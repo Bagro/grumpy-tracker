@@ -154,17 +154,38 @@ export const timeEntryRoutes = new Elysia({ prefix: '/time' })
       .where('date', '>=', new Date(Date.now() - 30 * 24 * 60 * 60 * 1000))
       .orderBy('date desc')
       .execute();
+    // Fetch all breaks for these entries
+    const entryIds = entries.map(e => e.id);
+    let breaksByEntry: Record<string, { break_start_time: string, break_end_time: string }[]> = {};
+    if (entryIds.length) {
+      const breaks = await db.selectFrom('break').select(['time_entry_id', 'break_start_time', 'break_end_time']).where('time_entry_id', 'in', entryIds).execute();
+      for (const br of breaks) {
+        if (!breaksByEntry[br.time_entry_id]) {
+          breaksByEntry[br.time_entry_id] = [];
+        }
+        (breaksByEntry[br.time_entry_id] ?? []).push({ break_start_time: br.break_start_time, break_end_time: br.break_end_time });
+      }
+    }
     // --- Calculate daily flex and totals ---
     let totalFlexMinutes = 0;
     let html = `<table class="min-w-full table-auto border mt-8" aria-label="Flex Time Summary">
       <thead><tr>
-        <th scope="col">Date</th><th scope="col">Work</th><th scope="col">Travel</th><th scope="col">Break</th><th scope="col">Extra</th><th scope="col">Flex</th>
+        <th scope="col">Date</th><th scope="col">Work</th><th scope="col">Travel</th><th scope="col">Breaks</th><th scope="col">Extra</th><th scope="col">Flex</th>
       </tr></thead><tbody>`;
     for (const e of entries) {
       // Calculate work, travel, break, extra, flex (simple demo logic)
       const workMinutes = (parseTime(e.work_end_time) - parseTime(e.work_start_time)) / 60_000;
       const travelMinutes = (e.travel_start_time && e.travel_end_time) ? (parseTime(e.travel_end_time) - parseTime(e.travel_start_time)) / 60_000 : 0;
-      const breakMinutes = (e.break_start_time && e.break_end_time) ? (parseTime(e.break_end_time) - parseTime(e.break_start_time)) / 60_000 : 0;
+      // Sum all breaks for this entry
+      const breaks = breaksByEntry[e.id] || [];
+      let breakMinutes = 0;
+      let breaksDisplay = '';
+      if (breaks.length) {
+        breaksDisplay = breaks.map((b, i) => `${b.break_start_time}–${b.break_end_time}`).join('<br>');
+        for (const b of breaks) {
+          breakMinutes += (parseTime(b.break_end_time) - parseTime(b.break_start_time)) / 60_000;
+        }
+      }
       const extraMinutes = e.extra_time ? parseInterval(e.extra_time) : 0;
       // Assume normal work time is 8h (480 min) for demo
       const flex = workMinutes + travelMinutes + extraMinutes - breakMinutes - 480;
@@ -173,7 +194,7 @@ export const timeEntryRoutes = new Elysia({ prefix: '/time' })
         <td>${e.date.toISOString().slice(0,10)}</td>
         <td>${workMinutes}</td>
         <td>${travelMinutes}</td>
-        <td>${breakMinutes}</td>
+        <td>${breaksDisplay || '-'}</td>
         <td>${extraMinutes}</td>
         <td>${flex}</td>
       </tr>`;
