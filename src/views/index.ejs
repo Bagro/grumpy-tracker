@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Grumpy Tracker</title>
+    <link href="/public/tailwind.css" rel="stylesheet">
+  </head>
+  <body class="bg-gray-50 min-h-screen flex flex-col">
+    <header class="bg-blue-900 text-white p-4">
+      <h1 class="text-2xl font-bold">Grumpy Tracker</h1>
+    </header>
+    <main class="flex-1 p-4">
+      <% if (user) { %>
+        <p>Welcome, <%= user.name %>!</p>
+      <% } else { %>
+        <p>Welcome! Please <a href="/login" class="text-blue-700 underline">log in</a>.</p>
+      <% } %>
+    </main>
+    <footer class="bg-gray-200 text-center p-2 text-xs">&copy; <%= new Date().getFullYear() %> Grumpy Tracker</footer>
+  </body>
+</html>

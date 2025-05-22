@@ -1,0 +1,48 @@
+// Prisma schema for Grumpy Tracker
+// Run `npx prisma migrate dev` to apply
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id                String   @id @default(uuid())
+  email             String   @unique
+  name              String
+  password_hash     String
+  preferred_language String  @default("en")
+  created_at        DateTime @default(now())
+  updated_at        DateTime @updatedAt
+  timeEntries       TimeEntry[]
+  settings          Settings?
+}
+
+model TimeEntry {
+  id                String   @id @default(uuid())
+  user              User     @relation(fields: [user_id], references: [id])
+  user_id           String
+  date              DateTime
+  travel_start_time DateTime?
+  work_start_time   DateTime
+  work_end_time     DateTime
+  break_start_time  DateTime[]
+  break_end_time    DateTime[]
+  travel_end_time   DateTime?
+  extra_time        Int?
+  comments          String?
+  created_at        DateTime @default(now())
+  updated_at        DateTime @updatedAt
+}
+
+model Settings {
+  id                String   @id @default(uuid())
+  user              User     @relation(fields: [user_id], references: [id])
+  user_id           String   @unique
+  normal_work_time  Int      @default(480) // minutes
+  summer_work_time  Int      @default(435) // minutes
+}

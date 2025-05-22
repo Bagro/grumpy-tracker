@@ -1,22 +1,27 @@
 version: '3.8'
 services:
   db:
-    image: postgres:16
+    image: postgres:16-alpine
+    restart: always
     environment:
       POSTGRES_USER: grumpy
       POSTGRES_PASSWORD: grumpy
-      POSTGRES_DB: grumpy
+      POSTGRES_DB: grumpytracker
+      POSTGRES_INITDB_ARGS: "--locale-provider=libc"
     ports:
       - '5432:5432'
     volumes:
       - pgdata:/var/lib/postgresql/data
   app:
     build: .
+    command: npm run dev
     ports:
       - '3000:3000'
     environment:
-      DATABASE_URL: postgres://grumpy:grumpy@db:5432/grumpy
+      DATABASE_URL: postgres://grumpy:grumpy@db:5432/grumpytracker
     depends_on:
       - db
+    volumes:
+      - .:/app
 volumes:
   pgdata:

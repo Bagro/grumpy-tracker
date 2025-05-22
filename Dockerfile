@@ -1,9 +1,9 @@
-# syntax=docker/dockerfile:1
-# --- Single-stage Bun build with Tailwind CLI via npx ---
-FROM oven/bun:latest
+# Grumpy Tracker Dockerfile
+FROM node:20-alpine
 WORKDIR /app
+COPY package*.json ./
+RUN npm install
 COPY . .
-RUN bun install
-RUN bunx @tailwindcss/cli -i ./src/static/tailwind.input.css -o ./src/static/tailwind.css --minify
+RUN npx tailwindcss -i ./src/public/input.css -o ./src/public/tailwind.css --minify || true
 EXPOSE 3000
-CMD ["bun", "run", "src/index.ts"]
+CMD ["npm", "run", "start"]
