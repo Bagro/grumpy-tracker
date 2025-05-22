@@ -1,0 +1,10 @@
+{
+  "welcome": "Sveiki atvykę į Grumpy Tracker!",
+  "login": "Prisijungti",
+  "register": "Registruotis",
+  "email": "El. paštas",
+  "password": "Slaptažodis",
+  "name": "Vardas",
+  "language": "Kalba",
+  "submit": "Pateikti"
+}

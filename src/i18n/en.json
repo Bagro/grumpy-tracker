@@ -1,0 +1,10 @@
+{
+  "welcome": "Welcome to Grumpy Tracker!",
+  "login": "Login",
+  "register": "Register",
+  "email": "Email",
+  "password": "Password",
+  "name": "Name",
+  "language": "Language",
+  "submit": "Submit"
+}

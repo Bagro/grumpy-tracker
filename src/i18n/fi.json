@@ -1,0 +1,10 @@
+{
+  "welcome": "Tervetuloa Grumpy Trackeriin!",
+  "login": "Kirjaudu sisään",
+  "register": "Rekisteröidy",
+  "email": "Sähköposti",
+  "password": "Salasana",
+  "name": "Nimi",
+  "language": "Kieli",
+  "submit": "Lähetä"
+}

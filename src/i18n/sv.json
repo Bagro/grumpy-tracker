@@ -1,0 +1,10 @@
+{
+  "welcome": "Välkommen till Grumpy Tracker!",
+  "login": "Logga in",
+  "register": "Registrera",
+  "email": "E-post",
+  "password": "Lösenord",
+  "name": "Namn",
+  "language": "Språk",
+  "submit": "Skicka"
+}
