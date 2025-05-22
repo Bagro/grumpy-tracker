@@ -6,7 +6,22 @@ import { userRoutes } from './routes/user';
 import { timeEntryRoutes } from './routes/time';
 import { settingsRoutes } from './routes/settings';
 
+process.on('uncaughtException', (err) => {
+  console.error('Uncaught Exception:', err);
+  process.exit(1);
+});
+process.on('unhandledRejection', (reason) => {
+  console.error('Unhandled Rejection:', reason);
+  process.exit(1);
+});
+
 const app = new Elysia();
+
+// Error handler middleware
+app.onError(({ code, error }) => {
+  console.error('Elysia error:', code, error);
+  return 'Internal server error';
+});
 
 app.get('/', (ctx) => {
   // Example: use i18n for welcome message
