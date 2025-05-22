@@ -13,6 +13,7 @@ import { dirname } from 'path';
 import authRoutes from './routes/auth.js';
 import timeRoutes from './routes/time.js';
 import profileRoutes from './routes/profile.js';
+import settingsRoutes from './routes/settings.js';
 import setupI18n from './i18n/index.js';
 import { PrismaClient } from '@prisma/client';
 
@@ -72,6 +73,10 @@ app.get('/', async (req, res) => {
   // Simple flex calculation: (work_end - work_start - breaks) - normal_work_time
   let flexToday = 0, flexTotal = 0;
   const today = new Date().toISOString().slice(0,10);
+  // Fetch user settings for normal work time
+  let normal = 480;
+  const userSettings = await prisma.settings.findUnique({ where: { user_id: req.user.id } });
+  if (userSettings) normal = userSettings.normal_work_time;
   for (const e of entries) {
     const workMinutes = (e.work_end_time - e.work_start_time) / 60000;
     const breakMinutes = (e.break_start_time || []).reduce((sum, b, i) => {
@@ -79,7 +84,6 @@ app.get('/', async (req, res) => {
       return sum + (end && b ? (end - b) / 60000 : 0);
     }, 0);
     const extra = e.extra_time || 0;
-    const normal = 480; // TODO: fetch user setting
     const flex = workMinutes - breakMinutes + extra - normal;
     if (e.date.toISOString().slice(0,10) === today) flexToday += flex;
     flexTotal += flex;
@@ -91,6 +95,7 @@ app.get('/', async (req, res) => {
 app.use(authRoutes);
 app.use(timeRoutes);
 app.use(profileRoutes);
+app.use(settingsRoutes);
 
 // Error handler for CSRF and others
 app.use((err, req, res, next) => {

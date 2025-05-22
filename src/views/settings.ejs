@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Settings - Grumpy Tracker</title>
+  <link href="/public/tailwind.css" rel="stylesheet">
+</head>
+<body class="bg-gray-50 min-h-screen flex flex-col">
+  <header class="bg-blue-900 text-white p-4">
+    <h1 class="text-2xl font-bold">Settings</h1>
+  </header>
+  <main class="flex-1 p-4 max-w-md mx-auto">
+    <% if (error) { %>
+      <div class="bg-red-100 text-red-700 p-2 rounded mb-2"><%= error %></div>
+    <% } %>
+    <% if (success) { %>
+      <div class="bg-green-100 text-green-700 p-2 rounded mb-2"><%= success %></div>
+    <% } %>
+    <form method="post" action="/settings" class="bg-white shadow p-6 rounded space-y-4">
+      <div>
+        <label for="normal_work_time" class="block mb-1">Normal Work Time (minutes)</label>
+        <input id="normal_work_time" name="normal_work_time" type="number" min="0" required class="w-full border rounded p-2" value="<%= settings.normal_work_time %>" />
+      </div>
+      <div>
+        <label for="summer_work_time" class="block mb-1">Summer Work Time (minutes)</label>
+        <input id="summer_work_time" name="summer_work_time" type="number" min="0" required class="w-full border rounded p-2" value="<%= settings.summer_work_time %>" />
+      </div>
+      <button type="submit" class="w-full bg-blue-700 text-white py-2 rounded hover:bg-blue-800">Save Settings</button>
+    </form>
+  </main>
+  <footer class="bg-gray-200 text-center p-2 text-xs">&copy; <%= new Date().getFullYear() %> Grumpy Tracker</footer>
+</body>
+</html>
