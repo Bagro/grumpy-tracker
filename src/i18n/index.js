@@ -1,6 +1,5 @@
 import i18next from 'i18next';
-import Backend from 'i18next-fs-backend';
-import middleware from 'i18next-express-middleware';
+import middleware from 'i18next-http-middleware';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import { dirname } from 'path';
@@ -9,6 +8,7 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
 export default async function setupI18n() {
+  const Backend = (await import('i18next-fs-backend')).default;
   await i18next
     .use(Backend)
     .use(middleware.LanguageDetector)

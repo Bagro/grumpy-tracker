@@ -5,10 +5,13 @@ import path from 'path';
 import dotenv from 'dotenv';
 import passport from 'passport';
 import i18next from 'i18next';
-import i18nextMiddleware from 'i18next-express-middleware';
+import Backend from 'i18next-fs-backend';
+import middleware from 'i18next-http-middleware';
 import csurf from 'csurf';
 import { fileURLToPath } from 'url';
 import { dirname } from 'path';
+import authRoutes from './routes/auth.js';
+import setupI18n from './i18n/index.js';
 
 // Load env vars
 dotenv.config();
@@ -41,15 +44,36 @@ app.use(session({
 app.use(passport.initialize());
 app.use(passport.session());
 
-// i18next (placeholder, config to be added)
-app.use(i18nextMiddleware.handle(i18next));
+// i18next setup
+await setupI18n();
+app.use(middleware.handle(i18next));
 
 // CSRF protection
 app.use(csurf());
 
+// Middleware: redirect unauthenticated users to login (except /login, /register)
+app.use((req, res, next) => {
+  const publicPaths = ['/login', '/register', '/public', '/logout'];
+  if (!req.user && !publicPaths.some(p => req.path.startsWith(p))) {
+    return res.redirect('/login');
+  }
+  next();
+});
+
 // Basic home route
 app.get('/', (req, res) => {
   res.render('index', { user: req.user });
+});
+
+// Auth routes
+app.use(authRoutes);
+
+// Error handler for CSRF and others
+app.use((err, req, res, next) => {
+  if (err.code === 'EBADCSRFTOKEN') {
+    return res.status(403).send('Form tampered with.');
+  }
+  res.status(500).send('Internal Server Error');
 });
 
 // TODO: Add routes, auth, db, i18n, error handling
@@ -58,3 +82,5 @@ const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
   console.log(`Grumpy Tracker running on http://localhost:${PORT}`);
 });
+
+export default app;
