@@ -147,4 +147,45 @@ export const timeEntryRoutes = new Elysia({ prefix: '/time' })
     function parseTime(t: string | null | undefined): number { if (!t) return 0; const [h,m,s] = t.split(':').map(Number); return ((h||0)*60+(m||0))*60_000; }
     function parseInterval(i: string | null | undefined): number { if (!i) return 0; const [h,m,s] = i.split(':').map(Number); return ((h||0)*60+(m||0))*60_000; }
     return html;
+  })
+  // Export time entries as CSV (GET)
+  .get('/export/csv', async (ctx) => {
+    // --- Auth check (simple cookie/session) ---
+    const cookie = ctx.request.headers.get('cookie');
+    const sessionId = cookie?.split(';').find((c) => c.trim().startsWith('session='))?.split('=')[1];
+    if (!sessionId) {
+      return ctx.set.status = 401, { error: i18n.t('Not authenticated') };
+    }
+    const session = await auth.validateSession(sessionId);
+    if (!session?.userId) {
+      return ctx.set.status = 401, { error: i18n.t('Not authenticated') };
+    }
+    // --- Fetch all time entries for user ---
+    const entries = await db.selectFrom('time_entry')
+      .selectAll()
+      .where('user_id', '=', session.userId)
+      .orderBy('date desc')
+      .execute();
+    // --- Build CSV ---
+    const header = [
+      'date','work_start_time','work_end_time','travel_start_time','travel_end_time','break_start_time','break_end_time','extra_time','comments'
+    ];
+    const rows = entries.map(e => [
+      e.date.toISOString().slice(0,10),
+      e.work_start_time ?? '',
+      e.work_end_time ?? '',
+      e.travel_start_time ?? '',
+      e.travel_end_time ?? '',
+      e.break_start_time ?? '',
+      e.break_end_time ?? '',
+      e.extra_time ?? '',
+      (e.comments ?? '').replace(/"/g, '""')
+    ]);
+    let csv = header.join(',') + '\n';
+    for (const row of rows) {
+      csv += row.map(v => `"${v}"`).join(',') + '\n';
+    }
+    ctx.set.headers['Content-Type'] = 'text/csv';
+    ctx.set.headers['Content-Disposition'] = 'attachment; filename="time_entries.csv"';
+    return csv;
   });

@@ -163,4 +163,45 @@ export const userRoutes = new Elysia({ prefix: '/user' })
     }
     await db.updateTable('user').set(update).where('id', '=', session.userId).execute();
     return { success: true };
+  })
+  // User data export (GET)
+  .get('/export', async (ctx) => {
+    // --- Auth check (simple cookie/session) ---
+    const cookie = ctx.request.headers.get('cookie');
+    const sessionId = cookie?.split(';').find((c) => c.trim().startsWith('session='))?.split('=')[1];
+    if (!sessionId) {
+      return ctx.set.status = 401, { error: i18n.t('Not authenticated') };
+    }
+    const session = await auth.validateSession(sessionId);
+    if (!session?.userId) {
+      return ctx.set.status = 401, { error: i18n.t('Not authenticated') };
+    }
+    // --- Fetch user and all their data ---
+    const user = await db.selectFrom('user').selectAll().where('id', '=', session.userId).executeTakeFirst();
+    const timeEntries = await db.selectFrom('time_entry').selectAll().where('user_id', '=', session.userId).execute();
+    const settings = await db.selectFrom('settings').selectAll().where('user_id', '=', session.userId).execute();
+    // --- Build export object ---
+    const exportData = { user, timeEntries, settings };
+    ctx.set.headers['Content-Type'] = 'application/json';
+    ctx.set.headers['Content-Disposition'] = 'attachment; filename="user_data.json"';
+    return JSON.stringify(exportData, null, 2);
+  })
+  // Account deletion (POST)
+  .post('/delete', async (ctx) => {
+    // --- Auth check (simple cookie/session) ---
+    const cookie = ctx.request.headers.get('cookie');
+    const sessionId = cookie?.split(';').find((c) => c.trim().startsWith('session='))?.split('=')[1];
+    if (!sessionId) {
+      return ctx.set.status = 401, { error: i18n.t('Not authenticated') };
+    }
+    const session = await auth.validateSession(sessionId);
+    if (!session?.userId) {
+      return ctx.set.status = 401, { error: i18n.t('Not authenticated') };
+    }
+    // --- Delete user and cascade ---
+    await db.deleteFrom('user').where('id', '=', session.userId).execute();
+    // Remove session cookie
+    ctx.set.headers['Set-Cookie'] = 'session=; HttpOnly; Path=/; Max-Age=0; SameSite=Lax';
+    // TODO: Notify admin (out of scope for now)
+    return { success: true };
   });

@@ -14,5 +14,7 @@
   "Not authenticated": "Not authenticated.",
   "Required fields missing": "Required fields missing.",
   "Profile": "Profile",
-  "User not found": "User not found."
+  "User not found": "User not found.",
+  "Export Data": "Export Data",
+  "Delete Account": "Delete Account"
 }
