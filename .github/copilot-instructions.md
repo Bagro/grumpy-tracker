@@ -1,18 +1,20 @@
 # Time Tracking System – Architecture & Coding Guidelines
 
-This document outlines the technology stack, architecture, and coding standards for our time tracking system with flex time calculation and multilingual support.
+This document outlines the technology stack, architecture, and coding standards for the **Grumpy Tracker** time tracking system, now based on Node.js and Express.
 
 ---
 
 ## **1. Tech Stack (Selected Technologies)**
 
 ### **Backend**
-- **Bun** (runtime & package manager)
-- **ElysiaJS** (web API & HTML server)
+- **Node.js** (LTS)
+- **Express.js** (web framework)
 - **EJS** (server-rendered templates)
-- **lucia-auth** (authentication, sessions)
-- **Kysely** (type-safe SQL/ORM)
+- **Passport.js** (authentication, sessions)
+- **Prisma** or **Kysely** (type-safe ORM/database client)
 - **PostgreSQL** (database)
+- **i18next** (internationalization)
+- **Jest** or **Vitest** (testing)
 
 ### **Frontend**
 - **HTML First** (semantic HTML, forms, classic SSR)
@@ -20,9 +22,7 @@ This document outlines the technology stack, architecture, and coding standards 
 - **htmx** (progressive enhancement – AJAX, partial updates, etc.)
 
 ### **Other**
-- **i18next** (internationalization support)
 - **Prettier & ESLint** (code standards)
-- **Vitest** (testing)
 - **Docker** (local development & deployment)
 - **GitHub Actions** (CI/CD, optional)
 
@@ -36,13 +36,13 @@ This document outlines the technology stack, architecture, and coding standards 
   - Backend: API, business logic, server-rendered views  
   - Frontend: Forms, clear and semantic HTML
 - **Security:**  
-  - Secure password handling (hashing via lucia-auth)
-  - CSRF protection, server-side validation
+  - Secure password handling (hashing via bcrypt or similar)
+  - CSRF protection (can use [csurf](https://www.npmjs.com/package/csurf)), server-side validation
 - **Testability:**  
-  - Unit tests for backend logic
+  - Unit and integration tests for backend logic and routes
 - **Accessibility & Responsiveness:**  
   - All HTML should comply with WCAG 2.1
-  - Responsive design via Tailwind
+  - Responsive design via Tailwind CSS
 
 ---
 
@@ -79,11 +79,12 @@ This document outlines the technology stack, architecture, and coding standards 
 ## **4. Coding Guidelines**
 
 ### **Backend**
-- Prefer `async/await` syntax.
-- All input must be validated both on frontend (for UX) and backend (for security).
-- Never expose sensitive data in templates.
-- Use parameterized queries via Kysely.
-- Authentication via lucia-auth, handle sessions securely (httpOnly cookies).
+- Use `async/await` syntax throughout.
+- Validate all input both on the frontend (for UX) and backend (for security).
+- Never expose sensitive data in templates or responses.
+- Use parameterized queries and avoid raw SQL to prevent injection.
+- Authentication managed with Passport.js; password hashing with bcrypt.
+- Sessions stored securely using httpOnly cookies.
 
 ### **Frontend**
 - Write **semantic HTML** – use `<form>`, `<label>`, `<input>`, `<table>`, etc.
@@ -92,12 +93,12 @@ This document outlines the technology stack, architecture, and coding standards 
 - Use htmx for AJAX-based interactivity where it improves UX; otherwise, stick to classic page reloads.
 
 ### **Internationalization**
-- All text rendered via translation functions.
+- All text rendered via translation functions using i18next.
 - Initial support for Swedish, English, Finnish, Norwegian, Latvian, Estonian, Lithuanian, Danish.
 - Texts stored in JSON/YAML or i18next format.
 
 ### **Testing**
-- Backend logic must be covered by unit tests using Vitest.
+- Backend logic and endpoints must be covered by tests (Jest or Vitest).
 - Database functions should be tested against a test database.
 
 ---
@@ -108,20 +109,21 @@ This document outlines the technology stack, architecture, and coding standards 
 /project-root
 │
 ├── src/
-│   ├── index.ts          # Elysia main entrypoint
-│   ├── routes/           # Route handlers, divided by feature
-│   ├── templates/        # EJS templates (views)
-│   ├── db/               # Kysely db classes and migrations
-│   ├── auth/             # lucia-auth setup
-│   ├── i18n/             # Language files
-│   ├── static/           # CSS (Tailwind), JS, images
+│ ├── index.js # Express main entrypoint
+│ ├── routes/ # Route handlers, divided by feature
+│ ├── views/ # EJS templates (views)
+│ ├── db/ # Prisma/Kysely db classes and migrations
+│ ├── auth/ # Passport.js setup, strategies, middleware
+│ ├── i18n/ # Language files and i18next config
+│ ├── public/ # Static files: CSS (Tailwind), JS, images
 │
-├── tests/                # Vitest tests
+├── tests/ # Jest/Vitest tests
 ├── docker-compose.yml
 ├── Dockerfile
 ├── package.json
 ├── README.md
 ```
+
 
 ---
 
@@ -131,12 +133,14 @@ This document outlines the technology stack, architecture, and coding standards 
 - Create **feature branches** for new features.
 - Pull requests must be reviewed before merging to main.
 - All code should pass linting and testing before merge.
+- **All code must pass linting and testing before merge.**
+- **All code changes must be verified to build and run successfully (locally or in CI) before being merged.**
 
 ---
 
 ## **7. Deployment & DevOps**
 
-- Local: Docker Compose for development (Bun + Postgres)
+- Local: Docker Compose for development (Node.js + Postgres)
 - Production: Docker or any preferred PaaS (Railway, DigitalOcean, etc.)
 - CI/CD (optional): GitHub Actions for lint, test, build
 
@@ -156,7 +160,7 @@ This document outlines the technology stack, architecture, and coding standards 
 1. **Setup & Base Structure**
    - Project structure, repo, CI/CD, Docker
 2. **Auth & User Management**
-   - lucia-auth, registration, login, sessions
+   - Passport.js, registration, login, sessions
 3. **Time Tracking & Database Model**
    - CRUD endpoints, server-rendered forms
 4. **Flex Time Calculation & Settings**
@@ -172,16 +176,17 @@ This document outlines the technology stack, architecture, and coding standards 
 
 ## **10. Links & References**
 
-- [Bun](https://bun.sh/)
-- [ElysiaJS](https://elysiajs.com/)
+- [Node.js](https://nodejs.org/)
+- [Express.js](https://expressjs.com/)
 - [EJS](https://ejs.co/)
-- [lucia-auth](https://lucia-auth.com/)
-- [Kysely](https://kysely.dev/)
+- [Passport.js](http://www.passportjs.org/)
+- [Prisma](https://www.prisma.io/) / [Kysely](https://kysely.dev/)
 - [PostgreSQL](https://www.postgresql.org/)
 - [Tailwind CSS](https://tailwindcss.com/)
 - [htmx](https://htmx.org/)
 - [i18next](https://www.i18next.com/)
+- [Jest](https://jestjs.io/) / [Vitest](https://vitest.dev/)
 
 ---
 
-For questions and suggestions, use the project’s GitHub issues or discuss within the team.
+
