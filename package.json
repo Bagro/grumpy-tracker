@@ -24,6 +24,7 @@
     "i18next-express-middleware": "^2.0.0",
     "i18next-fs-backend": "^2.6.0",
     "i18next-http-middleware": "^3.7.4",
+    "json2csv": "^6.0.0-alpha.2",
     "passport": "^0.7.0",
     "passport-local": "^1.0.0",
     "pg": "^8.11.1",

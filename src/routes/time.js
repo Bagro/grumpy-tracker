@@ -1,6 +1,7 @@
 import express from "express";
 import { PrismaClient } from "@prisma/client";
 import { parseISO } from "date-fns";
+import { Parser } from 'json2csv';
 
 const prisma = new PrismaClient();
 const router = express.Router();
@@ -97,6 +98,36 @@ router.get("/time/summary", async (req, res) => {
   }
   const summary = Object.entries(summaryMap).map(([date, row]) => ({ date, ...row }));
   res.render("time-summary", { summary, totalFlex, period, date: baseDate.toISOString().slice(0,10), user: req.user });
+});
+
+// CSV export of time entries
+router.get('/time/export/csv', async (req, res) => {
+  if (!req.user) return res.redirect('/login');
+  const entries = await prisma.timeEntry.findMany({
+    where: { user_id: req.user.id },
+    orderBy: { date: 'asc' },
+  });
+  const fields = [
+    'date', 'work_start_time', 'work_end_time', 'travel_start_time', 'travel_end_time',
+    'break_start_time', 'break_end_time', 'extra_time', 'comments', 'created_at', 'updated_at'
+  ];
+  const data = entries.map(e => ({
+    ...e,
+    break_start_time: (e.break_start_time || []).join(';'),
+    break_end_time: (e.break_end_time || []).join(';'),
+    date: e.date.toISOString(),
+    work_start_time: e.work_start_time.toISOString(),
+    work_end_time: e.work_end_time.toISOString(),
+    travel_start_time: e.travel_start_time ? e.travel_start_time.toISOString() : '',
+    travel_end_time: e.travel_end_time ? e.travel_end_time.toISOString() : '',
+    created_at: e.created_at.toISOString(),
+    updated_at: e.updated_at.toISOString(),
+  }));
+  const parser = new Parser({ fields });
+  const csv = parser.parse(data);
+  res.header('Content-Type', 'text/csv');
+  res.attachment('time-entries.csv');
+  res.send(csv);
 });
 
 export default router;
