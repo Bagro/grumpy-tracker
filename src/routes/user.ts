@@ -4,12 +4,14 @@ import { i18n } from '../i18n';
 import { randomUUID } from 'crypto';
 import bcrypt from 'bcryptjs';
 import { lucia } from '../auth';
+import { renderPage } from '../templates/renderPage';
 
 export const userRoutes = new Elysia({ prefix: '/user' })
   // Registration form (GET)
   .get('/register', (ctx) => {
     ctx.set.headers['Content-Type'] = 'text/html';
-    return `
+    return renderPage(`
+      <div id="register-form-container">
       <form method="post" action="/user/register" class="max-w-md mx-auto mt-8 p-4 border rounded bg-white" aria-labelledby="register-title" hx-post="/user/register" hx-target="#register-form-container" hx-swap="outerHTML">
         <h1 id="register-title" class="text-2xl mb-4">${i18n.t('register')}</h1>
         <div id="register-error" class="text-red-600 mb-2" style="display:none"></div>
@@ -32,7 +34,8 @@ export const userRoutes = new Elysia({ prefix: '/user' })
         </select>
         <button class="btn btn-primary w-full mt-4" type="submit">${i18n.t('submit')}</button>
       </form>
-    `;
+      </div>
+    `);
   })
   // Registration handler (POST)
   .post('/register', async (ctx) => {
@@ -123,10 +126,8 @@ export const userRoutes = new Elysia({ prefix: '/user' })
   // Login form (GET)
   .get('/login', (ctx) => {
     ctx.set.headers['Content-Type'] = 'text/html';
-    // Check for htmx request
-    const isHtmx = ctx.request.headers.get('hx-request') === 'true';
-    // Render login form with htmx attributes
-    return `
+    return renderPage(`
+      <div id="login-form-container">
       <form method="post" action="/user/login" class="max-w-md mx-auto mt-8 p-4 border rounded bg-white" aria-labelledby="login-title" hx-post="/user/login" hx-target="#login-form-container" hx-swap="outerHTML">
         <h1 id="login-title" class="text-2xl mb-4">${i18n.t('login')}</h1>
         <div id="login-error" class="text-red-600 mb-2" style="display:none"></div>
@@ -136,7 +137,8 @@ export const userRoutes = new Elysia({ prefix: '/user' })
         <input id="login-password" name="password" type="password" class="input input-bordered w-full" required autocomplete="current-password" />
         <button class="btn btn-primary w-full mt-4" type="submit">${i18n.t('submit')}</button>
       </form>
-    `;
+      </div>
+    `);
   })
   // Login handler (POST)
   .post('/login', async (ctx) => {
@@ -216,6 +218,8 @@ export const userRoutes = new Elysia({ prefix: '/user' })
   // Profile view (GET)
   .get('/profile', async (ctx) => {
     ctx.set.headers['Content-Type'] = 'text/html';
+    // Check for htmx request
+    const isHtmx = ctx.request.headers.get('hx-request') === 'true';
     const cookie = ctx.request.headers.get('cookie');
     const sessionId = cookie?.split(';').find((c) => c.trim().startsWith('session='))?.split('=')[1];
     if (!sessionId) {
@@ -230,7 +234,8 @@ export const userRoutes = new Elysia({ prefix: '/user' })
       return ctx.set.status = 404, { error: i18n.t('User not found') };
     }
     // Render profile form (SSR, EJS or HTML string for now)
-    return `
+    return renderPage(`
+      <div id="profile-form-container">
       <form method="post" action="/user/profile" class="max-w-md mx-auto mt-8 p-4 border rounded bg-white" aria-labelledby="profile-title" hx-post="/user/profile" hx-target="#profile-form-container" hx-swap="outerHTML">
         <h1 id="profile-title" class="text-2xl mb-4">${i18n.t('Profile')}</h1>
         <div id="profile-error" class="text-red-600 mb-2" style="display:none"></div>
@@ -253,7 +258,8 @@ export const userRoutes = new Elysia({ prefix: '/user' })
         <input id="profile-password" name="password" type="password" class="input input-bordered w-full" placeholder="(leave blank to keep current)" autocomplete="new-password" />
         <button class="btn btn-primary w-full mt-4" type="submit">${i18n.t('submit')}</button>
       </form>
-    `;
+      </div>
+    `);
   })
   // Profile update handler (POST)
   .post('/profile', async (ctx) => {

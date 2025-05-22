@@ -1,10 +1,12 @@
 // Elysia main entrypoint
 import { Elysia } from 'elysia';
+import staticPlugin from '@elysiajs/static';
 import { db } from './db';
 import { i18n } from './i18n';
 import { userRoutes } from './routes/user';
 import { timeEntryRoutes } from './routes/time';
 import { settingsRoutes } from './routes/settings';
+import { renderPage } from './templates/renderPage';
 
 process.on('uncaughtException', (err) => {
   console.error('Uncaught Exception:', err);
@@ -16,6 +18,12 @@ process.on('unhandledRejection', (reason) => {
 });
 
 const app = new Elysia();
+
+// Serve static files from /static
+app.use(staticPlugin({
+  assets: './src/static',
+  prefix: '/static'
+}));
 
 // Error handler middleware
 app.onError(({ code, error }) => {
