@@ -59,4 +59,43 @@ export const timeEntryRoutes = new Elysia({ prefix: '/time' })
       updated_at: new Date(),
     }).execute();
     return { success: true };
+  })
+  // List time entries (GET)
+  .get('/list', async (ctx) => {
+    // --- Auth check (simple cookie/session) ---
+    const cookie = ctx.request.headers.get('cookie');
+    const sessionId = cookie?.split(';').find((c) => c.trim().startsWith('session='))?.split('=')[1];
+    if (!sessionId) {
+      return ctx.set.status = 401, { error: i18n.t('Not authenticated') };
+    }
+    const session = await auth.validateSession(sessionId);
+    if (!session?.userId) {
+      return ctx.set.status = 401, { error: i18n.t('Not authenticated') };
+    }
+    // --- Fetch time entries for user ---
+    const entries = await db.selectFrom('time_entry')
+      .selectAll()
+      .where('user_id', '=', session.userId)
+      .orderBy('date desc')
+      .execute();
+    // Render as simple HTML table (SSR, EJS or HTML string for now)
+    let html = `<table class="min-w-full table-auto border mt-8">
+      <thead><tr>
+        <th>Date</th><th>Work Start</th><th>Work End</th><th>Travel Start</th><th>Travel End</th><th>Break Start</th><th>Break End</th><th>Extra</th><th>Comments</th>
+      </tr></thead><tbody>`;
+    for (const e of entries) {
+      html += `<tr>
+        <td>${e.date.toISOString().slice(0,10)}</td>
+        <td>${e.work_start_time ?? ''}</td>
+        <td>${e.work_end_time ?? ''}</td>
+        <td>${e.travel_start_time ?? ''}</td>
+        <td>${e.travel_end_time ?? ''}</td>
+        <td>${e.break_start_time ?? ''}</td>
+        <td>${e.break_end_time ?? ''}</td>
+        <td>${e.extra_time ?? ''}</td>
+        <td>${e.comments ?? ''}</td>
+      </tr>`;
+    }
+    html += '</tbody></table>';
+    return html;
   });

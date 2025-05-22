@@ -12,5 +12,7 @@
   "Email already registered": "Email already registered.",
   "Invalid email or password": "Invalid email or password.",
   "Not authenticated": "Not authenticated.",
-  "Required fields missing": "Required fields missing."
+  "Required fields missing": "Required fields missing.",
+  "Profile": "Profile",
+  "User not found": "User not found."
 }
