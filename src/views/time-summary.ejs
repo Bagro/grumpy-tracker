@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Time Summary - Grumpy Tracker</title>
+  <link href="/public/tailwind.css" rel="stylesheet">
+</head>
+<body class="bg-gray-50 min-h-screen flex flex-col">
+  <header class="bg-blue-900 text-white p-4">
+    <h1 class="text-2xl font-bold">Time Summary</h1>
+  </header>
+  <main class="flex-1 p-4">
+    <form method="get" action="/time/summary" class="mb-4 flex gap-2">
+      <label for="period">Period:</label>
+      <select name="period" id="period" class="border rounded p-2">
+        <option value="day" <%= period === 'day' ? 'selected' : '' %>>Day</option>
+        <option value="week" <%= period === 'week' ? 'selected' : '' %>>Week</option>
+        <option value="month" <%= period === 'month' ? 'selected' : '' %>>Month</option>
+      </select>
+      <input type="date" name="date" value="<%= date %>" class="border rounded p-2" />
+      <button type="submit" class="bg-blue-700 text-white px-4 py-2 rounded">Show</button>
+    </form>
+    <table class="w-full table-auto border">
+      <thead>
+        <tr>
+          <th>Date</th>
+          <th>Work</th>
+          <th>Travel</th>
+          <th>Breaks</th>
+          <th>Extra</th>
+          <th>Flex</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% summary.forEach(row => { %>
+          <tr>
+            <td><%= row.date %></td>
+            <td><%= row.work %> min</td>
+            <td><%= row.travel %> min</td>
+            <td><%= row.breaks %> min</td>
+            <td><%= row.extra %> min</td>
+            <td><%= row.flex %> min</td>
+          </tr>
+        <% }) %>
+      </tbody>
+    </table>
+    <div class="mt-4 font-bold">Total Flex: <%= totalFlex %> min</div>
+  </main>
+  <footer class="bg-gray-200 text-center p-2 text-xs">&copy; <%= new Date().getFullYear() %> Grumpy Tracker</footer>
+</body>
+</html>
