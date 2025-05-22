@@ -1,0 +1,26 @@
+{
+  "name": "grumpy-tracker",
+  "module": "index.ts",
+  "type": "module",
+  "private": true,
+  "devDependencies": {
+    "@types/bun": "latest"
+  },
+  "peerDependencies": {
+    "typescript": "^5"
+  },
+  "dependencies": {
+    "@types/node": "^22.15.21",
+    "ejs": "^3.1.10",
+    "elysia": "^1.3.1",
+    "eslint": "^9.27.0",
+    "htmx": "^0.0.2",
+    "i18next": "^25.2.0",
+    "kysely": "^0.28.2",
+    "lucia-auth": "^1.8.0",
+    "pg": "^8.16.0",
+    "prettier": "^3.5.3",
+    "tailwindcss": "^4.1.7",
+    "vitest": "^3.1.4"
+  }
+}
