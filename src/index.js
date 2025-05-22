@@ -11,7 +11,10 @@ import csurf from 'csurf';
 import { fileURLToPath } from 'url';
 import { dirname } from 'path';
 import authRoutes from './routes/auth.js';
+import timeRoutes from './routes/time.js';
+import profileRoutes from './routes/profile.js';
 import setupI18n from './i18n/index.js';
+import { PrismaClient } from '@prisma/client';
 
 // Load env vars
 dotenv.config();
@@ -20,6 +23,7 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
 const app = express();
+const prisma = new PrismaClient();
 
 // EJS setup
 app.set('view engine', 'ejs');
@@ -61,12 +65,32 @@ app.use((req, res, next) => {
 });
 
 // Basic home route
-app.get('/', (req, res) => {
-  res.render('index', { user: req.user });
+app.get('/', async (req, res) => {
+  if (!req.user) return res.redirect('/login');
+  // Calculate flex time for today and total
+  const entries = await prisma.timeEntry.findMany({ where: { user_id: req.user.id } });
+  // Simple flex calculation: (work_end - work_start - breaks) - normal_work_time
+  let flexToday = 0, flexTotal = 0;
+  const today = new Date().toISOString().slice(0,10);
+  for (const e of entries) {
+    const workMinutes = (e.work_end_time - e.work_start_time) / 60000;
+    const breakMinutes = (e.break_start_time || []).reduce((sum, b, i) => {
+      const end = (e.break_end_time||[])[i];
+      return sum + (end && b ? (end - b) / 60000 : 0);
+    }, 0);
+    const extra = e.extra_time || 0;
+    const normal = 480; // TODO: fetch user setting
+    const flex = workMinutes - breakMinutes + extra - normal;
+    if (e.date.toISOString().slice(0,10) === today) flexToday += flex;
+    flexTotal += flex;
+  }
+  res.render('index', { user: req.user, flexToday, flexTotal });
 });
 
 // Auth routes
 app.use(authRoutes);
+app.use(timeRoutes);
+app.use(profileRoutes);
 
 // Error handler for CSRF and others
 app.use((err, req, res, next) => {

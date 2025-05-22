@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>New Time Entry - Grumpy Tracker</title>
+  <link href="/public/tailwind.css" rel="stylesheet">
+</head>
+<body class="bg-gray-50 min-h-screen flex flex-col">
+  <header class="bg-blue-900 text-white p-4">
+    <h1 class="text-2xl font-bold">New Time Entry</h1>
+  </header>
+  <main class="flex-1 p-4 max-w-md mx-auto">
+    <% if (error) { %>
+      <div class="bg-red-100 text-red-700 p-2 rounded mb-2"><%= error %></div>
+    <% } %>
+    <form method="post" action="/time/new" class="bg-white shadow p-6 rounded space-y-4">
+      <div>
+        <label for="date" class="block mb-1">Date</label>
+        <input id="date" name="date" type="date" required class="w-full border rounded p-2" value="<%= entry?.date || '' %>" />
+      </div>
+      <div>
+        <label for="work_start_time" class="block mb-1">Work Start</label>
+        <input id="work_start_time" name="work_start_time" type="time" required class="w-full border rounded p-2" value="<%= entry?.work_start_time || '' %>" />
+      </div>
+      <div>
+        <label for="work_end_time" class="block mb-1">Work End</label>
+        <input id="work_end_time" name="work_end_time" type="time" required class="w-full border rounded p-2" value="<%= entry?.work_end_time || '' %>" />
+      </div>
+      <div>
+        <label class="block mb-1">Breaks (multiple allowed)</label>
+        <div id="breaks">
+          <div class="flex space-x-2 mb-1">
+            <input name="break_start_time" type="time" class="border rounded p-2" />
+            <input name="break_end_time" type="time" class="border rounded p-2" />
+          </div>
+        </div>
+        <button type="button" onclick="addBreak()" class="text-blue-700 underline">+ Add Break</button>
+      </div>
+      <div>
+        <label for="travel_start_time" class="block mb-1">Travel Start</label>
+        <input id="travel_start_time" name="travel_start_time" type="time" class="w-full border rounded p-2" value="<%= entry?.travel_start_time || '' %>" />
+      </div>
+      <div>
+        <label for="travel_end_time" class="block mb-1">Travel End</label>
+        <input id="travel_end_time" name="travel_end_time" type="time" class="w-full border rounded p-2" value="<%= entry?.travel_end_time || '' %>" />
+      </div>
+      <div>
+        <label for="extra_time" class="block mb-1">Extra Time (minutes)</label>
+        <input id="extra_time" name="extra_time" type="number" min="0" class="w-full border rounded p-2" value="<%= entry?.extra_time || '' %>" />
+      </div>
+      <div>
+        <label for="comments" class="block mb-1">Comments</label>
+        <textarea id="comments" name="comments" class="w-full border rounded p-2"><%= entry?.comments || '' %></textarea>
+      </div>
+      <button type="submit" class="w-full bg-blue-700 text-white py-2 rounded hover:bg-blue-800">Save</button>
+    </form>
+    <script>
+      function addBreak() {
+        const div = document.createElement('div');
+        div.className = 'flex space-x-2 mb-1';
+        div.innerHTML = `<input name="break_start_time" type="time" class="border rounded p-2" /> <input name="break_end_time" type="time" class="border rounded p-2" />`;
+        document.getElementById('breaks').appendChild(div);
+      }
+    </script>
+  </main>
+  <footer class="bg-gray-200 text-center p-2 text-xs">&copy; <%= new Date().getFullYear() %> Grumpy Tracker</footer>
+</body>
+</html>
