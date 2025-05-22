@@ -9,5 +9,6 @@
   "submit": "Submit",
   "Add Time Entry": "Add Time Entry",
   "All fields are required": "All fields are required.",
-  "Email already registered": "Email already registered."
+  "Email already registered": "Email already registered.",
+  "Invalid email or password": "Invalid email or password."
 }
