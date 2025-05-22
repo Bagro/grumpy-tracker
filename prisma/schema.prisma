@@ -20,6 +20,7 @@ model User {
   updated_at        DateTime @updatedAt
   timeEntries       TimeEntry[]
   settings          Settings?
+  deactivated        Boolean? @default(false)
 }
 
 model TimeEntry {

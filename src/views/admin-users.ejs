@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Admin: Users - Grumpy Tracker</title>
+  <link href="/public/tailwind.css" rel="stylesheet">
+</head>
+<body class="bg-gray-50 min-h-screen flex flex-col">
+  <header class="bg-blue-900 text-white p-4">
+    <h1 class="text-2xl font-bold">Admin: User Management</h1>
+  </header>
+  <main class="flex-1 p-4 max-w-2xl mx-auto">
+    <table class="w-full table-auto border mb-4">
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Email</th>
+          <th>Language</th>
+          <th>Created</th>
+          <th>Status</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% users.forEach(u => { %>
+          <tr>
+            <td><%= u.name %></td>
+            <td><%= u.email %></td>
+            <td><%= u.preferred_language %></td>
+            <td><%= u.created_at.toISOString().slice(0,10) %></td>
+            <td><%= u.deactivated ? 'Deactivated' : 'Active' %></td>
+            <td>
+              <form method="post" action="/admin/users/<%= u.id %>/toggle" style="display:inline">
+                <button type="submit" class="text-blue-700 underline"><%= u.deactivated ? 'Reactivate' : 'Deactivate' %></button>
+              </form>
+              <form method="post" action="/admin/users/<%= u.id %>/delete" style="display:inline" onsubmit="return confirm('Delete user?')">
+                <button type="submit" class="text-red-700 underline ml-2">Delete</button>
+              </form>
+            </td>
+          </tr>
+        <% }) %>
+      </tbody>
+    </table>
+    <a href="/" class="text-blue-700 underline">Back to Dashboard</a>
+  </main>
+  <footer class="bg-gray-200 text-center p-2 text-xs">&copy; <%= new Date().getFullYear() %> Grumpy Tracker</footer>
+</body>
+</html>

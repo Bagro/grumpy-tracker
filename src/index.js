@@ -15,6 +15,7 @@ import timeRoutes from './routes/time.js';
 import profileRoutes from './routes/profile.js';
 import settingsRoutes from './routes/settings.js';
 import gdprRoutes from './routes/gdpr.js';
+import adminRoutes from './routes/admin.js';
 import setupI18n from './i18n/index.js';
 import { PrismaClient } from '@prisma/client';
 
@@ -98,6 +99,7 @@ app.use(timeRoutes);
 app.use(profileRoutes);
 app.use(settingsRoutes);
 app.use(gdprRoutes);
+app.use(adminRoutes);
 
 // Error handler for CSRF and others
 app.use((err, req, res, next) => {
