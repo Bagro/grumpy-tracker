@@ -26,6 +26,14 @@ CREATE TABLE IF NOT EXISTS time_entry (
     updated_at TIMESTAMP NOT NULL DEFAULT NOW()
 );
 
+-- Add a new table for breaks to support multiple breaks per time entry
+CREATE TABLE IF NOT EXISTS break (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    time_entry_id UUID REFERENCES time_entry(id) ON DELETE CASCADE,
+    break_start_time TIME NOT NULL,
+    break_end_time TIME NOT NULL
+);
+
 -- Settings table
 CREATE TABLE IF NOT EXISTS settings (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),

@@ -17,20 +17,33 @@ export const timeEntryRoutes = new Elysia({ prefix: '/time' })
         <input id="work_start_time" name="work_start_time" type="time" class="input input-bordered w-full" required autocomplete="off" />
         <label class="block mb-2" for="work_end_time">Work End</label>
         <input id="work_end_time" name="work_end_time" type="time" class="input input-bordered w-full" required autocomplete="off" />
+        <div id="breaks-container">
+          <label class="block mb-2">Breaks</label>
+          <div class="break-row flex gap-2 mb-2">
+            <input name="break_start_time[]" type="time" class="input input-bordered" autocomplete="off" aria-label="Break Start" />
+            <input name="break_end_time[]" type="time" class="input input-bordered" autocomplete="off" aria-label="Break End" />
+          </div>
+        </div>
+        <button type="button" onclick="addBreakRow()" class="btn btn-secondary mb-2">Add Break</button>
         <label class="block mb-2" for="travel_start_time">Travel Start</label>
         <input id="travel_start_time" name="travel_start_time" type="time" class="input input-bordered w-full" autocomplete="off" />
         <label class="block mb-2" for="travel_end_time">Travel End</label>
         <input id="travel_end_time" name="travel_end_time" type="time" class="input input-bordered w-full" autocomplete="off" />
-        <label class="block mb-2" for="break_start_time">Break Start</label>
-        <input id="break_start_time" name="break_start_time" type="time" class="input input-bordered w-full" autocomplete="off" />
-        <label class="block mb-2" for="break_end_time">Break End</label>
-        <input id="break_end_time" name="break_end_time" type="time" class="input input-bordered w-full" autocomplete="off" />
         <label class="block mb-2" for="extra_time">Extra Time</label>
         <input id="extra_time" name="extra_time" type="time" class="input input-bordered w-full" autocomplete="off" />
         <label class="block mb-2" for="comments">Comments</label>
         <textarea id="comments" name="comments" class="input input-bordered w-full" aria-multiline="true"></textarea>
         <button class="btn btn-primary w-full mt-4" type="submit">${i18n.t('submit')}</button>
       </form>
+      <script>
+        function addBreakRow() {
+          const container = document.getElementById('breaks-container');
+          const div = document.createElement('div');
+          div.className = 'break-row flex gap-2 mb-2';
+          div.innerHTML = \`<input name='break_start_time[]' type='time' class='input input-bordered' autocomplete='off' aria-label='Break Start' /> <input name='break_end_time[]' type='time' class='input input-bordered' autocomplete='off' aria-label='Break End' /> <button type='button' onclick='this.parentNode.remove()' class='btn btn-xs btn-error'>Remove</button>\`;
+          container.appendChild(div);
+        }
+      </script>
     `;
   })
   // Time entry handler (POST)
@@ -46,27 +59,41 @@ export const timeEntryRoutes = new Elysia({ prefix: '/time' })
       return ctx.set.status = 401, { error: i18n.t('Not authenticated') };
     }
     // --- Input validation ---
-    const body = await ctx.request.json();
-    const { date, work_start_time, work_end_time, travel_start_time, travel_end_time, break_start_time, break_end_time, extra_time, comments } = body as Record<string, string>;
+    const body = await ctx.request.json() as Record<string, any>;
+    const { date, work_start_time, work_end_time, travel_start_time, travel_end_time, extra_time, comments } = body;
+    const break_start_times = body['break_start_time[]'] as string[] || [];
+    const break_end_times = body['break_end_time[]'] as string[] || [];
     if (!date || !work_start_time || !work_end_time) {
       return ctx.set.status = 400, { error: i18n.t('Required fields missing') };
     }
-    // --- Insert time entry ---
+    // Insert time entry
+    const entryId = randomUUID();
     await db.insertInto('time_entry').values({
-      id: randomUUID(),
+      id: entryId,
       user_id: session.userId,
       date: new Date(date),
       work_start_time,
       work_end_time,
       travel_start_time,
       travel_end_time,
-      break_start_time,
-      break_end_time,
       extra_time,
       comments,
       created_at: new Date(),
       updated_at: new Date(),
     }).execute();
+    // Insert breaks
+    for (let i = 0; i < break_start_times.length; i++) {
+      const start = break_start_times[i] ?? '';
+      const end = break_end_times[i] ?? '';
+      if (start && end) {
+        await db.insertInto('break').values({
+          id: randomUUID(),
+          time_entry_id: entryId,
+          break_start_time: start,
+          break_end_time: end,
+        }).execute();
+      }
+    }
     return { success: true };
   })
   // List time entries (GET)
@@ -209,31 +236,49 @@ export const timeEntryRoutes = new Elysia({ prefix: '/time' })
     // --- Fetch entry ---
     const entry = await db.selectFrom('time_entry').selectAll().where('id', '=', ctx.params.id).where('user_id', '=', session.userId).executeTakeFirst();
     if (!entry) return ctx.set.status = 404, { error: i18n.t('Entry not found') };
+    // Fetch breaks for this entry
+    const breaks = await db.selectFrom('break').selectAll().where('time_entry_id', '=', entry.id).execute();
     // --- Render edit form ---
-    return `
-      <form method="post" action="/time/edit/${entry.id}" class="max-w-md mx-auto mt-8 p-4 border rounded bg-white" aria-labelledby="editentry-title">
-        <h1 id="editentry-title" class="text-2xl mb-4">${i18n.t('Edit Time Entry')}</h1>
-        <label class="block mb-2" for="date">Date</label>
-        <input id="date" name="date" type="date" class="input input-bordered w-full" required value="${entry.date.toISOString().slice(0,10)}" />
-        <label class="block mb-2" for="work_start_time">Work Start</label>
-        <input id="work_start_time" name="work_start_time" type="time" class="input input-bordered w-full" required value="${entry.work_start_time ?? ''}" />
-        <label class="block mb-2" for="work_end_time">Work End</label>
-        <input id="work_end_time" name="work_end_time" type="time" class="input input-bordered w-full" required value="${entry.work_end_time ?? ''}" />
-        <label class="block mb-2" for="travel_start_time">Travel Start</label>
-        <input id="travel_start_time" name="travel_start_time" type="time" class="input input-bordered w-full" value="${entry.travel_start_time ?? ''}" />
-        <label class="block mb-2" for="travel_end_time">Travel End</label>
-        <input id="travel_end_time" name="travel_end_time" type="time" class="input input-bordered w-full" value="${entry.travel_end_time ?? ''}" />
-        <label class="block mb-2" for="break_start_time">Break Start</label>
-        <input id="break_start_time" name="break_start_time" type="time" class="input input-bordered w-full" value="${entry.break_start_time ?? ''}" />
-        <label class="block mb-2" for="break_end_time">Break End</label>
-        <input id="break_end_time" name="break_end_time" type="time" class="input input-bordered w-full" value="${entry.break_end_time ?? ''}" />
-        <label class="block mb-2" for="extra_time">Extra Time</label>
-        <input id="extra_time" name="extra_time" type="time" class="input input-bordered w-full" value="${entry.extra_time ?? ''}" />
-        <label class="block mb-2" for="comments">Comments</label>
-        <textarea id="comments" name="comments" class="input input-bordered w-full" aria-multiline="true">${entry.comments ?? ''}</textarea>
-        <button class="btn btn-primary w-full mt-4" type="submit">${i18n.t('submit')}</button>
-      </form>
-    `;
+    return [
+      `<form method="post" action="/time/edit/${entry.id}" class="max-w-md mx-auto mt-8 p-4 border rounded bg-white" aria-labelledby="editentry-title">`,
+      `<h1 id="editentry-title" class="text-2xl mb-4">${i18n.t('Edit Time Entry')}</h1>`,
+      `<label class="block mb-2" for="date">Date</label>`,
+      `<input id="date" name="date" type="date" class="input input-bordered w-full" required value="${entry.date.toISOString().slice(0,10)}" />`,
+      `<label class="block mb-2" for="work_start_time">Work Start</label>`,
+      `<input id="work_start_time" name="work_start_time" type="time" class="input input-bordered w-full" required value="${entry.work_start_time ?? ''}" />`,
+      `<label class="block mb-2" for="work_end_time">Work End</label>`,
+      `<input id="work_end_time" name="work_end_time" type="time" class="input input-bordered w-full" required value="${entry.work_end_time ?? ''}" />`,
+      `<div id="breaks-container">`,
+      `<label class="block mb-2">Breaks</label>`,
+      ...breaks.map((breakEntry: any) => `
+        <div class="break-row flex gap-2 mb-2">
+          <input name="break_start_time[]" type="time" class="input input-bordered" autocomplete="off" aria-label="Break Start" value="${breakEntry.break_start_time}" />
+          <input name="break_end_time[]" type="time" class="input input-bordered" autocomplete="off" aria-label="Break End" value="${breakEntry.break_end_time}" />
+          <button type="button" onclick="this.parentNode.remove()" class="btn btn-xs btn-error">Remove</button>
+        </div>
+      `),
+      `</div>`,
+      `<button type="button" onclick="addBreakRow()" class="btn btn-secondary mb-2">Add Break</button>`,
+      `<label class="block mb-2" for="travel_start_time">Travel Start</label>`,
+      `<input id="travel_start_time" name="travel_start_time" type="time" class="input input-bordered w-full" value="${entry.travel_start_time ?? ''}" />`,
+      `<label class="block mb-2" for="travel_end_time">Travel End</label>`,
+      `<input id="travel_end_time" name="travel_end_time" type="time" class="input input-bordered w-full" value="${entry.travel_end_time ?? ''}" />`,
+      `<label class="block mb-2" for="extra_time">Extra Time</label>`,
+      `<input id="extra_time" name="extra_time" type="time" class="input input-bordered w-full" value="${entry.extra_time ?? ''}" />`,
+      `<label class="block mb-2" for="comments">Comments</label>`,
+      `<textarea id="comments" name="comments" class="input input-bordered w-full" aria-multiline="true">${entry.comments ?? ''}</textarea>`,
+      `<button class="btn btn-primary w-full mt-4" type="submit">${i18n.t('submit')}</button>`,
+      `</form>`,
+      `<script>
+        function addBreakRow() {
+          const container = document.getElementById('breaks-container');
+          const div = document.createElement('div');
+          div.className = 'break-row flex gap-2 mb-2';
+          div.innerHTML = \`<input name='break_start_time[]' type='time' class='input input-bordered' autocomplete='off' aria-label='Break Start' /> <input name='break_end_time[]' type='time' class='input input-bordered' autocomplete='off' aria-label='Break End' /> <button type='button' onclick='this.parentNode.remove()' class='btn btn-xs btn-error'>Remove</button>\`;
+          container.appendChild(div);
+        }
+      </script>`
+    ].join('');
   })
   // Edit time entry handler (POST)
   .post('/edit/:id', async (ctx) => {
@@ -247,23 +292,39 @@ export const timeEntryRoutes = new Elysia({ prefix: '/time' })
     const entry = await db.selectFrom('time_entry').select('id').where('id', '=', ctx.params.id).where('user_id', '=', session.userId).executeTakeFirst();
     if (!entry) return ctx.set.status = 404, { error: i18n.t('Entry not found') };
     // --- Update entry ---
-    const body = await ctx.request.json();
-    const { date, work_start_time, work_end_time, travel_start_time, travel_end_time, break_start_time, break_end_time, extra_time, comments } = body as Record<string, string>;
+    const body = await ctx.request.json() as Record<string, any>;
+    const { date, work_start_time, work_end_time, travel_start_time, travel_end_time, extra_time, comments } = body;
+    const break_start_times = body['break_start_time[]'] as string[] || [];
+    const break_end_times = body['break_end_time[]'] as string[] || [];
     if (!date || !work_start_time || !work_end_time) {
       return ctx.set.status = 400, { error: i18n.t('Required fields missing') };
     }
+    // Update time entry
     await db.updateTable('time_entry').set({
       date: new Date(date),
       work_start_time,
       work_end_time,
       travel_start_time,
       travel_end_time,
-      break_start_time,
-      break_end_time,
       extra_time,
       comments,
       updated_at: new Date(),
     }).where('id', '=', ctx.params.id).where('user_id', '=', session.userId).execute();
+    // Remove old breaks
+    await db.deleteFrom('break').where('time_entry_id', '=', ctx.params.id).execute();
+    // Insert new breaks
+    for (let i = 0; i < break_start_times.length; i++) {
+      const start = break_start_times[i] ?? '';
+      const end = break_end_times[i] ?? '';
+      if (start && end) {
+        await db.insertInto('break').values({
+          id: randomUUID(),
+          time_entry_id: ctx.params.id,
+          break_start_time: start,
+          break_end_time: end,
+        }).execute();
+      }
+    }
     return { success: true };
   })
   // Delete time entry (POST)

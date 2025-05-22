@@ -35,10 +35,18 @@ export interface SettingsTable {
   summer_work_time: string;
 }
 
+export interface BreakTable {
+  id: string;
+  time_entry_id: string;
+  break_start_time: string;
+  break_end_time: string;
+}
+
 export interface DB {
   user: UserTable;
   time_entry: TimeEntryTable;
   settings: SettingsTable;
+  break: BreakTable;
 }
 
 export const db = new Kysely<DB>({
