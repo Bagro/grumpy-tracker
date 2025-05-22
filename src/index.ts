@@ -2,6 +2,8 @@
 import { Elysia } from 'elysia';
 import { db } from './db';
 import { i18n } from './i18n';
+import { userRoutes } from './routes/user';
+import { timeEntryRoutes } from './routes/time';
 
 const app = new Elysia();
 
@@ -9,6 +11,9 @@ app.get('/', (ctx) => {
   // Example: use i18n for welcome message
   return i18n.t('welcome');
 });
+
+app.use(userRoutes);
+app.use(timeEntryRoutes);
 
 app.listen(3000);
 
