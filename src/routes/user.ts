@@ -11,32 +11,42 @@ export const userRoutes = new Elysia({ prefix: '/user' })
   .get('/register', (ctx) => {
     ctx.set.headers['Content-Type'] = 'text/html';
     return renderPage(`
-      <div id="register-form-container">
-      <form method="post" action="/user/register" class="max-w-md mx-auto mt-8 p-4 border rounded bg-white" aria-labelledby="register-title" hx-post="/user/register" hx-target="#register-form-container" hx-swap="outerHTML">
-        <h1 id="register-title" class="text-2xl mb-4">${i18n.t('register')}</h1>
-        <div id="register-error" class="text-red-600 mb-2" style="display:none"></div>
-        <label class="block mb-2" for="name">${i18n.t('name')}</label>
-        <input id="name" name="name" class="input input-bordered w-full" required autocomplete="name" />
-        <label class="block mb-2" for="email">${i18n.t('email')}</label>
-        <input id="email" name="email" type="email" class="input input-bordered w-full" required autocomplete="email" />
-        <label class="block mb-2" for="password">${i18n.t('password')}</label>
-        <input id="password" name="password" type="password" class="input input-bordered w-full" required autocomplete="new-password" />
-        <label class="block mb-2" for="preferred_language">${i18n.t('language')}</label>
-        <select id="preferred_language" name="preferred_language" class="input input-bordered w-full" aria-label="${i18n.t('language')}">
-          <option value="en">English</option>
-          <option value="sv">Svenska</option>
-          <option value="fi">Suomi</option>
-          <option value="no">Norsk</option>
-          <option value="lv">Latviešu</option>
-          <option value="et">Eesti</option>
-          <option value="lt">Lietuvių</option>
-          <option value="da">Dansk</option>
-        </select>
-        <button class="btn btn-primary w-full mt-4" type="submit">${i18n.t('submit')}</button>
-      </form>
-      <div class="mt-4 text-center">
-        <a href="/user/login" class="text-blue-600 underline">${i18n.t('Already have an account? Login')}</a>
-      </div>
+      <div class="flex min-h-screen items-center justify-center bg-gradient-to-br from-blue-100 to-indigo-200">
+        <div id="register-form-container" class="w-full max-w-md p-8 rounded-2xl shadow-xl bg-white/90 border border-gray-200">
+          <form method="post" action="/user/register" class="space-y-6" aria-labelledby="register-title" hx-post="/user/register" hx-target="#register-form-container" hx-swap="outerHTML">
+            <h1 id="register-title" class="text-3xl font-bold text-center text-indigo-700 mb-6">${i18n.t('register')}</h1>
+            <div id="register-error" class="text-red-600 mb-2 text-center" style="display:none"></div>
+            <div>
+              <label class="block mb-1 font-medium text-gray-700" for="name">${i18n.t('name')}</label>
+              <input id="name" name="name" class="input input-bordered w-full rounded-lg border-gray-300 focus:ring-2 focus:ring-indigo-400" required autocomplete="name" />
+            </div>
+            <div>
+              <label class="block mb-1 font-medium text-gray-700" for="email">${i18n.t('email')}</label>
+              <input id="email" name="email" type="email" class="input input-bordered w-full rounded-lg border-gray-300 focus:ring-2 focus:ring-indigo-400" required autocomplete="email" />
+            </div>
+            <div>
+              <label class="block mb-1 font-medium text-gray-700" for="password">${i18n.t('password')}</label>
+              <input id="password" name="password" type="password" class="input input-bordered w-full rounded-lg border-gray-300 focus:ring-2 focus:ring-indigo-400" required autocomplete="new-password" />
+            </div>
+            <div>
+              <label class="block mb-1 font-medium text-gray-700" for="preferred_language">${i18n.t('language')}</label>
+              <select id="preferred_language" name="preferred_language" class="input input-bordered w-full rounded-lg border-gray-300 focus:ring-2 focus:ring-indigo-400" aria-label="${i18n.t('language')}">
+                <option value="en">English</option>
+                <option value="sv">Svenska</option>
+                <option value="fi">Suomi</option>
+                <option value="no">Norsk</option>
+                <option value="lv">Latviešu</option>
+                <option value="et">Eesti</option>
+                <option value="lt">Lietuvių</option>
+                <option value="da">Dansk</option>
+              </select>
+            </div>
+            <button class="btn btn-primary w-full py-3 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white font-semibold shadow transition" type="submit">${i18n.t('submit')}</button>
+          </form>
+          <div class="mt-6 text-center">
+            <a href="/user/login" class="text-indigo-600 hover:underline font-medium">${i18n.t('Already have an account? Login')}</a>
+          </div>
+        </div>
       </div>
     `);
   })
@@ -130,19 +140,25 @@ export const userRoutes = new Elysia({ prefix: '/user' })
   .get('/login', (ctx) => {
     ctx.set.headers['Content-Type'] = 'text/html';
     return renderPage(`
-      <div id="login-form-container">
-      <form method="post" action="/user/login" class="max-w-md mx-auto mt-8 p-4 border rounded bg-white" aria-labelledby="login-title" hx-post="/user/login" hx-target="#login-form-container" hx-swap="outerHTML">
-        <h1 id="login-title" class="text-2xl mb-4">${i18n.t('login')}</h1>
-        <div id="login-error" class="text-red-600 mb-2" style="display:none"></div>
-        <label class="block mb-2" for="login-email">${i18n.t('email')}</label>
-        <input id="login-email" name="email" type="email" class="input input-bordered w-full" required autocomplete="email" />
-        <label class="block mb-2" for="login-password">${i18n.t('password')}</label>
-        <input id="login-password" name="password" type="password" class="input input-bordered w-full" required autocomplete="current-password" />
-        <button class="btn btn-primary w-full mt-4" type="submit">${i18n.t('submit')}</button>
-      </form>
-      <div class="mt-4 text-center">
-        <a href="/user/register" class="text-blue-600 underline">${i18n.t("Don't have an account? Register")}</a>
-      </div>
+      <div class="flex min-h-screen items-center justify-center bg-gradient-to-br from-blue-100 to-indigo-200">
+        <div id="login-form-container" class="w-full max-w-md p-8 rounded-2xl shadow-xl bg-white/90 border border-gray-200">
+          <form method="post" action="/user/login" class="space-y-6" aria-labelledby="login-title" hx-post="/user/login" hx-target="#login-form-container" hx-swap="outerHTML">
+            <h1 id="login-title" class="text-3xl font-bold text-center text-indigo-700 mb-6">${i18n.t('login')}</h1>
+            <div id="login-error" class="text-red-600 mb-2 text-center" style="display:none"></div>
+            <div>
+              <label class="block mb-1 font-medium text-gray-700" for="login-email">${i18n.t('email')}</label>
+              <input id="login-email" name="email" type="email" class="input input-bordered w-full rounded-lg border-gray-300 focus:ring-2 focus:ring-indigo-400" required autocomplete="email" />
+            </div>
+            <div>
+              <label class="block mb-1 font-medium text-gray-700" for="login-password">${i18n.t('password')}</label>
+              <input id="login-password" name="password" type="password" class="input input-bordered w-full rounded-lg border-gray-300 focus:ring-2 focus:ring-indigo-400" required autocomplete="current-password" />
+            </div>
+            <button class="btn btn-primary w-full py-3 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white font-semibold shadow transition" type="submit">${i18n.t('submit')}</button>
+          </form>
+          <div class="mt-6 text-center">
+            <a href="/user/register" class="text-indigo-600 hover:underline font-medium">${i18n.t("Don't have an account? Register")}</a>
+          </div>
+        </div>
       </div>
     `);
   })

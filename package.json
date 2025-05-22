@@ -30,6 +30,6 @@
     "vitest": "^3.1.4"
   },
   "scripts": {
-    "build:css": "tailwindcss -i ./src/static/tailwind.css -o ./src/static/tailwind.css --minify"
+    "build:css": "bunx @tailwindcss/cli -i ./src/static/tailwind.input.css -o ./src/static/tailwind.css --minify"
   }
 }

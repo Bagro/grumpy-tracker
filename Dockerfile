@@ -4,6 +4,6 @@ FROM oven/bun:latest
 WORKDIR /app
 COPY . .
 RUN bun install
-RUN bunx @tailwindcss/cli -i ./src/static/tailwind.css -o ./src/static/otailwind.css --minify
+RUN bunx @tailwindcss/cli -i ./src/static/tailwind.input.css -o ./src/static/tailwind.css --minify
 EXPOSE 3000
 CMD ["bun", "run", "src/index.ts"]
