@@ -1,6 +1,8 @@
 import { Elysia } from 'elysia';
 import { db } from '../db';
 import { i18n } from '../i18n';
+import { randomUUID } from 'crypto';
+import bcrypt from 'bcryptjs';
 
 export const userRoutes = new Elysia({ prefix: '/user' })
   // Registration form (GET)
@@ -30,8 +32,28 @@ export const userRoutes = new Elysia({ prefix: '/user' })
   })
   // Registration handler (POST)
   .post('/register', async (ctx) => {
-    const { name, email, password, preferred_language } = await ctx.request.json();
-    // TODO: Validate input, hash password, insert user
-    // For now, just return a success message
+    const body = await ctx.request.json();
+    const { name, email, password, preferred_language } = body as Record<string, string>;
+    // Basic validation
+    if (!name || !email || !password || !preferred_language) {
+      return ctx.set.status = 400, { error: i18n.t('All fields are required') };
+    }
+    // Check if user exists
+    const existing = await db.selectFrom('user').select('id').where('email', '=', email).executeTakeFirst();
+    if (existing) {
+      return ctx.set.status = 400, { error: i18n.t('Email already registered') };
+    }
+    // Hash password
+    const password_hash = await bcrypt.hash(password, 10);
+    // Insert user
+    await db.insertInto('user').values({
+      id: randomUUID(),
+      name,
+      email,
+      password_hash,
+      preferred_language,
+      created_at: new Date(),
+      updated_at: new Date(),
+    }).execute();
     return { success: true };
   });

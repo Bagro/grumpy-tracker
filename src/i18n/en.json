@@ -7,5 +7,7 @@
   "name": "Name",
   "language": "Language",
   "submit": "Submit",
-  "Add Time Entry": "Add Time Entry"
+  "Add Time Entry": "Add Time Entry",
+  "All fields are required": "All fields are required.",
+  "Email already registered": "Email already registered."
 }
