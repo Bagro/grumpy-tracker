@@ -34,6 +34,9 @@ export const userRoutes = new Elysia({ prefix: '/user' })
         </select>
         <button class="btn btn-primary w-full mt-4" type="submit">${i18n.t('submit')}</button>
       </form>
+      <div class="mt-4 text-center">
+        <a href="/user/login" class="text-blue-600 underline">${i18n.t('Already have an account? Login')}</a>
+      </div>
       </div>
     `);
   })
@@ -137,6 +140,9 @@ export const userRoutes = new Elysia({ prefix: '/user' })
         <input id="login-password" name="password" type="password" class="input input-bordered w-full" required autocomplete="current-password" />
         <button class="btn btn-primary w-full mt-4" type="submit">${i18n.t('submit')}</button>
       </form>
+      <div class="mt-4 text-center">
+        <a href="/user/register" class="text-blue-600 underline">${i18n.t("Don't have an account? Register")}</a>
+      </div>
       </div>
     `);
   })
