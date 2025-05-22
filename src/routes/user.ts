@@ -10,24 +10,26 @@ export const userRoutes = new Elysia({ prefix: '/user' })
   .get('/register', (ctx) => {
     // Render registration form (SSR, EJS or HTML string for now)
     return `
-      <form method="post" action="/user/register" class="max-w-md mx-auto mt-8 p-4 border rounded bg-white">
-        <h1 class="text-2xl mb-4">${i18n.t('register')}</h1>
-        <label class="block mb-2">${i18n.t('name')}<input name="name" class="input input-bordered w-full" required></label>
-        <label class="block mb-2">${i18n.t('email')}<input name="email" type="email" class="input input-bordered w-full" required></label>
-        <label class="block mb-2">${i18n.t('password')}<input name="password" type="password" class="input input-bordered w-full" required></label>
-        <label class="block mb-2">${i18n.t('language')}
-          <select name="preferred_language" class="input input-bordered w-full">
-            <option value="en">English</option>
-            <option value="sv">Svenska</option>
-            <option value="fi">Suomi</option>
-            <option value="no">Norsk</option>
-            <option value="lv">Latviešu</option>
-            <option value="et">Eesti</option>
-            <option value="lt">Lietuvių</option>
-            <option value="da">Dansk</option>
-          </select>
-        </label>
-        <button class="btn btn-primary w-full" type="submit">${i18n.t('submit')}</button>
+      <form method="post" action="/user/register" class="max-w-md mx-auto mt-8 p-4 border rounded bg-white" aria-labelledby="register-title">
+        <h1 id="register-title" class="text-2xl mb-4">${i18n.t('register')}</h1>
+        <label class="block mb-2" for="name">${i18n.t('name')}</label>
+        <input id="name" name="name" class="input input-bordered w-full" required autocomplete="name" />
+        <label class="block mb-2" for="email">${i18n.t('email')}</label>
+        <input id="email" name="email" type="email" class="input input-bordered w-full" required autocomplete="email" />
+        <label class="block mb-2" for="password">${i18n.t('password')}</label>
+        <input id="password" name="password" type="password" class="input input-bordered w-full" required autocomplete="new-password" />
+        <label class="block mb-2" for="preferred_language">${i18n.t('language')}</label>
+        <select id="preferred_language" name="preferred_language" class="input input-bordered w-full" aria-label="${i18n.t('language')}">
+          <option value="en">English</option>
+          <option value="sv">Svenska</option>
+          <option value="fi">Suomi</option>
+          <option value="no">Norsk</option>
+          <option value="lv">Latviešu</option>
+          <option value="et">Eesti</option>
+          <option value="lt">Lietuvių</option>
+          <option value="da">Dansk</option>
+        </select>
+        <button class="btn btn-primary w-full mt-4" type="submit">${i18n.t('submit')}</button>
       </form>
     `;
   })
@@ -61,11 +63,13 @@ export const userRoutes = new Elysia({ prefix: '/user' })
   // Login form (GET)
   .get('/login', (ctx) => {
     return `
-      <form method="post" action="/user/login" class="max-w-md mx-auto mt-8 p-4 border rounded bg-white">
-        <h1 class="text-2xl mb-4">${i18n.t('login')}</h1>
-        <label class="block mb-2">${i18n.t('email')}<input name="email" type="email" class="input input-bordered w-full" required></label>
-        <label class="block mb-2">${i18n.t('password')}<input name="password" type="password" class="input input-bordered w-full" required></label>
-        <button class="btn btn-primary w-full" type="submit">${i18n.t('submit')}</button>
+      <form method="post" action="/user/login" class="max-w-md mx-auto mt-8 p-4 border rounded bg-white" aria-labelledby="login-title">
+        <h1 id="login-title" class="text-2xl mb-4">${i18n.t('login')}</h1>
+        <label class="block mb-2" for="login-email">${i18n.t('email')}</label>
+        <input id="login-email" name="email" type="email" class="input input-bordered w-full" required autocomplete="email" />
+        <label class="block mb-2" for="login-password">${i18n.t('password')}</label>
+        <input id="login-password" name="password" type="password" class="input input-bordered w-full" required autocomplete="current-password" />
+        <button class="btn btn-primary w-full mt-4" type="submit">${i18n.t('submit')}</button>
       </form>
     `;
   })
@@ -113,24 +117,26 @@ export const userRoutes = new Elysia({ prefix: '/user' })
     }
     // Render profile form (SSR, EJS or HTML string for now)
     return `
-      <form method="post" action="/user/profile" class="max-w-md mx-auto mt-8 p-4 border rounded bg-white">
-        <h1 class="text-2xl mb-4">${i18n.t('Profile')}</h1>
-        <label class="block mb-2">${i18n.t('name')}<input name="name" value="${user.name}" class="input input-bordered w-full" required></label>
-        <label class="block mb-2">${i18n.t('email')}<input name="email" type="email" value="${user.email}" class="input input-bordered w-full" required></label>
-        <label class="block mb-2">${i18n.t('language')}
-          <select name="preferred_language" class="input input-bordered w-full">
-            <option value="en"${user.preferred_language==='en'?' selected':''}>English</option>
-            <option value="sv"${user.preferred_language==='sv'?' selected':''}>Svenska</option>
-            <option value="fi"${user.preferred_language==='fi'?' selected':''}>Suomi</option>
-            <option value="no"${user.preferred_language==='no'?' selected':''}>Norsk</option>
-            <option value="lv"${user.preferred_language==='lv'?' selected':''}>Latviešu</option>
-            <option value="et"${user.preferred_language==='et'?' selected':''}>Eesti</option>
-            <option value="lt"${user.preferred_language==='lt'?' selected':''}>Lietuvių</option>
-            <option value="da"${user.preferred_language==='da'?' selected':''}>Dansk</option>
-          </select>
-        </label>
-        <label class="block mb-2">${i18n.t('password')}<input name="password" type="password" class="input input-bordered w-full" placeholder="(leave blank to keep current)"></label>
-        <button class="btn btn-primary w-full" type="submit">${i18n.t('submit')}</button>
+      <form method="post" action="/user/profile" class="max-w-md mx-auto mt-8 p-4 border rounded bg-white" aria-labelledby="profile-title">
+        <h1 id="profile-title" class="text-2xl mb-4">${i18n.t('Profile')}</h1>
+        <label class="block mb-2" for="profile-name">${i18n.t('name')}</label>
+        <input id="profile-name" name="name" value="${user.name}" class="input input-bordered w-full" required autocomplete="name" />
+        <label class="block mb-2" for="profile-email">${i18n.t('email')}</label>
+        <input id="profile-email" name="email" type="email" value="${user.email}" class="input input-bordered w-full" required autocomplete="email" />
+        <label class="block mb-2" for="profile-language">${i18n.t('language')}</label>
+        <select id="profile-language" name="preferred_language" class="input input-bordered w-full" aria-label="${i18n.t('language')}">
+          <option value="en"${user.preferred_language==='en'?' selected':''}>English</option>
+          <option value="sv"${user.preferred_language==='sv'?' selected':''}>Svenska</option>
+          <option value="fi"${user.preferred_language==='fi'?' selected':''}>Suomi</option>
+          <option value="no"${user.preferred_language==='no'?' selected':''}>Norsk</option>
+          <option value="lv"${user.preferred_language==='lv'?' selected':''}>Latviešu</option>
+          <option value="et"${user.preferred_language==='et'?' selected':''}>Eesti</option>
+          <option value="lt"${user.preferred_language==='lt'?' selected':''}>Lietuvių</option>
+          <option value="da"${user.preferred_language==='da'?' selected':''}>Dansk</option>
+        </select>
+        <label class="block mb-2" for="profile-password">${i18n.t('password')}</label>
+        <input id="profile-password" name="password" type="password" class="input input-bordered w-full" placeholder="(leave blank to keep current)" autocomplete="new-password" />
+        <button class="btn btn-primary w-full mt-4" type="submit">${i18n.t('submit')}</button>
       </form>
     `;
   })
