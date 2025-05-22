@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>GDPR - Grumpy Tracker</title>
+  <link href="/public/tailwind.css" rel="stylesheet">
+</head>
+<body class="bg-gray-50 min-h-screen flex flex-col">
+  <header class="bg-blue-900 text-white p-4">
+    <h1 class="text-2xl font-bold">GDPR: Data Export & Delete</h1>
+  </header>
+  <main class="flex-1 p-4 max-w-md mx-auto">
+    <div class="mb-4">
+      <form method="get" action="/gdpr/export">
+        <button type="submit" class="w-full bg-blue-700 text-white py-2 rounded hover:bg-blue-800 mb-2">Export My Data (JSON)</button>
+      </form>
+      <form method="post" action="/gdpr/delete" onsubmit="return confirm('Are you sure? This cannot be undone!')">
+        <button type="submit" class="w-full bg-red-700 text-white py-2 rounded hover:bg-red-800">Delete My Account & Data</button>
+      </form>
+    </div>
+    <a href="/profile" class="text-blue-700 underline">Back to Profile</a>
+  </main>
+  <footer class="bg-gray-200 text-center p-2 text-xs">&copy; <%= new Date().getFullYear() %> Grumpy Tracker</footer>
+</body>
+</html>
