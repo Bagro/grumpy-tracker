@@ -98,4 +98,53 @@ export const timeEntryRoutes = new Elysia({ prefix: '/time' })
     }
     html += '</tbody></table>';
     return html;
+  })
+  // Summary of flex time (GET)
+  .get('/summary', async (ctx) => {
+    // --- Auth check (simple cookie/session) ---
+    const cookie = ctx.request.headers.get('cookie');
+    const sessionId = cookie?.split(';').find((c) => c.trim().startsWith('session='))?.split('=')[1];
+    if (!sessionId) {
+      return ctx.set.status = 401, { error: i18n.t('Not authenticated') };
+    }
+    const session = await auth.validateSession(sessionId);
+    if (!session?.userId) {
+      return ctx.set.status = 401, { error: i18n.t('Not authenticated') };
+    }
+    // --- Fetch time entries for user (last 30 days for demo) ---
+    const entries = await db.selectFrom('time_entry')
+      .selectAll()
+      .where('user_id', '=', session.userId)
+      .where('date', '>=', new Date(Date.now() - 30 * 24 * 60 * 60 * 1000))
+      .orderBy('date desc')
+      .execute();
+    // --- Calculate daily flex and totals ---
+    let totalFlexMinutes = 0;
+    let html = `<table class="min-w-full table-auto border mt-8">
+      <thead><tr>
+        <th>Date</th><th>Work</th><th>Travel</th><th>Break</th><th>Extra</th><th>Flex</th>
+      </tr></thead><tbody>`;
+    for (const e of entries) {
+      // Calculate work, travel, break, extra, flex (simple demo logic)
+      const workMinutes = (parseTime(e.work_end_time) - parseTime(e.work_start_time)) / 60_000;
+      const travelMinutes = (e.travel_start_time && e.travel_end_time) ? (parseTime(e.travel_end_time) - parseTime(e.travel_start_time)) / 60_000 : 0;
+      const breakMinutes = (e.break_start_time && e.break_end_time) ? (parseTime(e.break_end_time) - parseTime(e.break_start_time)) / 60_000 : 0;
+      const extraMinutes = e.extra_time ? parseInterval(e.extra_time) : 0;
+      // Assume normal work time is 8h (480 min) for demo
+      const flex = workMinutes + travelMinutes + extraMinutes - breakMinutes - 480;
+      totalFlexMinutes += flex;
+      html += `<tr>
+        <td>${e.date.toISOString().slice(0,10)}</td>
+        <td>${workMinutes}</td>
+        <td>${travelMinutes}</td>
+        <td>${breakMinutes}</td>
+        <td>${extraMinutes}</td>
+        <td>${flex}</td>
+      </tr>`;
+    }
+    html += `</tbody><tfoot><tr><td colspan="5">Total Flex</td><td>${totalFlexMinutes}</td></tr></tfoot></table>`;
+    // --- Helper functions ---
+    function parseTime(t: string | null | undefined): number { if (!t) return 0; const [h,m,s] = t.split(':').map(Number); return ((h||0)*60+(m||0))*60_000; }
+    function parseInterval(i: string | null | undefined): number { if (!i) return 0; const [h,m,s] = i.split(':').map(Number); return ((h||0)*60+(m||0))*60_000; }
+    return html;
   });
