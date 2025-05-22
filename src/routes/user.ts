@@ -8,10 +8,11 @@ import { lucia } from '../auth';
 export const userRoutes = new Elysia({ prefix: '/user' })
   // Registration form (GET)
   .get('/register', (ctx) => {
-    // Render registration form (SSR, EJS or HTML string for now)
+    ctx.set.headers['Content-Type'] = 'text/html';
     return `
-      <form method="post" action="/user/register" class="max-w-md mx-auto mt-8 p-4 border rounded bg-white" aria-labelledby="register-title">
+      <form method="post" action="/user/register" class="max-w-md mx-auto mt-8 p-4 border rounded bg-white" aria-labelledby="register-title" hx-post="/user/register" hx-target="#register-form-container" hx-swap="outerHTML">
         <h1 id="register-title" class="text-2xl mb-4">${i18n.t('register')}</h1>
+        <div id="register-error" class="text-red-600 mb-2" style="display:none"></div>
         <label class="block mb-2" for="name">${i18n.t('name')}</label>
         <input id="name" name="name" class="input input-bordered w-full" required autocomplete="name" />
         <label class="block mb-2" for="email">${i18n.t('email')}</label>
@@ -35,15 +36,70 @@ export const userRoutes = new Elysia({ prefix: '/user' })
   })
   // Registration handler (POST)
   .post('/register', async (ctx) => {
+    const isHtmx = ctx.request.headers.get('hx-request') === 'true';
     const body = await ctx.request.json();
     const { name, email, password, preferred_language } = body as Record<string, string>;
     // Basic validation
     if (!name || !email || !password || !preferred_language) {
+      if (isHtmx) {
+        ctx.set.headers['Content-Type'] = 'text/html';
+        return `
+          <form method="post" action="/user/register" class="max-w-md mx-auto mt-8 p-4 border rounded bg-white" aria-labelledby="register-title" hx-post="/user/register" hx-target="#register-form-container" hx-swap="outerHTML">
+            <h1 id="register-title" class="text-2xl mb-4">${i18n.t('register')}</h1>
+            <div id="register-error" class="text-red-600 mb-2">${i18n.t('All fields are required')}</div>
+            <label class="block mb-2" for="name">${i18n.t('name')}</label>
+            <input id="name" name="name" class="input input-bordered w-full" required autocomplete="name" />
+            <label class="block mb-2" for="email">${i18n.t('email')}</label>
+            <input id="email" name="email" type="email" class="input input-bordered w-full" required autocomplete="email" />
+            <label class="block mb-2" for="password">${i18n.t('password')}</label>
+            <input id="password" name="password" type="password" class="input input-bordered w-full" required autocomplete="new-password" />
+            <label class="block mb-2" for="preferred_language">${i18n.t('language')}</label>
+            <select id="preferred_language" name="preferred_language" class="input input-bordered w-full" aria-label="${i18n.t('language')}">
+              <option value="en">English</option>
+              <option value="sv">Svenska</option>
+              <option value="fi">Suomi</option>
+              <option value="no">Norsk</option>
+              <option value="lv">Latviešu</option>
+              <option value="et">Eesti</option>
+              <option value="lt">Lietuvių</option>
+              <option value="da">Dansk</option>
+            </select>
+            <button class="btn btn-primary w-full mt-4" type="submit">${i18n.t('submit')}</button>
+          </form>
+        `;
+      }
       return ctx.set.status = 400, { error: i18n.t('All fields are required') };
     }
     // Check if user exists
     const existing = await db.selectFrom('user').select('id').where('email', '=', email).executeTakeFirst();
     if (existing) {
+      if (isHtmx) {
+        ctx.set.headers['Content-Type'] = 'text/html';
+        return `
+          <form method="post" action="/user/register" class="max-w-md mx-auto mt-8 p-4 border rounded bg-white" aria-labelledby="register-title" hx-post="/user/register" hx-target="#register-form-container" hx-swap="outerHTML">
+            <h1 id="register-title" class="text-2xl mb-4">${i18n.t('register')}</h1>
+            <div id="register-error" class="text-red-600 mb-2">${i18n.t('Email already registered')}</div>
+            <label class="block mb-2" for="name">${i18n.t('name')}</label>
+            <input id="name" name="name" class="input input-bordered w-full" required autocomplete="name" />
+            <label class="block mb-2" for="email">${i18n.t('email')}</label>
+            <input id="email" name="email" type="email" class="input input-bordered w-full" required autocomplete="email" />
+            <label class="block mb-2" for="password">${i18n.t('password')}</label>
+            <input id="password" name="password" type="password" class="input input-bordered w-full" required autocomplete="new-password" />
+            <label class="block mb-2" for="preferred_language">${i18n.t('language')}</label>
+            <select id="preferred_language" name="preferred_language" class="input input-bordered w-full" aria-label="${i18n.t('language')}">
+              <option value="en">English</option>
+              <option value="sv">Svenska</option>
+              <option value="fi">Suomi</option>
+              <option value="no">Norsk</option>
+              <option value="lv">Latviešu</option>
+              <option value="et">Eesti</option>
+              <option value="lt">Lietuvių</option>
+              <option value="da">Dansk</option>
+            </select>
+            <button class="btn btn-primary w-full mt-4" type="submit">${i18n.t('submit')}</button>
+          </form>
+        `;
+      }
       return ctx.set.status = 400, { error: i18n.t('Email already registered') };
     }
     // Hash password
@@ -58,13 +114,22 @@ export const userRoutes = new Elysia({ prefix: '/user' })
       created_at: new Date(),
       updated_at: new Date(),
     }).execute();
+    if (isHtmx) {
+      ctx.set.headers['HX-Redirect'] = '/user/login';
+      return '';
+    }
     return { success: true };
   })
   // Login form (GET)
   .get('/login', (ctx) => {
+    ctx.set.headers['Content-Type'] = 'text/html';
+    // Check for htmx request
+    const isHtmx = ctx.request.headers.get('hx-request') === 'true';
+    // Render login form with htmx attributes
     return `
-      <form method="post" action="/user/login" class="max-w-md mx-auto mt-8 p-4 border rounded bg-white" aria-labelledby="login-title">
+      <form method="post" action="/user/login" class="max-w-md mx-auto mt-8 p-4 border rounded bg-white" aria-labelledby="login-title" hx-post="/user/login" hx-target="#login-form-container" hx-swap="outerHTML">
         <h1 id="login-title" class="text-2xl mb-4">${i18n.t('login')}</h1>
+        <div id="login-error" class="text-red-600 mb-2" style="display:none"></div>
         <label class="block mb-2" for="login-email">${i18n.t('email')}</label>
         <input id="login-email" name="email" type="email" class="input input-bordered w-full" required autocomplete="email" />
         <label class="block mb-2" for="login-password">${i18n.t('password')}</label>
@@ -75,24 +140,71 @@ export const userRoutes = new Elysia({ prefix: '/user' })
   })
   // Login handler (POST)
   .post('/login', async (ctx) => {
+    const isHtmx = ctx.request.headers.get('hx-request') === 'true';
     const body = await ctx.request.json();
     const { email, password } = body as Record<string, string>;
     if (!email || !password) {
+      if (isHtmx) {
+        ctx.set.headers['Content-Type'] = 'text/html';
+        return `
+          <form method="post" action="/user/login" class="max-w-md mx-auto mt-8 p-4 border rounded bg-white" aria-labelledby="login-title" hx-post="/user/login" hx-target="#login-form-container" hx-swap="outerHTML">
+            <h1 id="login-title" class="text-2xl mb-4">${i18n.t('login')}</h1>
+            <div id="login-error" class="text-red-600 mb-2">${i18n.t('All fields are required')}</div>
+            <label class="block mb-2" for="login-email">${i18n.t('email')}</label>
+            <input id="login-email" name="email" type="email" class="input input-bordered w-full" required autocomplete="email" />
+            <label class="block mb-2" for="login-password">${i18n.t('password')}</label>
+            <input id="login-password" name="password" type="password" class="input input-bordered w-full" required autocomplete="current-password" />
+            <button class="btn btn-primary w-full mt-4" type="submit">${i18n.t('submit')}</button>
+          </form>
+        `;
+      }
       return ctx.set.status = 400, { error: i18n.t('All fields are required') };
     }
     const user = await db.selectFrom('user').selectAll().where('email', '=', email).executeTakeFirst();
     if (!user) {
+      if (isHtmx) {
+        ctx.set.headers['Content-Type'] = 'text/html';
+        return `
+          <form method="post" action="/user/login" class="max-w-md mx-auto mt-8 p-4 border rounded bg-white" aria-labelledby="login-title" hx-post="/user/login" hx-target="#login-form-container" hx-swap="outerHTML">
+            <h1 id="login-title" class="text-2xl mb-4">${i18n.t('login')}</h1>
+            <div id="login-error" class="text-red-600 mb-2">${i18n.t('Invalid email or password')}</div>
+            <label class="block mb-2" for="login-email">${i18n.t('email')}</label>
+            <input id="login-email" name="email" type="email" class="input input-bordered w-full" required autocomplete="email" />
+            <label class="block mb-2" for="login-password">${i18n.t('password')}</label>
+            <input id="login-password" name="password" type="password" class="input input-bordered w-full" required autocomplete="current-password" />
+            <button class="btn btn-primary w-full mt-4" type="submit">${i18n.t('submit')}</button>
+          </form>
+        `;
+      }
       return ctx.set.status = 401, { error: i18n.t('Invalid email or password') };
     }
     const bcrypt = await import('bcryptjs');
     const valid = await bcrypt.compare(password, user.password_hash);
     if (!valid) {
+      if (isHtmx) {
+        ctx.set.headers['Content-Type'] = 'text/html';
+        return `
+          <form method="post" action="/user/login" class="max-w-md mx-auto mt-8 p-4 border rounded bg-white" aria-labelledby="login-title" hx-post="/user/login" hx-target="#login-form-container" hx-swap="outerHTML">
+            <h1 id="login-title" class="text-2xl mb-4">${i18n.t('login')}</h1>
+            <div id="login-error" class="text-red-600 mb-2">${i18n.t('Invalid email or password')}</div>
+            <label class="block mb-2" for="login-email">${i18n.t('email')}</label>
+            <input id="login-email" name="email" type="email" class="input input-bordered w-full" required autocomplete="email" />
+            <label class="block mb-2" for="login-password">${i18n.t('password')}</label>
+            <input id="login-password" name="password" type="password" class="input input-bordered w-full" required autocomplete="current-password" />
+            <button class="btn btn-primary w-full mt-4" type="submit">${i18n.t('submit')}</button>
+          </form>
+        `;
+      }
       return ctx.set.status = 401, { error: i18n.t('Invalid email or password') };
     }
     // Create session using lucia-auth
-    // Lucia v3: createSession(userId, attributes, options)
     const session = await lucia.createSession(user.id, {}, {});
     ctx.set.headers['Set-Cookie'] = `session=${session.id}; HttpOnly; Path=/; SameSite=Lax`;
+    if (isHtmx) {
+      // htmx: trigger redirect to dashboard
+      ctx.set.headers['HX-Redirect'] = '/time/summary';
+      return '';
+    }
     return { success: true, user: { id: user.id, name: user.name, preferred_language: user.preferred_language } };
   })
   // Logout (GET)
@@ -103,6 +215,7 @@ export const userRoutes = new Elysia({ prefix: '/user' })
   })
   // Profile view (GET)
   .get('/profile', async (ctx) => {
+    ctx.set.headers['Content-Type'] = 'text/html';
     const cookie = ctx.request.headers.get('cookie');
     const sessionId = cookie?.split(';').find((c) => c.trim().startsWith('session='))?.split('=')[1];
     if (!sessionId) {
@@ -118,8 +231,9 @@ export const userRoutes = new Elysia({ prefix: '/user' })
     }
     // Render profile form (SSR, EJS or HTML string for now)
     return `
-      <form method="post" action="/user/profile" class="max-w-md mx-auto mt-8 p-4 border rounded bg-white" aria-labelledby="profile-title">
+      <form method="post" action="/user/profile" class="max-w-md mx-auto mt-8 p-4 border rounded bg-white" aria-labelledby="profile-title" hx-post="/user/profile" hx-target="#profile-form-container" hx-swap="outerHTML">
         <h1 id="profile-title" class="text-2xl mb-4">${i18n.t('Profile')}</h1>
+        <div id="profile-error" class="text-red-600 mb-2" style="display:none"></div>
         <label class="block mb-2" for="profile-name">${i18n.t('name')}</label>
         <input id="profile-name" name="name" value="${user.name}" class="input input-bordered w-full" required autocomplete="name" />
         <label class="block mb-2" for="profile-email">${i18n.t('email')}</label>
@@ -143,23 +257,40 @@ export const userRoutes = new Elysia({ prefix: '/user' })
   })
   // Profile update handler (POST)
   .post('/profile', async (ctx) => {
+    const isHtmx = ctx.request.headers.get('hx-request') === 'true';
     const cookie = ctx.request.headers.get('cookie');
     const sessionId = cookie?.split(';').find((c) => c.trim().startsWith('session='))?.split('=')[1];
     if (!sessionId) {
+      if (isHtmx) {
+        ctx.set.headers['Content-Type'] = 'text/html';
+        return `<div class='text-red-600'>${i18n.t('Not authenticated')}</div>`;
+      }
       return ctx.set.status = 401, { error: i18n.t('Not authenticated') };
     }
     const session = await lucia.validateSession(sessionId);
     if (!session.user) {
+      if (isHtmx) {
+        ctx.set.headers['Content-Type'] = 'text/html';
+        return `<div class='text-red-600'>${i18n.t('Not authenticated')}</div>`;
+      }
       return ctx.set.status = 401, { error: i18n.t('Not authenticated') };
     }
     const body = await ctx.request.json();
     const { name, email, preferred_language, password } = body as Record<string, string>;
     if (!name || !email || !preferred_language) {
+      if (isHtmx) {
+        ctx.set.headers['Content-Type'] = 'text/html';
+        return `<div class='text-red-600'>${i18n.t('All fields are required')}</div>`;
+      }
       return ctx.set.status = 400, { error: i18n.t('All fields are required') };
     }
     // Check for email conflict
     const existing = await db.selectFrom('user').select('id').where('email', '=', email).where('id', '!=', session.user.id).executeTakeFirst();
     if (existing) {
+      if (isHtmx) {
+        ctx.set.headers['Content-Type'] = 'text/html';
+        return `<div class='text-red-600'>${i18n.t('Email already registered')}</div>`;
+      }
       return ctx.set.status = 400, { error: i18n.t('Email already registered') };
     }
     // Update user
@@ -169,6 +300,10 @@ export const userRoutes = new Elysia({ prefix: '/user' })
       update.password_hash = await bcrypt.hash(password, 10);
     }
     await db.updateTable('user').set(update).where('id', '=', session.user.id).execute();
+    if (isHtmx) {
+      ctx.set.headers['HX-Redirect'] = '/user/profile';
+      return '';
+    }
     return { success: true };
   })
   // User data export (GET)
