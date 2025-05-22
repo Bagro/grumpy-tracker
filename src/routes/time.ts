@@ -1,6 +1,8 @@
 import { Elysia } from 'elysia';
 import { db } from '../db';
 import { i18n } from '../i18n';
+import { randomUUID } from 'crypto';
+import { auth } from '../auth';
 
 export const timeEntryRoutes = new Elysia({ prefix: '/time' })
   // Time entry form (GET)
@@ -24,8 +26,37 @@ export const timeEntryRoutes = new Elysia({ prefix: '/time' })
   })
   // Time entry handler (POST)
   .post('/new', async (ctx) => {
+    // --- Auth check (simple cookie/session) ---
+    const cookie = ctx.request.headers.get('cookie');
+    const sessionId = cookie?.split(';').find((c) => c.trim().startsWith('session='))?.split('=')[1];
+    if (!sessionId) {
+      return ctx.set.status = 401, { error: i18n.t('Not authenticated') };
+    }
+    const session = await auth.validateSession(sessionId);
+    if (!session?.userId) {
+      return ctx.set.status = 401, { error: i18n.t('Not authenticated') };
+    }
+    // --- Input validation ---
     const body = await ctx.request.json();
-    // TODO: Validate input, insert time entry for the user
-    // For now, just return a success message
+    const { date, work_start_time, work_end_time, travel_start_time, travel_end_time, break_start_time, break_end_time, extra_time, comments } = body as Record<string, string>;
+    if (!date || !work_start_time || !work_end_time) {
+      return ctx.set.status = 400, { error: i18n.t('Required fields missing') };
+    }
+    // --- Insert time entry ---
+    await db.insertInto('time_entry').values({
+      id: randomUUID(),
+      user_id: session.userId,
+      date: new Date(date),
+      work_start_time,
+      work_end_time,
+      travel_start_time,
+      travel_end_time,
+      break_start_time,
+      break_end_time,
+      extra_time,
+      comments,
+      created_at: new Date(),
+      updated_at: new Date(),
+    }).execute();
     return { success: true };
   });
