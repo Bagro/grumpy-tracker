@@ -18,5 +18,8 @@
   "User not found": "User not found.",
   "Export Data": "Export Data",
   "Delete Account": "Delete Account",
-  "Entry not found": "Entry not found."
+  "Entry not found": "Entry not found.",
+  "Settings": "Settings",
+  "Normal Work Time": "Normal Work Time",
+  "Summer Work Time": "Summer Work Time"
 }

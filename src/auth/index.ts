@@ -1,22 +1,13 @@
-import lucia from 'lucia-auth';
-import { db } from '../db';
+import { Lucia } from "lucia";
+import { NodePostgresAdapter } from "@lucia-auth/adapter-postgresql";
+import { Pool } from "pg";
 
-export const auth = lucia({
-  adapter: {
-    getUser: async (id: string) => {
-      return await db.selectFrom('user').selectAll().where('id', '=', id).executeTakeFirst();
-    },
-    getUserByEmail: async (email: string) => {
-      return await db.selectFrom('user').selectAll().where('email', '=', email).executeTakeFirst();
-    },
-    // ...implement other required adapter methods
-  },
-  session: {
-    // session config here
-    cookie: {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'lax',
-    },
-  },
-});
+const pool = new Pool({ connectionString: process.env.DATABASE_URL });
+
+export const lucia = new Lucia(
+  new NodePostgresAdapter(pool, {
+    user: "user",
+    session: "session",
+  })
+  // You can add config options as a second argument if needed
+);

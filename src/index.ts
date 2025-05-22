@@ -4,6 +4,7 @@ import { db } from './db';
 import { i18n } from './i18n';
 import { userRoutes } from './routes/user';
 import { timeEntryRoutes } from './routes/time';
+import { settingsRoutes } from './routes/settings';
 
 const app = new Elysia();
 
@@ -14,6 +15,7 @@ app.get('/', (ctx) => {
 
 app.use(userRoutes);
 app.use(timeEntryRoutes);
+app.use(settingsRoutes);
 
 app.listen(3000);
 

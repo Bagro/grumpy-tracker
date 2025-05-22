@@ -3,7 +3,7 @@ import { db } from '../db';
 import { i18n } from '../i18n';
 import { randomUUID } from 'crypto';
 import bcrypt from 'bcryptjs';
-import { auth } from '../auth';
+import { lucia } from '../auth';
 
 export const userRoutes = new Elysia({ prefix: '/user' })
   // Registration form (GET)
@@ -90,8 +90,9 @@ export const userRoutes = new Elysia({ prefix: '/user' })
       return ctx.set.status = 401, { error: i18n.t('Invalid email or password') };
     }
     // Create session using lucia-auth
-    const session = await auth.createSession(user.id);
-    ctx.set.headers['Set-Cookie'] = `session=${session.sessionId}; HttpOnly; Path=/; SameSite=Lax`;
+    // Lucia v3: createSession(userId, attributes, options)
+    const session = await lucia.createSession(user.id, {}, {});
+    ctx.set.headers['Set-Cookie'] = `session=${session.id}; HttpOnly; Path=/; SameSite=Lax`;
     return { success: true, user: { id: user.id, name: user.name, preferred_language: user.preferred_language } };
   })
   // Logout (GET)
@@ -107,11 +108,11 @@ export const userRoutes = new Elysia({ prefix: '/user' })
     if (!sessionId) {
       return ctx.set.status = 401, { error: i18n.t('Not authenticated') };
     }
-    const session = await auth.validateSession(sessionId);
-    if (!session?.userId) {
+    const session = await lucia.validateSession(sessionId);
+    if (!session.user) {
       return ctx.set.status = 401, { error: i18n.t('Not authenticated') };
     }
-    const user = await db.selectFrom('user').selectAll().where('id', '=', session.userId).executeTakeFirst();
+    const user = await db.selectFrom('user').selectAll().where('id', '=', session.user.id).executeTakeFirst();
     if (!user) {
       return ctx.set.status = 404, { error: i18n.t('User not found') };
     }
@@ -147,8 +148,8 @@ export const userRoutes = new Elysia({ prefix: '/user' })
     if (!sessionId) {
       return ctx.set.status = 401, { error: i18n.t('Not authenticated') };
     }
-    const session = await auth.validateSession(sessionId);
-    if (!session?.userId) {
+    const session = await lucia.validateSession(sessionId);
+    if (!session.user) {
       return ctx.set.status = 401, { error: i18n.t('Not authenticated') };
     }
     const body = await ctx.request.json();
@@ -157,7 +158,7 @@ export const userRoutes = new Elysia({ prefix: '/user' })
       return ctx.set.status = 400, { error: i18n.t('All fields are required') };
     }
     // Check for email conflict
-    const existing = await db.selectFrom('user').select('id').where('email', '=', email).where('id', '!=', session.userId).executeTakeFirst();
+    const existing = await db.selectFrom('user').select('id').where('email', '=', email).where('id', '!=', session.user.id).executeTakeFirst();
     if (existing) {
       return ctx.set.status = 400, { error: i18n.t('Email already registered') };
     }
@@ -167,7 +168,7 @@ export const userRoutes = new Elysia({ prefix: '/user' })
       const bcrypt = await import('bcryptjs');
       update.password_hash = await bcrypt.hash(password, 10);
     }
-    await db.updateTable('user').set(update).where('id', '=', session.userId).execute();
+    await db.updateTable('user').set(update).where('id', '=', session.user.id).execute();
     return { success: true };
   })
   // User data export (GET)
@@ -178,14 +179,14 @@ export const userRoutes = new Elysia({ prefix: '/user' })
     if (!sessionId) {
       return ctx.set.status = 401, { error: i18n.t('Not authenticated') };
     }
-    const session = await auth.validateSession(sessionId);
-    if (!session?.userId) {
+    const session = await lucia.validateSession(sessionId);
+    if (!session.user) {
       return ctx.set.status = 401, { error: i18n.t('Not authenticated') };
     }
     // --- Fetch user and all their data ---
-    const user = await db.selectFrom('user').selectAll().where('id', '=', session.userId).executeTakeFirst();
-    const timeEntries = await db.selectFrom('time_entry').selectAll().where('user_id', '=', session.userId).execute();
-    const settings = await db.selectFrom('settings').selectAll().where('user_id', '=', session.userId).execute();
+    const user = await db.selectFrom('user').selectAll().where('id', '=', session.user.id).executeTakeFirst();
+    const timeEntries = await db.selectFrom('time_entry').selectAll().where('user_id', '=', session.user.id).execute();
+    const settings = await db.selectFrom('settings').selectAll().where('user_id', '=', session.user.id).execute();
     // --- Build export object ---
     const exportData = { user, timeEntries, settings };
     ctx.set.headers['Content-Type'] = 'application/json';
@@ -200,12 +201,12 @@ export const userRoutes = new Elysia({ prefix: '/user' })
     if (!sessionId) {
       return ctx.set.status = 401, { error: i18n.t('Not authenticated') };
     }
-    const session = await auth.validateSession(sessionId);
-    if (!session?.userId) {
+    const session = await lucia.validateSession(sessionId);
+    if (!session.user) {
       return ctx.set.status = 401, { error: i18n.t('Not authenticated') };
     }
     // --- Delete user and cascade ---
-    await db.deleteFrom('user').where('id', '=', session.userId).execute();
+    await db.deleteFrom('user').where('id', '=', session.user.id).execute();
     // Remove session cookie
     ctx.set.headers['Set-Cookie'] = 'session=; HttpOnly; Path=/; Max-Age=0; SameSite=Lax';
     // TODO: Notify admin (out of scope for now)

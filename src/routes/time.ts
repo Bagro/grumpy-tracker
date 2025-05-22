@@ -2,7 +2,7 @@ import { Elysia } from 'elysia';
 import { db } from '../db';
 import { i18n } from '../i18n';
 import { randomUUID } from 'crypto';
-import { auth } from '../auth';
+import { lucia } from '../auth';
 
 export const timeEntryRoutes = new Elysia({ prefix: '/time' })
   // Time entry form (GET)
@@ -54,8 +54,8 @@ export const timeEntryRoutes = new Elysia({ prefix: '/time' })
     if (!sessionId) {
       return ctx.set.status = 401, { error: i18n.t('Not authenticated') };
     }
-    const session = await auth.validateSession(sessionId);
-    if (!session?.userId) {
+    const session = await lucia.validateSession(sessionId);
+    if (!session.user) {
       return ctx.set.status = 401, { error: i18n.t('Not authenticated') };
     }
     // --- Input validation ---
@@ -70,7 +70,7 @@ export const timeEntryRoutes = new Elysia({ prefix: '/time' })
     const entryId = randomUUID();
     await db.insertInto('time_entry').values({
       id: entryId,
-      user_id: session.userId,
+      user_id: session.user.id,
       date: new Date(date),
       work_start_time,
       work_end_time,
@@ -104,14 +104,14 @@ export const timeEntryRoutes = new Elysia({ prefix: '/time' })
     if (!sessionId) {
       return ctx.set.status = 401, { error: i18n.t('Not authenticated') };
     }
-    const session = await auth.validateSession(sessionId);
-    if (!session?.userId) {
+    const session = await lucia.validateSession(sessionId);
+    if (!session.user) {
       return ctx.set.status = 401, { error: i18n.t('Not authenticated') };
     }
     // --- Fetch time entries for user ---
     const entries = await db.selectFrom('time_entry')
       .selectAll()
-      .where('user_id', '=', session.userId)
+      .where('user_id', '=', session.user.id)
       .orderBy('date desc')
       .execute();
     // Render as simple HTML table (SSR, EJS or HTML string for now)
@@ -143,14 +143,14 @@ export const timeEntryRoutes = new Elysia({ prefix: '/time' })
     if (!sessionId) {
       return ctx.set.status = 401, { error: i18n.t('Not authenticated') };
     }
-    const session = await auth.validateSession(sessionId);
-    if (!session?.userId) {
+    const session = await lucia.validateSession(sessionId);
+    if (!session.user) {
       return ctx.set.status = 401, { error: i18n.t('Not authenticated') };
     }
     // --- Fetch time entries for user (last 30 days for demo) ---
     const entries = await db.selectFrom('time_entry')
       .selectAll()
-      .where('user_id', '=', session.userId)
+      .where('user_id', '=', session.user.id)
       .where('date', '>=', new Date(Date.now() - 30 * 24 * 60 * 60 * 1000))
       .orderBy('date desc')
       .execute();
@@ -213,14 +213,14 @@ export const timeEntryRoutes = new Elysia({ prefix: '/time' })
     if (!sessionId) {
       return ctx.set.status = 401, { error: i18n.t('Not authenticated') };
     }
-    const session = await auth.validateSession(sessionId);
-    if (!session?.userId) {
+    const session = await lucia.validateSession(sessionId);
+    if (!session.user) {
       return ctx.set.status = 401, { error: i18n.t('Not authenticated') };
     }
     // --- Fetch all time entries for user ---
     const entries = await db.selectFrom('time_entry')
       .selectAll()
-      .where('user_id', '=', session.userId)
+      .where('user_id', '=', session.user.id)
       .orderBy('date desc')
       .execute();
     // --- Build CSV ---
@@ -252,10 +252,10 @@ export const timeEntryRoutes = new Elysia({ prefix: '/time' })
     const cookie = ctx.request.headers.get('cookie');
     const sessionId = cookie?.split(';').find((c) => c.trim().startsWith('session='))?.split('=')[1];
     if (!sessionId) return ctx.set.status = 401, { error: i18n.t('Not authenticated') };
-    const session = await auth.validateSession(sessionId);
-    if (!session?.userId) return ctx.set.status = 401, { error: i18n.t('Not authenticated') };
+    const session = await lucia.validateSession(sessionId);
+    if (!session.user) return ctx.set.status = 401, { error: i18n.t('Not authenticated') };
     // --- Fetch entry ---
-    const entry = await db.selectFrom('time_entry').selectAll().where('id', '=', ctx.params.id).where('user_id', '=', session.userId).executeTakeFirst();
+    const entry = await db.selectFrom('time_entry').selectAll().where('id', '=', ctx.params.id).where('user_id', '=', session.user.id).executeTakeFirst();
     if (!entry) return ctx.set.status = 404, { error: i18n.t('Entry not found') };
     // Fetch breaks for this entry
     const breaks = await db.selectFrom('break').selectAll().where('time_entry_id', '=', entry.id).execute();
@@ -307,10 +307,10 @@ export const timeEntryRoutes = new Elysia({ prefix: '/time' })
     const cookie = ctx.request.headers.get('cookie');
     const sessionId = cookie?.split(';').find((c) => c.trim().startsWith('session='))?.split('=')[1];
     if (!sessionId) return ctx.set.status = 401, { error: i18n.t('Not authenticated') };
-    const session = await auth.validateSession(sessionId);
-    if (!session?.userId) return ctx.set.status = 401, { error: i18n.t('Not authenticated') };
+    const session = await lucia.validateSession(sessionId);
+    if (!session.user) return ctx.set.status = 401, { error: i18n.t('Not authenticated') };
     // --- Fetch entry ---
-    const entry = await db.selectFrom('time_entry').select('id').where('id', '=', ctx.params.id).where('user_id', '=', session.userId).executeTakeFirst();
+    const entry = await db.selectFrom('time_entry').select('id').where('id', '=', ctx.params.id).where('user_id', '=', session.user.id).executeTakeFirst();
     if (!entry) return ctx.set.status = 404, { error: i18n.t('Entry not found') };
     // --- Update entry ---
     const body = await ctx.request.json() as Record<string, any>;
@@ -330,7 +330,7 @@ export const timeEntryRoutes = new Elysia({ prefix: '/time' })
       extra_time,
       comments,
       updated_at: new Date(),
-    }).where('id', '=', ctx.params.id).where('user_id', '=', session.userId).execute();
+    }).where('id', '=', ctx.params.id).where('user_id', '=', session.user.id).execute();
     // Remove old breaks
     await db.deleteFrom('break').where('time_entry_id', '=', ctx.params.id).execute();
     // Insert new breaks
@@ -354,12 +354,12 @@ export const timeEntryRoutes = new Elysia({ prefix: '/time' })
     const cookie = ctx.request.headers.get('cookie');
     const sessionId = cookie?.split(';').find((c) => c.trim().startsWith('session='))?.split('=')[1];
     if (!sessionId) return ctx.set.status = 401, { error: i18n.t('Not authenticated') };
-    const session = await auth.validateSession(sessionId);
-    if (!session?.userId) return ctx.set.status = 401, { error: i18n.t('Not authenticated') };
+    const session = await lucia.validateSession(sessionId);
+    if (!session.user) return ctx.set.status = 401, { error: i18n.t('Not authenticated') };
     // --- Fetch entry ---
-    const entry = await db.selectFrom('time_entry').select('id').where('id', '=', ctx.params.id).where('user_id', '=', session.userId).executeTakeFirst();
+    const entry = await db.selectFrom('time_entry').select('id').where('id', '=', ctx.params.id).where('user_id', '=', session.user.id).executeTakeFirst();
     if (!entry) return ctx.set.status = 404, { error: i18n.t('Entry not found') };
     // --- Delete entry ---
-    await db.deleteFrom('time_entry').where('id', '=', ctx.params.id).where('user_id', '=', session.userId).execute();
+    await db.deleteFrom('time_entry').where('id', '=', ctx.params.id).where('user_id', '=', session.user.id).execute();
     return { success: true };
   });
