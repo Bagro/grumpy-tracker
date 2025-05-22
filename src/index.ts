@@ -23,9 +23,24 @@ app.onError(({ code, error }) => {
   return 'Internal server error';
 });
 
-app.get('/', (ctx) => {
-  // Example: use i18n for welcome message
-  return i18n.t('welcome');
+app.get('/', async (ctx) => {
+  const cookie = ctx.request.headers.get('cookie');
+  const sessionId = cookie?.split(';').find((c) => c.trim().startsWith('session='))?.split('=')[1];
+  if (!sessionId) {
+    ctx.set.status = 302;
+    ctx.set.headers['Location'] = '/user/login';
+    return '';
+  }
+  const { lucia } = await import('./auth');
+  const session = await lucia.validateSession(sessionId);
+  if (!session.user) {
+    ctx.set.status = 302;
+    ctx.set.headers['Location'] = '/user/login';
+    return '';
+  }
+  ctx.set.status = 302;
+  ctx.set.headers['Location'] = '/time/summary';
+  return '';
 });
 
 app.use(userRoutes);
