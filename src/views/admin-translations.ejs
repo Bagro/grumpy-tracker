@@ -1,0 +1,16 @@
+<%- include('partials/header', { user }) %>
+<div class="max-w-2xl mx-auto p-4">
+  <h1 class="text-2xl font-bold mb-4"><%= t('admin.translations.title', 'Translation Management') %></h1>
+  <ul class="divide-y divide-gray-200">
+    <% languages.forEach(function(lang) { %>
+      <li class="py-2 flex items-center justify-between">
+        <span class="font-mono"><%= lang %></span>
+        <a href="/admin/translations/<%= lang %>" class="text-blue-600 hover:underline">
+          <%= t('admin.translations.edit', 'Edit') %>
+        </a>
+      </li>
+    <% }) %>
+  </ul>
+  <a href="/admin" class="mt-6 inline-block text-gray-600 hover:underline">&larr; <%= t('admin.back', 'Back to admin') %></a>
+</div>
+<%- include('partials/footer') %>

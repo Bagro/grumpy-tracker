@@ -1,0 +1,17 @@
+<%- include('partials/header', { user }) %>
+<div class="max-w-2xl mx-auto p-4">
+  <h1 class="text-2xl font-bold mb-4"><%= t('admin.translations.editing', 'Editing translations for') %> <span class="font-mono"><%= lang %></span></h1>
+  <form method="post" action="/admin/translations/<%= lang %>" class="space-y-4">
+    <% Object.keys(translations).forEach(function(key) { %>
+      <div>
+        <label class="block font-semibold mb-1" for="key-<%= key %>"><%= key %></label>
+        <input type="text" id="key-<%= key %>" name="translations[<%= key %>]" value="<%= translations[key] %>" class="w-full border rounded px-2 py-1" />
+      </div>
+    <% }) %>
+    <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">
+      <%= t('admin.translations.save', 'Save Changes') %>
+    </button>
+    <a href="/admin/translations" class="ml-4 text-gray-600 hover:underline"><%= t('admin.back', 'Back') %></a>
+  </form>
+</div>
+<%- include('partials/footer') %>
