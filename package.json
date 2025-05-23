@@ -9,7 +9,9 @@
     "dev": "nodemon src/server.js",
     "lint": "eslint .",
     "test": "node --experimental-vm-modules node_modules/jest/bin/jest.js",
-    "serve": "node src/server.js"
+    "serve": "node src/server.js",
+    "tailwind:build": "tailwindcss -i ./src/public/input.css -o ./src/public/tailwind.css --minify",
+    "tailwind:watch": "tailwindcss -i ./src/public/input.css -o ./src/public/tailwind.css --watch"
   },
   "dependencies": {
     "@prisma/client": "^5.22.0",
