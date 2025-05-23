@@ -29,16 +29,33 @@ router.get("/time/new", (req, res) => {
 router.post("/time/new", async (req, res) => {
   try {
     const { date, work_start_time, work_end_time, travel_start_time, travel_end_time, break_start_time, break_end_time, extra_time, comments } = req.body;
+    // Defensive: Only parse if value is present and valid
+    function parseTime(date, time) {
+      if (!date || !time) return null;
+      // time: "HH:mm" or ""
+      if (!/^\d{2}:\d{2}$/.test(time)) return null;
+      const [h, m] = time.split(":");
+      const d = new Date(date);
+      d.setHours(Number(h), Number(m), 0, 0);
+      return d;
+    }
+    const entryDate = date;
+    const workStart = parseTime(entryDate, work_start_time);
+    const workEnd = parseTime(entryDate, work_end_time);
+    const travelStart = travel_start_time ? parseTime(entryDate, travel_start_time) : null;
+    const travelEnd = travel_end_time ? parseTime(entryDate, travel_end_time) : null;
+    const breaksStart = Array.isArray(break_start_time) ? break_start_time.map(t => parseTime(entryDate, t)).filter(Boolean) : [];
+    const breaksEnd = Array.isArray(break_end_time) ? break_end_time.map(t => parseTime(entryDate, t)).filter(Boolean) : [];
     await prisma.timeEntry.create({
       data: {
         user_id: req.user.id,
-        date: parseISO(date),
-        work_start_time: parseISO(work_start_time),
-        work_end_time: parseISO(work_end_time),
-        travel_start_time: travel_start_time ? parseISO(travel_start_time) : null,
-        travel_end_time: travel_end_time ? parseISO(travel_end_time) : null,
-        break_start_time: break_start_time ? break_start_time.map(parseISO) : [],
-        break_end_time: break_end_time ? break_end_time.map(parseISO) : [],
+        date: parseISO(entryDate),
+        work_start_time: workStart,
+        work_end_time: workEnd,
+        travel_start_time: travelStart,
+        travel_end_time: travelEnd,
+        break_start_time: breaksStart,
+        break_end_time: breaksEnd,
         extra_time: extra_time ? parseInt(extra_time) : null,
         comments,
       },
