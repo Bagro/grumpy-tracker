@@ -13,12 +13,16 @@ router.get("/time", async (req, res) => {
     where: { user_id: req.user.id },
     orderBy: { date: "desc" },
   });
-  res.render("time-list", { entries, user: req.user });
+  res.render("time-list", { entries, user: req.user, csrfToken: req.csrfToken() });
 });
 
 // New time entry form
 router.get("/time/new", (req, res) => {
-  res.render("time-form", { entry: null, user: req.user, error: null });
+  let entry = null;
+  let error = null;
+  if (req.query.error) error = req.query.error;
+  if (req.query.entry) entry = JSON.parse(req.query.entry);
+  res.render("time-form", { entry, user: req.user, error, csrfToken: req.csrfToken() });
 });
 
 // Create time entry
@@ -41,7 +45,7 @@ router.post("/time/new", async (req, res) => {
     });
     res.redirect("/time");
   } catch (err) {
-    res.render("time-form", { entry: req.body, user: req.user, error: err.message });
+    res.render("time-form", { entry: req.body, user: req.user, error: err.message, csrfToken: req.csrfToken() });
   }
 });
 
@@ -97,7 +101,7 @@ router.get("/time/summary", async (req, res) => {
     totalFlex += flex;
   }
   const summary = Object.entries(summaryMap).map(([date, row]) => ({ date, ...row }));
-  res.render("time-summary", { summary, totalFlex, period, date: baseDate.toISOString().slice(0,10), user: req.user });
+  res.render("time-summary", { summary, totalFlex, period, date: baseDate.toISOString().slice(0,10), user: req.user, csrfToken: req.csrfToken() });
 });
 
 // CSV export of time entries

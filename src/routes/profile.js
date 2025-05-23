@@ -7,7 +7,7 @@ const router = express.Router();
 
 router.get("/profile", async (req, res) => {
   if (!req.user) return res.redirect("/login");
-  res.render("profile", { user: req.user, error: null, success: null });
+  res.render("profile", { user: req.user, error: null, success: null, csrfToken: req.csrfToken() });
 });
 
 router.post("/profile", async (req, res) => {
@@ -28,9 +28,9 @@ router.post("/profile", async (req, res) => {
     });
     success = success || "Profile updated.";
     const user = await prisma.user.findUnique({ where: { id: req.user.id } });
-    res.render("profile", { user, error, success });
+    res.render("profile", { user, error, success, csrfToken: req.csrfToken() });
   } catch (err) {
-    res.render("profile", { user: req.user, error: err.message, success: null });
+    res.render("profile", { user: req.user, error: err.message, success: null, csrfToken: req.csrfToken() });
   }
 });
 

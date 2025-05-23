@@ -15,6 +15,7 @@
       <div class="bg-red-100 text-red-700 p-2 rounded mb-2"><%= error %></div>
     <% } %>
     <form method="post" action="/time/new" class="bg-white shadow p-6 rounded space-y-4">
+      <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
       <div>
         <label for="date" class="block mb-1">Date</label>
         <input id="date" name="date" type="date" required class="w-full border rounded p-2" value="<%= entry?.date || '' %>" />

@@ -13,6 +13,10 @@
     <a href="/time/summary" class="text-blue-700 underline ml-4">Summary</a>
     <a href="/time/export/csv" class="text-blue-700 underline ml-4">Export CSV</a>
     <a href="/gdpr" class="text-blue-700 underline ml-4">GDPR: Export/Delete</a>
+    <form method="post" action="/logout" class="inline">
+      <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
+      <button type="submit" class="text-blue-700 underline ml-4">Logout</button>
+    </form>
   </header>
   <main class="flex-1 p-4">
     <table class="w-full table-auto border">

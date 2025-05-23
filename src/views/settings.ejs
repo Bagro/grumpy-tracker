@@ -26,6 +26,7 @@
         <label for="summer_work_time" class="block mb-1">Summer Work Time (minutes)</label>
         <input id="summer_work_time" name="summer_work_time" type="number" min="0" required class="w-full border rounded p-2" value="<%= settings.summer_work_time %>" />
       </div>
+      <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
       <button type="submit" class="w-full bg-blue-700 text-white py-2 rounded hover:bg-blue-800">Save Settings</button>
     </form>
   </main>

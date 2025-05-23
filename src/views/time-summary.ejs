@@ -12,6 +12,7 @@
   </header>
   <main class="flex-1 p-4">
     <form method="get" action="/time/summary" class="mb-4 flex gap-2">
+      <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
       <label for="period">Period:</label>
       <select name="period" id="period" class="border rounded p-2">
         <option value="day" <%= period === 'day' ? 'selected' : '' %>>Day</option>

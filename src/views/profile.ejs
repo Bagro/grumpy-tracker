@@ -48,6 +48,7 @@
         <label for="new_password" class="block mb-1">New Password</label>
         <input id="new_password" name="new_password" type="password" class="w-full border rounded p-2" />
       </div>
+      <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
       <button type="submit" class="w-full bg-blue-700 text-white py-2 rounded hover:bg-blue-800">Update Profile</button>
     </form>
   </main>

@@ -16,6 +16,7 @@
         <% if (error) { %>
           <div class="bg-red-100 text-red-700 p-2 rounded"><%= error %></div>
         <% } %>
+        <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
         <div>
           <label for="name" class="block mb-1"><%= t('name') %></label>
           <input id="name" name="name" type="text" required class="w-full border rounded p-2" />

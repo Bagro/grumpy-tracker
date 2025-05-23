@@ -13,7 +13,7 @@ router.get("/settings", async (req, res) => {
       data: { user_id: req.user.id, normal_work_time: 480, summer_work_time: 435 },
     });
   }
-  res.render("settings", { user: req.user, settings, error: null, success: null });
+  res.render("settings", { user: req.user, settings, error: null, success: null, csrfToken: req.csrfToken() });
 });
 
 // Update settings
@@ -36,10 +36,10 @@ router.post("/settings", async (req, res) => {
     });
     success = "Settings updated.";
     const settings = await prisma.settings.findUnique({ where: { user_id: req.user.id } });
-    res.render("settings", { user: req.user, settings, error, success });
+    res.render("settings", { user: req.user, settings, error, success, csrfToken: req.csrfToken() });
   } catch (err) {
     const settings = await prisma.settings.findUnique({ where: { user_id: req.user.id } });
-    res.render("settings", { user: req.user, settings, error: err.message, success: null });
+    res.render("settings", { user: req.user, settings, error: err.message, success: null, csrfToken: req.csrfToken() });
   }
 });
 
