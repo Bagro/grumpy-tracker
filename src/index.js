@@ -19,6 +19,7 @@ import adminRoutes from './routes/admin.js';
 import setupI18n from './i18n/index.js';
 import { PrismaClient } from '@prisma/client';
 import flash from 'connect-flash';
+import { getWorkTimeForDate } from './utils.js';
 
 // Load env vars
 dotenv.config();
@@ -106,9 +107,7 @@ app.get('/', async (req, res) => {
   let flexTotalWork = 0, flexTotalWorkTravel = 0;
   let flexPeriodWork = 0, flexPeriodWorkTravel = 0;
   const today = new Date().toISOString().slice(0,10);
-  let normal = 480;
   const userSettings = await prisma.settings.findUnique({ where: { user_id: req.user.id } });
-  if (userSettings) normal = userSettings.normal_work_time;
   // For graph
   const period = req.query.period || 'week';
   let chartLabels = [], chartWork = [], chartWorkTravel = [];
@@ -133,6 +132,8 @@ app.get('/', async (req, res) => {
   for (const e of entries) {
     const d = e.date instanceof Date ? e.date : new Date(e.date);
     const dayKey = d.toISOString().slice(0,10);
+    // Use correct work time for this entry
+    const normal = await getWorkTimeForDate(d, userSettings, req.user.id);
     // Flex (work only)
     const workMinutes = (e.work_end_time && e.work_start_time) ? (new Date(e.work_end_time).getTime() - new Date(e.work_start_time).getTime()) / 60000 : 0;
     const breakMinutes = (e.break_start_time || []).reduce((sum, b, i) => {

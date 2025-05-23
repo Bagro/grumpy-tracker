@@ -2,6 +2,7 @@ import express from "express";
 import { PrismaClient } from "@prisma/client";
 import { parseISO } from "date-fns";
 import { Parser } from 'json2csv';
+import { getWorkTimeForDate } from '../utils.js';
 
 const prisma = new PrismaClient();
 const router = express.Router();
@@ -13,16 +14,14 @@ router.get("/time", async (req, res) => {
     where: { user_id: req.user.id },
     orderBy: { date: "desc" },
   });
-  // Calculate flexToday and flexTotal
   let flexToday = 0;
   let flexTotal = 0;
   if (entries.length) {
-    // Fetch user settings for normal work time
-    let normal = 480;
     const userSettings = await prisma.settings.findUnique({ where: { user_id: req.user.id } });
-    if (userSettings) normal = userSettings.normal_work_time;
     const today = new Date().toISOString().slice(0, 10);
     for (const e of entries) {
+      const entryDate = e.date instanceof Date ? e.date : new Date(e.date);
+      const normal = await getWorkTimeForDate(entryDate, userSettings, req.user.id);
       const work = (e.work_end_time && e.work_start_time) ? (new Date(e.work_end_time) - new Date(e.work_start_time)) / 60000 : 0;
       const breaks = (e.break_start_time || []).reduce((sum, b, i) => {
         const end = (e.break_end_time||[])[i];
@@ -130,16 +129,13 @@ router.get("/time/summary", async (req, res) => {
     },
     orderBy: { date: "asc" },
   });
-  // Fetch user settings for normal work time
-  let normal = 480;
   const userSettings = await prisma.settings.findUnique({ where: { user_id: req.user.id } });
-  if (userSettings) normal = userSettings.normal_work_time;
-  // Group by day
   const summaryMap = {};
   let totalFlex = 0;
   for (const e of entries) {
     const d = e.date.toISOString().slice(0, 10);
     if (!summaryMap[d]) summaryMap[d] = { work: 0, travel: 0, breaks: 0, extra: 0, flex: 0 };
+    const normal = await getWorkTimeForDate(e.date instanceof Date ? e.date : new Date(e.date), userSettings, req.user.id);
     const work = (e.work_end_time - e.work_start_time) / 60000;
     const travel = e.travel_start_time && e.travel_end_time ? (e.travel_end_time - e.travel_start_time) / 60000 : 0;
     const breaks = (e.break_start_time || []).reduce((sum, b, i) => {

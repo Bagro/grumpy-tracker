@@ -21,6 +21,7 @@ model User {
   timeEntries       TimeEntry[]
   settings          Settings?
   deactivated        Boolean? @default(false)
+  workPeriods       WorkPeriod[]
 }
 
 model TimeEntry {
@@ -40,10 +41,21 @@ model TimeEntry {
   updated_at        DateTime @updatedAt
 }
 
+model WorkPeriod {
+  id               String   @id @default(uuid())
+  user             User     @relation(fields: [user_id], references: [id])
+  user_id          String
+  name             String
+  start            DateTime
+  end              DateTime
+  work_time_minutes Int
+  created_at       DateTime @default(now())
+  updated_at       DateTime @updatedAt
+}
+
 model Settings {
   id                String   @id @default(uuid())
   user              User     @relation(fields: [user_id], references: [id])
   user_id           String   @unique
   normal_work_time  Int      @default(480) // minutes
-  summer_work_time  Int      @default(435) // minutes
 }

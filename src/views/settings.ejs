@@ -7,27 +7,171 @@
   <link href="/public/tailwind.css" rel="stylesheet">
 </head>
 <body class="bg-grumpy-dark min-h-screen flex flex-col font-sans text-grumpy-offwhite">
-  <!-- Remove duplicate header and logo, only keep menu -->
   <%- include('partials/menu', { user, csrfToken, currentPath: request.path }) %>
-  <main class="flex-1 p-4 max-w-md mx-auto w-full">
+  <main class="flex-1 p-4 max-w-3xl mx-auto w-full">
     <% if (error) { %>
       <div class="bg-red-100 text-red-700 p-2 rounded mb-2"><%= error %></div>
     <% } %>
     <% if (success) { %>
       <div class="bg-green-100 text-green-700 p-2 rounded mb-2"><%= success %></div>
     <% } %>
-    <form method="post" action="/settings" class="bg-grumpy-dark2 shadow-2xl p-6 rounded-2xl space-y-4 border border-grumpy-orange">
-      <div>
-        <label for="normal_work_time" class="block mb-1"><%= t('normal_work_time', 'Normal Work Time') %> (<%= t('minutes', 'minutes') %>)</label>
-        <input id="normal_work_time" name="normal_work_time" type="number" min="0" required class="w-full border rounded p-2 bg-grumpy-dark text-grumpy-offwhite" value="<%= settings.normal_work_time %>" />
+
+    <!-- Normaltid inställning -->
+    <section class="bg-grumpy-dark2 shadow-2xl p-6 rounded-2xl space-y-4 border border-grumpy-orange mb-6 w-full">
+      <form method="post" action="/settings" id="settings-main-form">
+        <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
+        <label for="normal_work_time_h" class="block mb-1 font-semibold"><%= t('normal_work_time', 'Normal Work Time') %></label>
+        <div class="flex gap-2 mb-4">
+          <input id="normal_work_time_h" name="normal_work_time_h" type="number" min="0" required class="w-20 border rounded p-2 bg-grumpy-dark text-grumpy-offwhite" value="<%= Math.floor((settings.normal_work_time || 480) / 60) %>" placeholder="h" />
+          <span class="self-center">h</span>
+          <input id="normal_work_time_m" name="normal_work_time_m" type="number" min="0" max="59" required class="w-20 border rounded p-2 bg-grumpy-dark text-grumpy-offwhite" value="<%= (settings.normal_work_time || 480) % 60 %>" placeholder="min" />
+          <span class="self-center">min</span>
+        </div>
+        <button id="save-settings-btn" type="submit" class="w-full bg-grumpy-orange text-grumpy-offwhite py-2 rounded hover:bg-grumpy-dark2 hover:text-grumpy-orange border border-grumpy-orange transition font-semibold"><%= t('save_settings', 'Spara inställningar') %></button>
+      </form>
+    </section>
+
+    <!-- Avvikande tider -->
+    <section class="bg-grumpy-dark2 shadow-2xl p-6 rounded-2xl space-y-4 border border-grumpy-orange w-full">
+      <div class="flex items-center justify-between mb-2">
+        <label class="block mb-1 font-semibold"><%= t('work_periods', 'Avvikande arbetstid (t.ex. sommar, vinter, projekt)') %></label>
       </div>
-      <div>
-        <label for="summer_work_time" class="block mb-1"><%= t('summer_work_time', 'Summer Work Time') %> (<%= t('minutes', 'minutes') %>)</label>
-        <input id="summer_work_time" name="summer_work_time" type="number" min="0" required class="w-full border rounded p-2 bg-grumpy-dark text-grumpy-offwhite" value="<%= settings.summer_work_time %>" />
+      <div class="mb-2">
+        <button type="button" id="show-add-workperiod" class="px-3 py-1 bg-grumpy-orange text-grumpy-dark2 rounded font-semibold w-full">+ <%= t('add', 'Lägg till avvikande arbetstid') %></button>
       </div>
-      <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
-      <button type="submit" class="w-full bg-grumpy-orange text-grumpy-offwhite py-2 rounded hover:bg-grumpy-dark2 hover:text-grumpy-orange border border-grumpy-orange transition font-semibold"><%= t('save_settings', 'Save Settings') %></button>
-    </form>
+      <form id="add-workperiod-form" method="post" action="/settings/work-period" class="p-3 rounded bg-grumpy-dark2 border border-grumpy-orange space-y-2 hidden mb-4">
+        <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
+        <div class="mb-2">
+          <label class="block text-xs mb-1">Namn</label>
+          <input name="name" placeholder="Namn" class="border rounded p-2 w-full bg-grumpy-dark text-grumpy-offwhite" required />
+        </div>
+        <div class="mb-2">
+          <label class="block text-xs mb-1">Start</label>
+          <input name="start" type="date" class="border rounded p-2 w-full bg-grumpy-dark text-grumpy-offwhite" required />
+        </div>
+        <div class="mb-2">
+          <label class="block text-xs mb-1">Slut</label>
+          <input name="end" type="date" class="border rounded p-2 w-full bg-grumpy-dark text-grumpy-offwhite" required />
+        </div>
+        <div class="mb-2">
+          <label class="block text-xs mb-1">Arbetstid</label>
+          <div class="flex flex-row gap-2 items-center">
+            <input name="work_time_h" type="number" min="0" class="w-20 border rounded p-2 bg-grumpy-dark text-grumpy-offwhite" required />h
+            <input name="work_time_m" type="number" min="0" max="59" class="w-20 border rounded p-2 bg-grumpy-dark text-grumpy-offwhite" required />min
+          </div>
+        </div>
+        <div>
+          <button type="submit" class="bg-grumpy-orange text-grumpy-dark2 rounded px-2 py-1 font-bold w-full">Lägg till</button>
+        </div>
+      </form>
+      <table class="w-full text-sm mb-2">
+        <thead>
+          <tr>
+            <th class="px-2 py-1">Namn</th>
+            <th class="px-2 py-1">Start</th>
+            <th class="px-2 py-1">Slut</th>
+            <th class="px-2 py-1">Arbetstid</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          <% (workPeriods || []).forEach(function(p, idx) { %>
+            <tr>
+              <td><b><%= p.name %></b></td>
+              <td><%= p.start.toISOString().slice(0,10) %></td>
+              <td><%= p.end.toISOString().slice(0,10) %></td>
+              <td><%= Math.floor(p.work_time_minutes/60) %>h <%= p.work_time_minutes%60 %>min</td>
+              <td class="text-right">
+                <button type="button" class="text-grumpy-orange underline edit-workperiod-btn" data-idx="<%= idx %>">Redigera</button>
+                <form method="post" action="/settings/work-period/delete" style="display:inline" onsubmit="return confirm('<%= t('confirm_delete_work_period', 'Är du säker på att du vill ta bort denna avvikande arbetstid?') %>');">
+                  <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
+                  <input type="hidden" name="id" value="<%= p.id %>" />
+                  <button type="submit" class="ml-2 text-red-500 font-bold">&times;</button>
+                </form>
+              </td>
+            </tr>
+            <tr class="edit-workperiod-row hidden" data-idx="<%= idx %>">
+              <td colspan="5">
+                <form method="post" action="/settings/work-period" class="edit-workperiod-form p-3 rounded bg-grumpy-dark2 border border-grumpy-orange space-y-2" data-idx="<%= idx %>">
+                  <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
+                  <input type="hidden" name="id" value="<%= p.id %>" />
+                  <div class="mb-2">
+                    <label class="block text-xs mb-1">Namn</label>
+                    <input name="name" value="<%= p.name %>" class="border rounded p-2 w-full bg-grumpy-dark text-grumpy-offwhite" required />
+                  </div>
+                  <div class="mb-2">
+                    <label class="block text-xs mb-1">Start</label>
+                    <input name="start" type="date" value="<%= p.start.toISOString().slice(0,10) %>" class="border rounded p-2 w-full bg-grumpy-dark text-grumpy-offwhite" required />
+                  </div>
+                  <div class="mb-2">
+                    <label class="block text-xs mb-1">Slut</label>
+                    <input name="end" type="date" value="<%= p.end.toISOString().slice(0,10) %>" class="border rounded p-2 w-full bg-grumpy-dark text-grumpy-offwhite" required />
+                  </div>
+                  <div class="mb-2">
+                    <label class="block text-xs mb-1">Arbetstid</label>
+                    <div class="flex flex-row gap-2 items-center">
+                      <input name="work_time_h" type="number" min="0" value="<%= Math.floor(p.work_time_minutes/60) %>" class="w-20 border rounded p-2 bg-grumpy-dark text-grumpy-offwhite" required />h
+                      <input name="work_time_m" type="number" min="0" max="59" value="<%= p.work_time_minutes%60 %>" class="w-20 border rounded p-2 bg-grumpy-dark text-grumpy-offwhite" required />min
+                    </div>
+                  </div>
+                  <div class="flex flex-row gap-2">
+                    <button type="submit" class="bg-grumpy-orange text-grumpy-dark2 rounded px-2 py-1 font-bold flex-1">Spara</button>
+                    <button type="button" class="text-grumpy-orange underline cancel-edit-workperiod-btn flex-1" data-idx="<%= idx %>">Avbryt</button>
+                  </div>
+                </form>
+              </td>
+            </tr>
+          <% }) %>
+        </tbody>
+      </table>
+    </section>
+
+    <script>
+      document.addEventListener('DOMContentLoaded', function() {
+        var addBtn = document.getElementById('show-add-workperiod');
+        var addForm = document.getElementById('add-workperiod-form');
+        if (addForm) addForm.classList.add('hidden');
+        if (addBtn && addForm) {
+          addBtn.addEventListener('click', function() {
+            addForm.classList.toggle('hidden');
+            document.querySelectorAll('.edit-workperiod-row').forEach(f => f.classList.add('hidden'));
+          });
+        }
+        document.querySelectorAll('.edit-workperiod-btn').forEach(function(btn) {
+          btn.addEventListener('click', function() {
+            var idx = this.getAttribute('data-idx');
+            if (addForm) addForm.classList.add('hidden');
+            document.querySelectorAll('.edit-workperiod-row').forEach(f => f.classList.add('hidden'));
+            var editRow = document.querySelector('.edit-workperiod-row[data-idx="' + idx + '"]');
+            if (editRow) editRow.classList.remove('hidden');
+          });
+        });
+        document.querySelectorAll('.cancel-edit-workperiod-btn').forEach(function(btn) {
+          btn.addEventListener('click', function() {
+            var idx = this.getAttribute('data-idx');
+            var editRow = document.querySelector('.edit-workperiod-row[data-idx="' + idx + '"]');
+            if (editRow) editRow.classList.add('hidden');
+          });
+        });
+      });
+      document.addEventListener('DOMContentLoaded', function() {
+        const form = document.getElementById('settings-main-form');
+        const saveBtn = document.getElementById('save-settings-btn');
+        const saveDefaultText = saveBtn ? saveBtn.textContent : '';
+        if (form && saveBtn) {
+          const initial = new FormData(form);
+          let dirty = false;
+          form.addEventListener('input', function() {
+            const current = new FormData(form);
+            dirty = false;
+            for (const [key, value] of current.entries()) {
+              if (initial.get(key) !== value) { dirty = true; break; }
+            }
+            saveBtn.textContent = dirty ? 'Spara ändringar' : saveDefaultText;
+          });
+        }
+      });
+    </script>
   </main>
   <%- include('partials/footer') %>
 </body>
