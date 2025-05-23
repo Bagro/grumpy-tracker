@@ -136,9 +136,4 @@ app.use((err, req, res, next) => {
 
 // TODO: Add routes, auth, db, i18n, error handling
 
-const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => {
-  console.log(`Grumpy Tracker running on http://localhost:${PORT}`);
-});
-
 export default app;
