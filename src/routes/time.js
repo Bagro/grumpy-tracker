@@ -197,4 +197,54 @@ router.get('/time/export/csv', async (req, res) => {
   res.send('\uFEFF' + csv); // Add BOM for Excel compatibility
 });
 
+// Edit time entry form
+router.get("/time/:id/edit", async (req, res) => {
+  if (!req.user) return res.redirect("/login");
+  const entry = await prisma.timeEntry.findUnique({
+    where: { id: req.params.id, user_id: req.user.id },
+  });
+  if (!entry) return res.status(404).send("Not found");
+  res.render("time-form", { entry, user: req.user, error: null, csrfToken: req.csrfToken() });
+});
+
+// Update time entry
+router.post("/time/:id/edit", async (req, res) => {
+  try {
+    if (!req.user) return res.redirect("/login");
+    const { date, work_start_time, work_end_time, travel_start_time, travel_end_time, break_start_time, break_end_time, extra_time, comments } = req.body;
+    function parseTime(date, time) {
+      if (!date || !time) return null;
+      if (!/^\d{2}:\d{2}$/.test(time)) return null;
+      const [h, m] = time.split(":");
+      const d = new Date(date);
+      d.setHours(Number(h), Number(m), 0, 0);
+      return d;
+    }
+    const entryDate = date;
+    const workStart = parseTime(entryDate, work_start_time);
+    const workEnd = parseTime(entryDate, work_end_time);
+    const travelStart = travel_start_time ? parseTime(entryDate, travel_start_time) : null;
+    const travelEnd = travel_end_time ? parseTime(entryDate, travel_end_time) : null;
+    const breaksStart = Array.isArray(break_start_time) ? break_start_time.map(t => parseTime(entryDate, t)).filter(Boolean) : [];
+    const breaksEnd = Array.isArray(break_end_time) ? break_end_time.map(t => parseTime(entryDate, t)).filter(Boolean) : [];
+    await prisma.timeEntry.update({
+      where: { id: req.params.id, user_id: req.user.id },
+      data: {
+        date: parseISO(entryDate),
+        work_start_time: workStart,
+        work_end_time: workEnd,
+        travel_start_time: travelStart,
+        travel_end_time: travelEnd,
+        break_start_time: breaksStart,
+        break_end_time: breaksEnd,
+        extra_time: extra_time ? parseInt(extra_time) : null,
+        comments,
+      },
+    });
+    res.redirect("/time");
+  } catch (err) {
+    res.render("time-form", { entry: req.body, user: req.user, error: err.message, csrfToken: req.csrfToken() });
+  }
+});
+
 export default router;
