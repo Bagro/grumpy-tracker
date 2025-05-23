@@ -113,15 +113,23 @@ router.get('/time/export/csv', async (req, res) => {
   ];
   const data = entries.map(e => ({
     ...e,
-    break_start_time: (e.break_start_time || []).join(';'),
-    break_end_time: (e.break_end_time || []).join(';'),
-    date: e.date.toISOString(),
-    work_start_time: e.work_start_time.toISOString(),
-    work_end_time: e.work_end_time.toISOString(),
-    travel_start_time: e.travel_start_time ? e.travel_start_time.toISOString() : '',
-    travel_end_time: e.travel_end_time ? e.travel_end_time.toISOString() : '',
-    created_at: e.created_at.toISOString(),
-    updated_at: e.updated_at.toISOString(),
+    break_start_time: Array.isArray(e.break_start_time) ? e.break_start_time.map(dt => {
+      if (dt instanceof Date) return dt.toISOString();
+      if (typeof dt === 'string' && !isNaN(Date.parse(dt))) return new Date(dt).toISOString();
+      return '';
+    }).join(';') : '',
+    break_end_time: Array.isArray(e.break_end_time) ? e.break_end_time.map(dt => {
+      if (dt instanceof Date) return dt.toISOString();
+      if (typeof dt === 'string' && !isNaN(Date.parse(dt))) return new Date(dt).toISOString();
+      return '';
+    }).join(';') : '',
+    date: e.date instanceof Date ? e.date.toISOString() : (typeof e.date === 'string' && !isNaN(Date.parse(e.date)) ? new Date(e.date).toISOString() : ''),
+    work_start_time: e.work_start_time instanceof Date ? e.work_start_time.toISOString() : (typeof e.work_start_time === 'string' && !isNaN(Date.parse(e.work_start_time)) ? new Date(e.work_start_time).toISOString() : ''),
+    work_end_time: e.work_end_time instanceof Date ? e.work_end_time.toISOString() : (typeof e.work_end_time === 'string' && !isNaN(Date.parse(e.work_end_time)) ? new Date(e.work_end_time).toISOString() : ''),
+    travel_start_time: e.travel_start_time ? (e.travel_start_time instanceof Date ? e.travel_start_time.toISOString() : (typeof e.travel_start_time === 'string' && !isNaN(Date.parse(e.travel_start_time)) ? new Date(e.travel_start_time).toISOString() : '')) : '',
+    travel_end_time: e.travel_end_time ? (e.travel_end_time instanceof Date ? e.travel_end_time.toISOString() : (typeof e.travel_end_time === 'string' && !isNaN(Date.parse(e.travel_end_time)) ? new Date(e.travel_end_time).toISOString() : '')) : '',
+    created_at: e.created_at instanceof Date ? e.created_at.toISOString() : (typeof e.created_at === 'string' && !isNaN(Date.parse(e.created_at)) ? new Date(e.created_at).toISOString() : ''),
+    updated_at: e.updated_at instanceof Date ? e.updated_at.toISOString() : (typeof e.updated_at === 'string' && !isNaN(Date.parse(e.updated_at)) ? new Date(e.updated_at).toISOString() : ''),
   }));
   const parser = new Parser({ fields });
   const csv = parser.parse(data);
