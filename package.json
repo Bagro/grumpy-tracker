@@ -6,9 +6,10 @@
   "type": "module",
   "scripts": {
     "start": "node src/server.js",
-    "dev": "nodemon src/index.js",
+    "dev": "nodemon src/server.js",
     "lint": "eslint .",
-    "test": "node --experimental-vm-modules node_modules/jest/bin/jest.js"
+    "test": "node --experimental-vm-modules node_modules/jest/bin/jest.js",
+    "serve": "node src/server.js"
   },
   "dependencies": {
     "@prisma/client": "^5.22.0",
