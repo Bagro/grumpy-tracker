@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="<%= (user && user.preferred_language) || 'en' %>">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -17,18 +17,18 @@
           <% include('partials/flex-summary', { flexToday, flexTotal }) %>
         <% } %>
         <% if (user) { %>
-          <p class="text-xl mb-6">Welcome, <span class="font-semibold text-grumpy-orange"><%= user.name %></span>!</p>
-          <a href="/time" class="block w-full text-center bg-grumpy-orange hover:bg-grumpy-dark2 text-grumpy-offwhite py-3 rounded-lg font-semibold shadow transition mb-3 border border-grumpy-orange">View Time Entries</a>
-          <a href="/profile" class="block w-full text-center bg-grumpy-dark2 hover:bg-grumpy-orange text-grumpy-offwhite py-3 rounded-lg font-semibold shadow transition mb-3 border border-grumpy-orange">Profile</a>
-          <a href="/settings" class="block w-full text-center bg-grumpy-dark2 hover:bg-grumpy-orange text-grumpy-offwhite py-3 rounded-lg font-semibold shadow transition mb-3 border border-grumpy-orange">Settings</a>
+          <p class="text-xl mb-6"><%= t('welcome', 'Welcome!') %> <span class="font-semibold text-grumpy-orange"><%= user.name %></span>!</p>
+          <a href="/time" class="block w-full text-center bg-grumpy-orange hover:bg-grumpy-dark2 text-grumpy-offwhite py-3 rounded-lg font-semibold shadow transition mb-3 border border-grumpy-orange"><%= t('view_time_entries', 'View Time Entries') %></a>
+          <a href="/profile" class="block w-full text-center bg-grumpy-dark2 hover:bg-grumpy-orange text-grumpy-offwhite py-3 rounded-lg font-semibold shadow transition mb-3 border border-grumpy-orange"><%= t('profile') %></a>
+          <a href="/settings" class="block w-full text-center bg-grumpy-dark2 hover:bg-grumpy-orange text-grumpy-offwhite py-3 rounded-lg font-semibold shadow transition mb-3 border border-grumpy-orange"><%= t('settings') %></a>
           <form method="post" action="/logout" class="mt-4">
             <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
-            <button type="submit" class="block w-full text-center bg-grumpy-dark2 hover:bg-grumpy-orange text-grumpy-orange hover:text-grumpy-offwhite py-3 rounded-lg font-semibold shadow transition border border-grumpy-orange">Logout</button>
+            <button type="submit" class="block w-full text-center bg-grumpy-dark2 hover:bg-grumpy-orange text-grumpy-orange hover:text-grumpy-offwhite py-3 rounded-lg font-semibold shadow transition border border-grumpy-orange"><%= t('logout') %></button>
           </form>
         <% } else { %>
-          <p class="text-xl mb-6">Welcome! Please log in to continue.</p>
-          <a href="/login" class="block w-full text-center bg-grumpy-orange hover:bg-grumpy-dark2 text-grumpy-offwhite py-3 rounded-lg font-semibold shadow transition mb-3 border border-grumpy-orange">Log in</a>
-          <a href="/register" class="block w-full text-center bg-grumpy-dark2 hover:bg-grumpy-orange text-grumpy-offwhite py-3 rounded-lg font-semibold shadow transition border border-grumpy-orange">Register</a>
+          <p class="text-xl mb-6"><%= t('welcome', 'Welcome!') %> <%= t('please_login', 'Please log in to continue.') %></p>
+          <a href="/login" class="block w-full text-center bg-grumpy-orange hover:bg-grumpy-dark2 text-grumpy-offwhite py-3 rounded-lg font-semibold shadow transition mb-3 border border-grumpy-orange"><%= t('login') %></a>
+          <a href="/register" class="block w-full text-center bg-grumpy-dark2 hover:bg-grumpy-orange text-grumpy-offwhite py-3 rounded-lg font-semibold shadow transition border border-grumpy-orange"><%= t('register') %></a>
         <% } %>
       </div>
     </main>

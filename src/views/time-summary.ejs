@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="<%= (user && user.preferred_language) || 'en' %>">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Time Summary - Grumpy Tracker</title>
+  <title><%= t('summary', 'Time Summary') %> - Grumpy Tracker</title>
   <link href="/public/tailwind.css" rel="stylesheet">
 </head>
 <body class="bg-grumpy-dark min-h-screen flex flex-col font-sans text-grumpy-offwhite">
@@ -11,7 +11,7 @@
     <div class="max-w-7xl mx-auto flex items-center justify-between">
       <div class="flex items-center gap-4">
         <img src="/public/logo.png" alt="Grumpy Tracker Logo" class="h-10 w-10 rounded-full bg-[#23211e] border-2 border-[#e76a2e] shadow" />
-        <h1 class="text-2xl font-extrabold tracking-tight text-[#f6eadd]">Time Summary</h1>
+        <h1 class="text-2xl font-extrabold tracking-tight text-[#f6eadd]"><%= t('summary', 'Time Summary') %></h1>
       </div>
     </div>
   </header>
@@ -20,28 +20,28 @@
       <form method="get" action="/time/summary" class="mb-4 flex gap-2 items-end">
         <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
         <div>
-          <label for="period" class="block font-semibold mb-1">Period:</label>
+          <label for="period" class="block font-semibold mb-1"><%= t('period', 'Period:') %></label>
           <select name="period" id="period" class="border rounded p-2 bg-gray-900 text-gray-100">
-            <option value="day" <%= period === 'day' ? 'selected' : '' %>>Day</option>
-            <option value="week" <%= period === 'week' ? 'selected' : '' %>>Week</option>
-            <option value="month" <%= period === 'month' ? 'selected' : '' %>>Month</option>
+            <option value="day" <%= period === 'day' ? 'selected' : '' %>><%= t('day', 'Day') %></option>
+            <option value="week" <%= period === 'week' ? 'selected' : '' %>><%= t('week', 'Week') %></option>
+            <option value="month" <%= period === 'month' ? 'selected' : '' %>><%= t('month', 'Month') %></option>
           </select>
         </div>
         <div>
-          <label for="date" class="block font-semibold mb-1">Date:</label>
+          <label for="date" class="block font-semibold mb-1"><%= t('date', 'Date:') %></label>
           <input type="date" name="date" value="<%= date %>" class="border rounded p-2 bg-gray-900 text-gray-100" />
         </div>
-        <button type="submit" class="bg-grumpy-orange hover:bg-grumpy-dark2 text-grumpy-offwhite px-4 py-2 rounded-lg font-semibold shadow transition border border-grumpy-orange">Show</button>
+        <button type="submit" class="bg-grumpy-orange hover:bg-grumpy-dark2 text-grumpy-offwhite px-4 py-2 rounded-lg font-semibold shadow transition border border-grumpy-orange"><%= t('show', 'Show') %></button>
       </form>
       <table class="w-full table-auto border rounded-lg overflow-hidden shadow text-sm">
         <thead class="bg-grumpy-dark2 text-grumpy-orange">
           <tr>
-            <th class="px-3 py-2 font-semibold">Date</th>
-            <th class="px-3 py-2 font-semibold">Work</th>
-            <th class="px-3 py-2 font-semibold">Travel</th>
-            <th class="px-3 py-2 font-semibold">Breaks</th>
-            <th class="px-3 py-2 font-semibold">Extra</th>
-            <th class="px-3 py-2 font-semibold">Flex</th>
+            <th class="px-3 py-2 font-semibold"><%= t('date', 'Date') %></th>
+            <th class="px-3 py-2 font-semibold"><%= t('work', 'Work') %></th>
+            <th class="px-3 py-2 font-semibold"><%= t('travel', 'Travel') %></th>
+            <th class="px-3 py-2 font-semibold"><%= t('breaks', 'Breaks') %></th>
+            <th class="px-3 py-2 font-semibold"><%= t('extra_time', 'Extra') %></th>
+            <th class="px-3 py-2 font-semibold"><%= t('flex_time', 'Flex') %></th>
           </tr>
         </thead>
         <tbody>
@@ -57,7 +57,7 @@
           <% }) %>
         </tbody>
       </table>
-      <div class="mt-4 font-bold text-lg text-grumpy-orange">Total Flex: <%= totalFlex %> min</div>
+      <div class="mt-4 font-bold text-lg text-grumpy-orange"><%= t('total_flex', 'Total Flex:') %> <%= totalFlex %> min</div>
     </div>
   </main>
   <footer class="bg-gradient-to-r from-gray-800 to-gray-900 text-center p-4 text-xs text-gray-400 border-t border-gray-700">&copy; <%= new Date().getFullYear() %> Grumpy Tracker</footer>

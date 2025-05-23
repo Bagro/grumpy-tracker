@@ -3,20 +3,20 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title><%= entry.id ? 'Edit Time Entry' : 'New Time Entry' %> - Grumpy Tracker</title>
+    <title><%= entry.id ? t('edit_time_entry', 'Edit Time Entry') : t('new_time_entry', 'New Time Entry') %> - Grumpy Tracker</title>
     <link href="/public/tailwind.css" rel="stylesheet">
   </head>
   <body class="bg-grumpy-dark min-h-screen flex flex-col font-sans text-grumpy-offwhite">
     <header class="bg-grumpy-dark2 text-grumpy-offwhite p-4 shadow-lg flex items-center gap-4">
       <img src="/public/logo.png" alt="Grumpy Tracker Logo" class="h-10 w-10 rounded-full bg-grumpy-dark2 border-2 border-grumpy-orange shadow" />
-      <h1 class="text-2xl font-extrabold tracking-tight text-grumpy-offwhite"><%= entry.id ? 'Edit Time Entry' : 'New Time Entry' %></h1>
+      <h1 class="text-2xl font-extrabold tracking-tight text-grumpy-offwhite"><%= entry.id ? t('edit_time_entry', 'Edit Time Entry') : t('new_time_entry', 'New Time Entry') %></h1>
       <nav class="ml-auto flex gap-4">
-        <a href="/time" class="hover:text-grumpy-orange transition">Back to List</a>
-        <a href="/time/summary" class="hover:text-grumpy-orange transition">Summary</a>
+        <a href="/time" class="hover:text-grumpy-orange transition"><%= t('back_to_list', 'Back to List') %></a>
+        <a href="/time/summary" class="hover:text-grumpy-orange transition"><%= t('summary') %></a>
         <a href="/gdpr" class="hover:text-grumpy-orange transition">GDPR</a>
         <form method="post" action="/logout" class="inline">
           <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
-          <button type="submit" class="hover:text-grumpy-orange transition">Logout</button>
+          <button type="submit" class="hover:text-grumpy-orange transition"><%= t('logout') %></button>
         </form>
       </nav>
     </header>
@@ -25,19 +25,19 @@
         <form method="post" action="<%= entry.id ? ('/time/' + entry.id + '/edit') : '/time/new' %>">
           <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
           <div class="mb-4">
-            <label for="date" class="block mb-1">Date</label>
+            <label for="date" class="block mb-1"><%= t('date', 'Date') %></label>
             <input id="date" name="date" type="date" required class="w-full border rounded p-2 bg-grumpy-dark text-grumpy-offwhite" value="<%= entry.date ? (entry.date instanceof Date ? entry.date.toISOString().slice(0,10) : (typeof entry.date === 'string' && entry.date.length > 10 ? entry.date.slice(0,10) : entry.date)) : '' %>" />
           </div>
           <div class="mb-4">
-            <label for="work_start_time" class="block mb-1">Work Start</label>
+            <label for="work_start_time" class="block mb-1"><%= t('work_start') %></label>
             <input id="work_start_time" name="work_start_time" type="time" required class="w-full border rounded p-2 bg-grumpy-dark text-grumpy-offwhite" value="<%= entry.work_start_time ? (entry.work_start_time instanceof Date ? entry.work_start_time.toISOString().slice(11,16) : (typeof entry.work_start_time === 'string' && entry.work_start_time.length >= 5 ? entry.work_start_time.slice(0,5) : entry.work_start_time)) : '' %>" />
           </div>
           <div class="mb-4">
-            <label for="work_end_time" class="block mb-1">Work End</label>
+            <label for="work_end_time" class="block mb-1"><%= t('work_end') %></label>
             <input id="work_end_time" name="work_end_time" type="time" required class="w-full border rounded p-2 bg-grumpy-dark text-grumpy-offwhite" value="<%= entry.work_end_time ? (entry.work_end_time instanceof Date ? entry.work_end_time.toISOString().slice(11,16) : (typeof entry.work_end_time === 'string' && entry.work_end_time.length >= 5 ? entry.work_end_time.slice(0,5) : entry.work_end_time)) : '' %>" />
           </div>
           <div class="mb-4">
-            <label class="block mb-1">Breaks (multiple allowed)</label>
+            <label class="block mb-1"><%= t('breaks', 'Breaks (multiple allowed)') %></label>
             <div id="breaks">
               <% let breaks = (entry.break_start_time && entry.break_end_time && entry.break_start_time.length) ? entry.break_start_time.map(function(start, i) { return { start, end: entry.break_end_time[i] }; }) : []; %>
               <% if (breaks.length) { %>
@@ -54,25 +54,25 @@
                 </div>
               <% } %>
             </div>
-            <button type="button" onclick="addBreak()" class="text-grumpy-orange underline hover:text-grumpy-offwhite transition">+ Add Break</button>
+            <button type="button" onclick="addBreak()" class="text-grumpy-orange underline hover:text-grumpy-offwhite transition">+ <%= t('add_break', 'Add Break') %></button>
           </div>
           <div class="mb-4">
-            <label for="travel_start_time" class="block mb-1">Travel Start</label>
+            <label for="travel_start_time" class="block mb-1"><%= t('travel_start') %></label>
             <input id="travel_start_time" name="travel_start_time" type="time" class="w-full border rounded p-2 bg-grumpy-dark text-grumpy-offwhite" value="<%= entry.travel_start_time ? (entry.travel_start_time instanceof Date ? entry.travel_start_time.toISOString().slice(11,16) : (typeof entry.travel_start_time === 'string' && entry.travel_start_time.length >= 5 ? entry.travel_start_time.slice(0,5) : entry.travel_start_time)) : '' %>" />
           </div>
           <div class="mb-4">
-            <label for="travel_end_time" class="block mb-1">Travel End</label>
+            <label for="travel_end_time" class="block mb-1"><%= t('travel_end') %></label>
             <input id="travel_end_time" name="travel_end_time" type="time" class="w-full border rounded p-2 bg-grumpy-dark text-grumpy-offwhite" value="<%= entry.travel_end_time ? (entry.travel_end_time instanceof Date ? entry.travel_end_time.toISOString().slice(11,16) : (typeof entry.travel_end_time === 'string' && entry.travel_end_time.length >= 5 ? entry.travel_end_time.slice(0,5) : entry.travel_end_time)) : '' %>" />
           </div>
           <div class="mb-4">
-            <label for="extra_time" class="block mb-1">Extra Time (minutes)</label>
+            <label for="extra_time" class="block mb-1"><%= t('extra_time') %> (<%= t('minutes', 'minutes') %>)</label>
             <input id="extra_time" name="extra_time" type="number" min="0" class="w-full border rounded p-2 bg-grumpy-dark text-grumpy-offwhite" value="<%= entry.extra_time || '' %>" />
           </div>
           <div class="mb-4">
-            <label for="comments" class="block mb-1">Comments</label>
+            <label for="comments" class="block mb-1"><%= t('comments') %></label>
             <textarea id="comments" name="comments" class="w-full border rounded p-2 bg-grumpy-dark text-grumpy-offwhite"><%= entry.comments || '' %></textarea>
           </div>
-          <button type="submit" class="w-full bg-grumpy-orange hover:bg-grumpy-dark2 text-grumpy-offwhite py-3 rounded-lg font-semibold shadow transition border border-grumpy-orange">Save</button>
+          <button type="submit" class="w-full bg-grumpy-orange hover:bg-grumpy-dark2 text-grumpy-offwhite py-3 rounded-lg font-semibold shadow transition border border-grumpy-orange"><%= t('save') %></button>
         </form>
         <script>
           function addBreak() {

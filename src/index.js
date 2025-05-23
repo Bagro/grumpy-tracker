@@ -52,6 +52,19 @@ app.use(session({
 app.use(passport.initialize());
 app.use(passport.session());
 
+// Set language from user profile if logged in
+app.use((req, res, next) => {
+  if (req.user && req.user.preferred_language) {
+    res.cookie('i18next', req.user.preferred_language, { httpOnly: false });
+    req.language = req.user.preferred_language;
+    req.lng = req.user.preferred_language;
+    if (req.i18next && typeof req.i18next.changeLanguage === 'function') {
+      req.i18next.changeLanguage(req.user.preferred_language);
+    }
+  }
+  next();
+});
+
 // i18next setup
 await setupI18n();
 app.use(middleware.handle(i18next));

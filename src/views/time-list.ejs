@@ -1,23 +1,23 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="<%= (user && user.preferred_language) || 'en' %>">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Time Entries - Grumpy Tracker</title>
+    <title><%= t('time_entries', 'Time Entries') %> - Grumpy Tracker</title>
     <link href="/public/tailwind.css" rel="stylesheet">
   </head>
   <body class="bg-grumpy-dark min-h-screen flex flex-col font-sans text-grumpy-offwhite">
     <header class="bg-grumpy-dark2 text-grumpy-offwhite p-4 shadow-lg flex items-center gap-4">
       <img src="/public/logo.png" alt="Grumpy Tracker Logo" class="h-10 w-10 rounded-full bg-grumpy-dark2 border-2 border-grumpy-orange shadow" />
-      <h1 class="text-2xl font-extrabold tracking-tight text-grumpy-offwhite">Time Entries</h1>
+      <h1 class="text-2xl font-extrabold tracking-tight text-grumpy-offwhite"><%= t('time_entries', 'Time Entries') %></h1>
       <nav class="ml-auto flex gap-4">
-        <a href="/time/new" class="hover:text-grumpy-orange transition">+ New Entry</a>
-        <a href="/time/summary" class="hover:text-grumpy-orange transition">Summary</a>
-        <a href="/time/export/csv" class="hover:text-grumpy-orange transition">Export CSV</a>
+        <a href="/time/new" class="hover:text-grumpy-orange transition">+ <%= t('new_entry', 'New Entry') %></a>
+        <a href="/time/summary" class="hover:text-grumpy-orange transition"><%= t('summary') %></a>
+        <a href="/time/export/csv" class="hover:text-grumpy-orange transition"><%= t('export_csv') %></a>
         <a href="/gdpr" class="hover:text-grumpy-orange transition">GDPR</a>
         <form method="post" action="/logout" class="inline">
           <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
-          <button type="submit" class="hover:text-grumpy-orange transition">Logout</button>
+          <button type="submit" class="hover:text-grumpy-orange transition"><%= t('logout') %></button>
         </form>
       </nav>
     </header>
@@ -26,14 +26,14 @@
         <table class="w-full table-auto border border-grumpy-orange rounded-2xl shadow mb-6">
           <thead class="bg-grumpy-dark2 text-grumpy-orange">
             <tr>
-              <th>Date</th>
-              <th>Start</th>
-              <th>End</th>
-              <th>Break</th>
-              <th>Travel</th>
-              <th>Extra</th>
-              <th>Comments</th>
-              <th>Actions</th>
+              <th><%= t('date', 'Date') %></th>
+              <th><%= t('work_start', 'Start') %></th>
+              <th><%= t('work_end', 'End') %></th>
+              <th><%= t('break', 'Break') %></th>
+              <th><%= t('travel', 'Travel') %></th>
+              <th><%= t('extra_time', 'Extra') %></th>
+              <th><%= t('comments', 'Comments') %></th>
+              <th><%= t('actions', 'Actions') %></th>
             </tr>
           </thead>
           <tbody>
@@ -47,10 +47,10 @@
                 <td><%= entry.extra_time || '' %></td>
                 <td><%= entry.comments || '' %></td>
                 <td>
-                  <a href="/time/<%= entry.id %>/edit" class="text-grumpy-orange underline hover:text-grumpy-offwhite transition">Edit</a>
-                  <form method="post" action="/time/<%= entry.id %>/delete" class="inline" onsubmit="return confirm('Delete entry?')">
+                  <a href="/time/<%= entry.id %>/edit" class="text-grumpy-orange underline hover:text-grumpy-offwhite transition"><%= t('edit', 'Edit') %></a>
+                  <form method="post" action="/time/<%= entry.id %>/delete" class="inline" onsubmit="return confirm('<%= t('delete_entry_confirm', 'Delete entry?') %>');">
                     <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
-                    <button type="submit" class="text-red-700 underline ml-2 hover:text-grumpy-orange transition">Delete</button>
+                    <button type="submit" class="text-red-700 underline ml-2 hover:text-grumpy-orange transition"><%= t('delete', 'Delete') %></button>
                   </form>
                 </td>
               </tr>
