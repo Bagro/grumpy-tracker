@@ -22,12 +22,30 @@ function formatFlexTime(min) {
   <body class="bg-grumpy-dark min-h-screen flex flex-col font-sans text-grumpy-offwhite">
     <!-- Remove duplicate header and logo, only keep menu -->
     <%- include('partials/menu', { user, csrfToken, currentPath: request.path }) %>
-    <main class="flex-1 flex flex-col p-6">
-      <div class="w-full max-w-5xl mx-auto flex flex-row gap-6 items-start">
+    <main class="flex-1 flex flex-col p-4 sm:p-6">
+      <div class="w-full max-w-5xl mx-auto flex flex-col md:flex-row gap-6 items-stretch">
+        <!-- Flex Time Card vänster på desktop, överst på mobil -->
+        <div class="flex flex-col max-w-xs w-full md:w-64 bg-grumpy-dark2 border border-grumpy-orange rounded-2xl shadow-xl p-4 sm:p-6 pointer-events-auto self-start md:self-start mx-auto md:mx-0 h-full">
+          <div class="w-full">
+            <h2 class="text-lg font-bold text-grumpy-orange mb-3">
+              <%= t('dashboard.flex_time', 'Flex Time') %>
+            </h2>
+            <div class="flex flex-col gap-2 w-full">
+              <div class="flex justify-between items-center">
+                <span class="font-semibold text-grumpy-offwhite"><%= t('dashboard.flex_time_work', 'Work') %>:</span>
+                <span class="text-xl font-extrabold text-grumpy-orange"><%= formatFlexTime(flexPeriodWork) %></span>
+              </div>
+              <div class="flex justify-between items-center">
+                <span class="font-semibold text-grumpy-offwhite"><%= t('dashboard.flex_time_work_travel', '+ Travel') %>:</span>
+                <span class="text-xl font-extrabold text-grumpy-orange"><%= formatFlexTime(flexPeriodWorkTravel) %></span>
+              </div>
+            </div>
+          </div>
+        </div>
         <!-- Flex Graph Card -->
-        <div class="bg-grumpy-dark2 border border-grumpy-orange rounded-2xl shadow-lg p-8 flex flex-col flex-1 min-w-0 max-w-3xl">
+        <div class="bg-grumpy-dark2 border border-grumpy-orange rounded-2xl shadow-lg p-4 sm:p-8 flex flex-col flex-1 min-w-0 max-w-3xl h-full">
           <h2 class="text-xl font-bold text-grumpy-orange mb-4"><%= t('dashboard.flex_graph', 'Work & Travel Time') %></h2>
-          <form method="get" class="mb-4 flex gap-2 items-center">
+          <form method="get" class="mb-4 flex flex-wrap gap-2 items-center">
             <label for="period" class="text-grumpy-offwhite font-semibold"><%= t('dashboard.period', 'Period') %>:</label>
             <select id="period" name="period" class="bg-grumpy-dark2 border border-grumpy-orange rounded p-1 text-grumpy-offwhite">
               <option value="week" <%= period === 'week' ? 'selected' : '' %>><%= t('dashboard.week', 'Week') %></option>
@@ -36,27 +54,8 @@ function formatFlexTime(min) {
             </select>
             <button type="submit" class="bg-grumpy-orange text-grumpy-dark2 px-3 py-1 rounded font-semibold hover:bg-grumpy-dark2 hover:text-grumpy-orange border border-grumpy-orange transition"><%= t('dashboard.show', 'Show') %></button>
           </form>
-          <canvas id="flexChart" width="400" height="200"></canvas>
-        </div>
-        <!-- Desktop: Flex Time Card to the right of graph -->
-        <div class="md:flex flex-col max-w-xs w-64 bg-grumpy-dark2 border border-grumpy-orange rounded-2xl shadow-xl p-6 pointer-events-auto self-start">
-          <div class="w-full">
-            <h2 class="text-lg font-bold text-grumpy-orange mb-3">
-              <%= t('dashboard.flex_time', 'Flex Time for') %> 
-              <span class="capitalize">
-                <%= t('dashboard.' + period, period.charAt(0).toUpperCase() + period.slice(1)) %>
-              </span>
-            </h2>
-            <div class="flex flex-col gap-2 w-full">
-              <div class="flex justify-between items-center">
-                <span class="font-semibold text-grumpy-offwhite"><%= t('dashboard.flex_time_work', 'Flex (Work only)') %>:</span>
-                <span class="text-xl font-extrabold text-grumpy-orange"><%= formatFlexTime(flexPeriodWork) %></span>
-              </div>
-              <div class="flex justify-between items-center">
-                <span class="font-semibold text-grumpy-offwhite"><%= t('dashboard.flex_time_work_travel', 'Flex (Work + Travel)') %>:</span>
-                <span class="text-xl font-extrabold text-grumpy-orange"><%= formatFlexTime(flexPeriodWorkTravel) %></span>
-              </div>
-            </div>
+          <div class="w-full overflow-x-auto">
+            <canvas id="flexChart" class="max-w-full" width="400" height="200"></canvas>
           </div>
         </div>
       </div>
