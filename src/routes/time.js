@@ -125,9 +125,9 @@ router.get('/time/export/csv', async (req, res) => {
   }));
   const parser = new Parser({ fields });
   const csv = parser.parse(data);
-  res.header('Content-Type', 'text/csv');
-  res.attachment('time-entries.csv');
-  res.send(csv);
+  res.header('Content-Type', 'text/csv; charset=utf-8');
+  res.header('Content-Disposition', 'attachment; filename="time-entries.csv"');
+  res.send('\uFEFF' + csv); // Add BOM for Excel compatibility
 });
 
 export default router;
