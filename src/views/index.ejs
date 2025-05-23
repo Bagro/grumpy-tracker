@@ -7,10 +7,8 @@
     <link href="/public/tailwind.css" rel="stylesheet">
   </head>
   <body class="bg-grumpy-dark min-h-screen flex flex-col font-sans text-grumpy-offwhite">
-    <header class="bg-grumpy-dark2 text-grumpy-offwhite p-4 shadow-lg flex items-center gap-4">
-      <img src="/public/logo.png" alt="Grumpy Tracker Logo" class="h-12 w-12 rounded-full bg-grumpy-dark2 border-2 border-grumpy-orange shadow" />
-      <h1 class="text-3xl font-extrabold tracking-tight text-grumpy-offwhite">Grumpy Tracker</h1>
-    </header>
+    <!-- Remove duplicate header and logo, only keep menu -->
+    <%- include('partials/menu', { user, csrfToken, currentPath: request.path }) %>
     <main class="flex-1 flex flex-col items-center justify-center">
       <div class="w-full max-w-lg bg-grumpy-dark2 shadow-2xl rounded-2xl p-10 border border-grumpy-orange">
         <% if (typeof flexToday !== 'undefined') { %>

@@ -8,7 +8,7 @@ const router = express.Router();
 // GDPR: Actions page
 router.get("/gdpr", (req, res) => {
   if (!req.user) return res.redirect("/login");
-  res.render("gdpr", { user: req.user });
+  res.render("gdpr", { user: req.user, csrfToken: req.csrfToken() });
 });
 
 // GDPR: Data export (all user data)

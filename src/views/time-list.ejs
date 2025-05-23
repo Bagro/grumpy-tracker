@@ -7,20 +7,8 @@
     <link href="/public/tailwind.css" rel="stylesheet">
   </head>
   <body class="bg-grumpy-dark min-h-screen flex flex-col font-sans text-grumpy-offwhite">
-    <header class="bg-grumpy-dark2 text-grumpy-offwhite p-4 shadow-lg flex items-center gap-4">
-      <img src="/public/logo.png" alt="Grumpy Tracker Logo" class="h-10 w-10 rounded-full bg-grumpy-dark2 border-2 border-grumpy-orange shadow" />
-      <h1 class="text-2xl font-extrabold tracking-tight text-grumpy-offwhite"><%= t('time_entries', 'Time Entries') %></h1>
-      <nav class="ml-auto flex gap-4">
-        <a href="/time/new" class="hover:text-grumpy-orange transition">+ <%= t('new_entry', 'New Entry') %></a>
-        <a href="/time/summary" class="hover:text-grumpy-orange transition"><%= t('summary') %></a>
-        <a href="/time/export/csv" class="hover:text-grumpy-orange transition"><%= t('export_csv') %></a>
-        <a href="/gdpr" class="hover:text-grumpy-orange transition">GDPR</a>
-        <form method="post" action="/logout" class="inline">
-          <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
-          <button type="submit" class="hover:text-grumpy-orange transition"><%= t('logout') %></button>
-        </form>
-      </nav>
-    </header>
+    <!-- Remove duplicate header and logo, only keep menu -->
+    <%- include('partials/menu', { user, csrfToken, currentPath: request.path }) %>
     <main class="flex-1 flex flex-col items-center justify-center">
       <div class="w-full max-w-4xl bg-grumpy-dark2 shadow-2xl rounded-2xl p-10 border border-grumpy-orange">
         <table class="w-full table-auto border border-grumpy-orange rounded-2xl shadow mb-6">

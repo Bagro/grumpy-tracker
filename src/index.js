@@ -91,6 +91,12 @@ app.use((req, res, next) => {
   next();
 });
 
+// Make request object available in all views
+app.use((req, res, next) => {
+  res.locals.request = req;
+  next();
+});
+
 // Basic home route
 app.get('/', async (req, res) => {
   if (!req.user) return res.redirect('/login');

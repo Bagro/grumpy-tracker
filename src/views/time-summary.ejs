@@ -7,14 +7,8 @@
   <link href="/public/tailwind.css" rel="stylesheet">
 </head>
 <body class="bg-grumpy-dark min-h-screen flex flex-col font-sans text-grumpy-offwhite">
-  <header class="bg-grumpy-dark2 text-grumpy-offwhite p-4 shadow-lg">
-    <div class="max-w-7xl mx-auto flex items-center justify-between">
-      <div class="flex items-center gap-4">
-        <img src="/public/logo.png" alt="Grumpy Tracker Logo" class="h-10 w-10 rounded-full bg-[#23211e] border-2 border-[#e76a2e] shadow" />
-        <h1 class="text-2xl font-extrabold tracking-tight text-[#f6eadd]"><%= t('summary', 'Time Summary') %></h1>
-      </div>
-    </div>
-  </header>
+    <!-- Remove duplicate header and logo, only keep menu -->
+    <%- include('partials/menu', { user, csrfToken, currentPath: request.path }) %>
   <main class="flex-1 flex flex-col items-center px-4 py-8">
     <div class="w-full max-w-3xl bg-gradient-to-br from-gray-800 to-gray-900 shadow-2xl rounded-2xl p-10 border border-gray-700">
       <form method="get" action="/time/summary" class="mb-4 flex gap-2 items-end">

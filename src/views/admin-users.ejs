@@ -7,10 +7,8 @@
   <link href="/public/tailwind.css" rel="stylesheet">
 </head>
 <body class="bg-grumpy-dark min-h-screen flex flex-col font-sans text-grumpy-offwhite">
-  <header class="bg-grumpy-dark2 text-grumpy-offwhite p-4 shadow-lg flex items-center gap-4">
-    <img src="/public/logo.png" alt="Grumpy Tracker Logo" class="h-10 w-10 rounded-full bg-grumpy-dark2 border-2 border-grumpy-orange shadow" />
-    <h1 class="text-2xl font-bold tracking-tight">Admin: User Management</h1>
-  </header>
+  <!-- Remove duplicate header and logo, only keep menu -->
+  <%- include('partials/menu', { user, csrfToken, currentPath: request.path }) %>
   <main class="flex-1 p-4 max-w-2xl mx-auto w-full">
     <table class="w-full table-auto border mb-4 bg-grumpy-dark2 text-grumpy-offwhite border-grumpy-orange rounded-2xl shadow">
       <thead>
@@ -46,11 +44,5 @@
     <a href="/" class="text-grumpy-orange underline hover:text-grumpy-offwhite transition">Back to Dashboard</a>
   </main>
   <%- include('partials/footer') %>
-  <nav class="bg-grumpy-dark2 shadow mt-4 rounded-2xl">
-    <ul class="flex space-x-4 p-4">
-      <li><a href="/admin/users" class="text-grumpy-orange hover:underline">Users</a></li>
-      <li><a href="/admin/translations" class="text-grumpy-orange hover:underline">Translation Management</a></li>
-    </ul>
-  </nav>
 </body>
 </html>
