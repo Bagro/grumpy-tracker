@@ -15,7 +15,11 @@
           <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
           <div class="mb-4">
             <label for="date" class="block mb-1"><%= t('date', 'Date') %></label>
-            <input id="date" name="date" type="date" required class="w-full border rounded p-2 bg-grumpy-dark text-grumpy-offwhite" value="<%= entry.date ? (entry.date instanceof Date ? entry.date.toISOString().slice(0,10) : (typeof entry.date === 'string' && entry.date.length > 10 ? entry.date.slice(0,10) : entry.date)) : '' %>" />
+            <input id="date" name="date" type="date" required class="w-full border rounded p-2 bg-grumpy-dark text-grumpy-offwhite" value="<%= entry.date ? (entry.date instanceof Date ? entry.date.toISOString().slice(0,10) : (typeof entry.date === 'string' && entry.date.length > 10 ? entry.date.slice(0,10) : entry.date)) : (new Date().toISOString().slice(0,10)) %>" />
+          </div>
+          <div class="mb-4">
+            <label for="travel_start_time" class="block mb-1"><%= t('travel_start') %></label>
+            <input id="travel_start_time" name="travel_start_time" type="time" class="w-full border rounded p-2 bg-grumpy-dark text-grumpy-offwhite" value="<%= entry.travel_start_time ? (entry.travel_start_time instanceof Date ? entry.travel_start_time.toISOString().slice(11,16) : (typeof entry.travel_start_time === 'string' && entry.travel_start_time.length >= 5 ? entry.travel_start_time.slice(0,5) : entry.travel_start_time)) : '' %>" />
           </div>
           <div class="mb-4">
             <label for="work_start_time" class="block mb-1"><%= t('work_start') %></label>
@@ -24,6 +28,10 @@
           <div class="mb-4">
             <label for="work_end_time" class="block mb-1"><%= t('work_end') %></label>
             <input id="work_end_time" name="work_end_time" type="time" required class="w-full border rounded p-2 bg-grumpy-dark text-grumpy-offwhite" value="<%= entry.work_end_time ? (entry.work_end_time instanceof Date ? entry.work_end_time.toISOString().slice(11,16) : (typeof entry.work_end_time === 'string' && entry.work_end_time.length >= 5 ? entry.work_end_time.slice(0,5) : entry.work_end_time)) : '' %>" />
+          </div>
+          <div class="mb-4">
+            <label for="travel_end_time" class="block mb-1"><%= t('travel_end') %></label>
+            <input id="travel_end_time" name="travel_end_time" type="time" class="w-full border rounded p-2 bg-grumpy-dark text-grumpy-offwhite" value="<%= entry.travel_end_time ? (entry.travel_end_time instanceof Date ? entry.travel_end_time.toISOString().slice(11,16) : (typeof entry.travel_end_time === 'string' && entry.travel_end_time.length >= 5 ? entry.travel_end_time.slice(0,5) : entry.travel_end_time)) : '' %>" />
           </div>
           <div class="mb-4">
             <label class="block mb-1"><%= t('breaks', 'Breaks (multiple allowed)') %></label>
@@ -46,30 +54,84 @@
             <button type="button" onclick="addBreak()" class="text-grumpy-orange underline hover:text-grumpy-offwhite transition">+ <%= t('add_break', 'Add Break') %></button>
           </div>
           <div class="mb-4">
-            <label for="travel_start_time" class="block mb-1"><%= t('travel_start') %></label>
-            <input id="travel_start_time" name="travel_start_time" type="time" class="w-full border rounded p-2 bg-grumpy-dark text-grumpy-offwhite" value="<%= entry.travel_start_time ? (entry.travel_start_time instanceof Date ? entry.travel_start_time.toISOString().slice(11,16) : (typeof entry.travel_start_time === 'string' && entry.travel_start_time.length >= 5 ? entry.travel_start_time.slice(0,5) : entry.travel_start_time)) : '' %>" />
-          </div>
-          <div class="mb-4">
-            <label for="travel_end_time" class="block mb-1"><%= t('travel_end') %></label>
-            <input id="travel_end_time" name="travel_end_time" type="time" class="w-full border rounded p-2 bg-grumpy-dark text-grumpy-offwhite" value="<%= entry.travel_end_time ? (entry.travel_end_time instanceof Date ? entry.travel_end_time.toISOString().slice(11,16) : (typeof entry.travel_end_time === 'string' && entry.travel_end_time.length >= 5 ? entry.travel_end_time.slice(0,5) : entry.travel_end_time)) : '' %>" />
-          </div>
-          <div class="mb-4">
-            <label for="extra_time" class="block mb-1"><%= t('extra_time') %> (<%= t('minutes', 'minutes') %>)</label>
-            <input id="extra_time" name="extra_time" type="number" min="0" class="w-full border rounded p-2 bg-grumpy-dark text-grumpy-offwhite" value="<%= entry.extra_time || '' %>" />
+            <label for="extra_times" class="block mb-1"><%= t('extra_time', 'Extra Time') %> (<%= t('minutes', 'minutes') %>)</label>
+            <div id="extra-times">
+              <% let extraTimes = entry.extraTimes || []; %>
+              <% if (extraTimes.length) { %>
+                <% extraTimes.forEach(function(et, i) { %>
+                  <div class="flex space-x-2 mb-1 extra-time-row">
+                    <input name="extra_time_start" type="time" class="border rounded p-2 bg-grumpy-dark text-grumpy-offwhite" value="<%= et.start ? (et.start instanceof Date ? et.start.toISOString().slice(11,16) : (typeof et.start === 'string' && et.start.length >= 5 ? et.start.slice(0,5) : et.start)) : '' %>" />
+                    <input name="extra_time_end" type="time" class="border rounded p-2 bg-grumpy-dark text-grumpy-offwhite" value="<%= et.end ? (et.end instanceof Date ? et.end.toISOString().slice(11,16) : (typeof et.end === 'string' && et.end.length >= 5 ? et.end.slice(0,5) : et.end)) : '' %>" />
+                    <button type="button" class="text-red-500 font-bold remove-extra-time" title="<%= t('remove', 'Remove') %>">&times;</button>
+                  </div>
+                <% }) %>
+              <% } else { %>
+                <div class="flex space-x-2 mb-1 extra-time-row">
+                  <input name="extra_time_start" type="time" class="border rounded p-2 bg-grumpy-dark text-grumpy-offwhite" />
+                  <input name="extra_time_end" type="time" class="border rounded p-2 bg-grumpy-dark text-grumpy-offwhite" />
+                  <button type="button" class="text-red-500 font-bold remove-extra-time" title="<%= t('remove', 'Remove') %>">&times;</button>
+                </div>
+              <% } %>
+            </div>
+            <button type="button" onclick="addExtraTime()" class="text-grumpy-orange underline hover:text-grumpy-offwhite transition">+ <%= t('add_extra_time', 'Add Extra Time') %></button>
           </div>
           <div class="mb-4">
             <label for="comments" class="block mb-1"><%= t('comments') %></label>
             <textarea id="comments" name="comments" class="w-full border rounded p-2 bg-grumpy-dark text-grumpy-offwhite"><%= entry.comments || '' %></textarea>
           </div>
+          <div id="form-error" class="hidden bg-red-100 text-red-700 p-2 rounded mb-2"></div>
           <button type="submit" class="w-full bg-grumpy-orange hover:bg-grumpy-dark2 text-grumpy-offwhite py-3 rounded-lg font-semibold shadow transition border border-grumpy-orange"><%= t('save') %></button>
         </form>
         <script>
+          // Translation strings for validation
+          const travelStartBeforeWorkStartMsg = "<%= t('travel_start_before_work_start', 'Travel start must be before work start') %>";
+          const travelEndAfterWorkEndMsg = "<%= t('travel_end_after_work_end', 'Travel end must be after work end') %>";
           function addBreak() {
             const div = document.createElement('div');
             div.className = 'flex space-x-2 mb-1';
             div.innerHTML = `<input name="break_start_time" type="time" class="border rounded p-2 bg-grumpy-dark text-grumpy-offwhite" /> <input name="break_end_time" type="time" class="border rounded p-2 bg-grumpy-dark text-grumpy-offwhite" />`;
             document.getElementById('breaks').appendChild(div);
           }
+          function addExtraTime() {
+            const div = document.createElement('div');
+            div.className = 'flex space-x-2 mb-1 extra-time-row';
+            div.innerHTML = `<input name="extra_time_start" type="time" class="border rounded p-2 bg-grumpy-dark text-grumpy-offwhite" /> <input name="extra_time_end" type="time" class="border rounded p-2 bg-grumpy-dark text-grumpy-offwhite" /> <button type="button" class="text-red-500 font-bold remove-extra-time" title="Remove">&times;</button>`;
+            document.getElementById('extra-times').appendChild(div);
+          }
+          document.addEventListener('DOMContentLoaded', function() {
+            document.getElementById('extra-times').addEventListener('click', function(e) {
+              if (e.target.classList.contains('remove-extra-time')) {
+                e.target.parentElement.remove();
+              }
+            });
+            // Validation: travel start < work start, travel end > work end
+            document.querySelector('form').addEventListener('submit', function(e) {
+              const date = document.getElementById('date').value;
+              const travelStart = document.getElementById('travel_start_time').value;
+              const workStart = document.getElementById('work_start_time').value;
+              const workEnd = document.getElementById('work_end_time').value;
+              const travelEnd = document.getElementById('travel_end_time').value;
+              let error = '';
+              if (travelStart && workStart && travelStart >= workStart) {
+                error = travelStartBeforeWorkStartMsg;
+              }
+              if (travelEnd && workEnd && travelEnd <= workEnd) {
+                error = travelEndAfterWorkEndMsg;
+              }
+              if (error) {
+                e.preventDefault();
+                let errDiv = document.getElementById('form-error');
+                if (!errDiv) {
+                  errDiv = document.createElement('div');
+                  errDiv.id = 'form-error';
+                  errDiv.className = 'bg-red-100 text-red-700 p-2 rounded mb-2';
+                  document.querySelector('form').prepend(errDiv);
+                }
+                errDiv.textContent = error;
+                return false;
+              }
+            });
+          });
         </script>
       </div>
     </main>

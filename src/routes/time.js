@@ -48,7 +48,7 @@ router.get("/time/new", (req, res) => {
     travel_end_time: '',
     break_start_time: [],
     break_end_time: [],
-    extra_time: '',
+    extraTimes: [],
     comments: ''
   };
   let error = null;
@@ -65,11 +65,9 @@ router.get("/time/new", (req, res) => {
 // Create time entry
 router.post("/time/new", async (req, res) => {
   try {
-    const { date, work_start_time, work_end_time, travel_start_time, travel_end_time, break_start_time, break_end_time, extra_time, comments } = req.body;
-    // Defensive: Only parse if value is present and valid
+    const { date, work_start_time, work_end_time, travel_start_time, travel_end_time, break_start_time, break_end_time, extra_time_start, extra_time_end, comments } = req.body;
     function parseTime(date, time) {
       if (!date || !time) return null;
-      // time: "HH:mm" or ""
       if (!/^\d{2}:\d{2}$/.test(time)) return null;
       const [h, m] = time.split(":");
       const d = new Date(date);
@@ -83,7 +81,22 @@ router.post("/time/new", async (req, res) => {
     const travelEnd = travel_end_time ? parseTime(entryDate, travel_end_time) : null;
     const breaksStart = Array.isArray(break_start_time) ? break_start_time.map(t => parseTime(entryDate, t)).filter(Boolean) : [];
     const breaksEnd = Array.isArray(break_end_time) ? break_end_time.map(t => parseTime(entryDate, t)).filter(Boolean) : [];
-    await prisma.timeEntry.create({
+    // Handle multiple extra times
+    let extraTimes = [];
+    if (extra_time_start && extra_time_end) {
+      const starts = Array.isArray(extra_time_start) ? extra_time_start : [extra_time_start];
+      const ends = Array.isArray(extra_time_end) ? extra_time_end : [extra_time_end];
+      for (let i = 0; i < starts.length; ++i) {
+        if (starts[i] && ends[i]) {
+          const start = parseTime(entryDate, starts[i]);
+          const end = parseTime(entryDate, ends[i]);
+          if (start && end && end > start) {
+            extraTimes.push({ start, end });
+          }
+        }
+      }
+    }
+    const created = await prisma.timeEntry.create({
       data: {
         user_id: req.user.id,
         date: parseISO(entryDate),
@@ -93,10 +106,19 @@ router.post("/time/new", async (req, res) => {
         travel_end_time: travelEnd,
         break_start_time: breaksStart,
         break_end_time: breaksEnd,
-        extra_time: extra_time ? parseInt(extra_time) : null,
         comments,
       },
     });
+    // Save extraTimes
+    for (const et of extraTimes) {
+      await prisma.extraTime.create({
+        data: {
+          time_entry_id: created.id,
+          start: et.start,
+          end: et.end,
+        },
+      });
+    }
     res.redirect("/time");
   } catch (err) {
     res.render("time-form", { entry: req.body, user: req.user, error: err.message, csrfToken: req.csrfToken() });
@@ -129,6 +151,14 @@ router.get("/time/summary", async (req, res) => {
     },
     orderBy: { date: "asc" },
   });
+  // Fetch all extraTimes for these entries
+  const entryIds = entries.map(e => e.id);
+  const extraTimes = await prisma.extraTime.findMany({ where: { time_entry_id: { in: entryIds } } });
+  const extraMap = {};
+  for (const et of extraTimes) {
+    if (!extraMap[et.time_entry_id]) extraMap[et.time_entry_id] = [];
+    extraMap[et.time_entry_id].push(et);
+  }
   const userSettings = await prisma.settings.findUnique({ where: { user_id: req.user.id } });
   const summaryMap = {};
   let totalFlex = 0;
@@ -142,7 +172,8 @@ router.get("/time/summary", async (req, res) => {
       const end = (e.break_end_time||[])[i];
       return sum + (end && b ? (end - b) / 60000 : 0);
     }, 0);
-    const extra = e.extra_time || 0;
+    // Sum all extra intervals for this entry
+    const extra = (extraMap[e.id] || []).reduce((sum, et) => sum + ((et.end - et.start) / 60000), 0);
     const flex = work - breaks + extra - normal;
     summaryMap[d].work += work;
     summaryMap[d].travel += travel;
@@ -162,9 +193,16 @@ router.get('/time/export/csv', async (req, res) => {
     where: { user_id: req.user.id },
     orderBy: { date: 'asc' },
   });
+  const entryIds = entries.map(e => e.id);
+  const extraTimes = await prisma.extraTime.findMany({ where: { time_entry_id: { in: entryIds } } });
+  const extraMap = {};
+  for (const et of extraTimes) {
+    if (!extraMap[et.time_entry_id]) extraMap[et.time_entry_id] = [];
+    extraMap[et.time_entry_id].push(et);
+  }
   const fields = [
     'date', 'work_start_time', 'work_end_time', 'travel_start_time', 'travel_end_time',
-    'break_start_time', 'break_end_time', 'extra_time', 'comments', 'created_at', 'updated_at'
+    'break_start_time', 'break_end_time', 'extra_times', 'comments', 'created_at', 'updated_at'
   ];
   const data = entries.map(e => ({
     ...e,
@@ -178,6 +216,7 @@ router.get('/time/export/csv', async (req, res) => {
       if (typeof dt === 'string' && !isNaN(Date.parse(dt))) return new Date(dt).toISOString();
       return '';
     }).join(';') : '',
+    extra_times: (extraMap[e.id] || []).map(et => `${et.start.toISOString().slice(11,16)}-${et.end.toISOString().slice(11,16)}`).join(';'),
     date: e.date instanceof Date ? e.date.toISOString() : (typeof e.date === 'string' && !isNaN(Date.parse(e.date)) ? new Date(e.date).toISOString() : ''),
     work_start_time: e.work_start_time instanceof Date ? e.work_start_time.toISOString() : (typeof e.work_start_time === 'string' && !isNaN(Date.parse(e.work_start_time)) ? new Date(e.work_start_time).toISOString() : ''),
     work_end_time: e.work_end_time instanceof Date ? e.work_end_time.toISOString() : (typeof e.work_end_time === 'string' && !isNaN(Date.parse(e.work_end_time)) ? new Date(e.work_end_time).toISOString() : ''),
@@ -200,6 +239,9 @@ router.get("/time/:id/edit", async (req, res) => {
     where: { id: req.params.id, user_id: req.user.id },
   });
   if (!entry) return res.status(404).send("Not found");
+  // Fetch extraTimes
+  const extraTimes = await prisma.extraTime.findMany({ where: { time_entry_id: entry.id } });
+  entry.extraTimes = extraTimes.map(et => ({ start: et.start, end: et.end }));
   res.render("time-form", { entry, user: req.user, error: null, csrfToken: req.csrfToken() });
 });
 
@@ -207,7 +249,7 @@ router.get("/time/:id/edit", async (req, res) => {
 router.post("/time/:id/edit", async (req, res) => {
   try {
     if (!req.user) return res.redirect("/login");
-    const { date, work_start_time, work_end_time, travel_start_time, travel_end_time, break_start_time, break_end_time, extra_time, comments } = req.body;
+    const { date, work_start_time, work_end_time, travel_start_time, travel_end_time, break_start_time, break_end_time, extra_time_start, extra_time_end, comments } = req.body;
     function parseTime(date, time) {
       if (!date || !time) return null;
       if (!/^\d{2}:\d{2}$/.test(time)) return null;
@@ -223,6 +265,21 @@ router.post("/time/:id/edit", async (req, res) => {
     const travelEnd = travel_end_time ? parseTime(entryDate, travel_end_time) : null;
     const breaksStart = Array.isArray(break_start_time) ? break_start_time.map(t => parseTime(entryDate, t)).filter(Boolean) : [];
     const breaksEnd = Array.isArray(break_end_time) ? break_end_time.map(t => parseTime(entryDate, t)).filter(Boolean) : [];
+    // Handle multiple extra times
+    let extraTimes = [];
+    if (extra_time_start && extra_time_end) {
+      const starts = Array.isArray(extra_time_start) ? extra_time_start : [extra_time_start];
+      const ends = Array.isArray(extra_time_end) ? extra_time_end : [extra_time_end];
+      for (let i = 0; i < starts.length; ++i) {
+        if (starts[i] && ends[i]) {
+          const start = parseTime(entryDate, starts[i]);
+          const end = parseTime(entryDate, ends[i]);
+          if (start && end && end > start) {
+            extraTimes.push({ start, end });
+          }
+        }
+      }
+    }
     await prisma.timeEntry.update({
       where: { id: req.params.id, user_id: req.user.id },
       data: {
@@ -233,10 +290,20 @@ router.post("/time/:id/edit", async (req, res) => {
         travel_end_time: travelEnd,
         break_start_time: breaksStart,
         break_end_time: breaksEnd,
-        extra_time: extra_time ? parseInt(extra_time) : null,
         comments,
       },
     });
+    // Remove old extraTimes and insert new
+    await prisma.extraTime.deleteMany({ where: { time_entry_id: req.params.id } });
+    for (const et of extraTimes) {
+      await prisma.extraTime.create({
+        data: {
+          time_entry_id: req.params.id,
+          start: et.start,
+          end: et.end,
+        },
+      });
+    }
     res.redirect("/time");
   } catch (err) {
     res.render("time-form", { entry: req.body, user: req.user, error: err.message, csrfToken: req.csrfToken() });
