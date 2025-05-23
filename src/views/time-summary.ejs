@@ -6,48 +6,60 @@
   <title>Time Summary - Grumpy Tracker</title>
   <link href="/public/tailwind.css" rel="stylesheet">
 </head>
-<body class="bg-gray-50 min-h-screen flex flex-col">
-  <header class="bg-blue-900 text-white p-4">
-    <h1 class="text-2xl font-bold">Time Summary</h1>
+<body class="bg-grumpy-dark min-h-screen flex flex-col font-sans text-grumpy-offwhite">
+  <header class="bg-grumpy-dark2 text-grumpy-offwhite p-4 shadow-lg">
+    <div class="max-w-7xl mx-auto flex items-center justify-between">
+      <div class="flex items-center gap-4">
+        <img src="/public/logo.png" alt="Grumpy Tracker Logo" class="h-10 w-10 rounded-full bg-[#23211e] border-2 border-[#e76a2e] shadow" />
+        <h1 class="text-2xl font-extrabold tracking-tight text-[#f6eadd]">Time Summary</h1>
+      </div>
+    </div>
   </header>
-  <main class="flex-1 p-4">
-    <form method="get" action="/time/summary" class="mb-4 flex gap-2">
-      <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
-      <label for="period">Period:</label>
-      <select name="period" id="period" class="border rounded p-2">
-        <option value="day" <%= period === 'day' ? 'selected' : '' %>>Day</option>
-        <option value="week" <%= period === 'week' ? 'selected' : '' %>>Week</option>
-        <option value="month" <%= period === 'month' ? 'selected' : '' %>>Month</option>
-      </select>
-      <input type="date" name="date" value="<%= date %>" class="border rounded p-2" />
-      <button type="submit" class="bg-blue-700 text-white px-4 py-2 rounded">Show</button>
-    </form>
-    <table class="w-full table-auto border">
-      <thead>
-        <tr>
-          <th>Date</th>
-          <th>Work</th>
-          <th>Travel</th>
-          <th>Breaks</th>
-          <th>Extra</th>
-          <th>Flex</th>
-        </tr>
-      </thead>
-      <tbody>
-        <% summary.forEach(row => { %>
+  <main class="flex-1 flex flex-col items-center px-4 py-8">
+    <div class="w-full max-w-3xl bg-gradient-to-br from-gray-800 to-gray-900 shadow-2xl rounded-2xl p-10 border border-gray-700">
+      <form method="get" action="/time/summary" class="mb-4 flex gap-2 items-end">
+        <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
+        <div>
+          <label for="period" class="block font-semibold mb-1">Period:</label>
+          <select name="period" id="period" class="border rounded p-2 bg-gray-900 text-gray-100">
+            <option value="day" <%= period === 'day' ? 'selected' : '' %>>Day</option>
+            <option value="week" <%= period === 'week' ? 'selected' : '' %>>Week</option>
+            <option value="month" <%= period === 'month' ? 'selected' : '' %>>Month</option>
+          </select>
+        </div>
+        <div>
+          <label for="date" class="block font-semibold mb-1">Date:</label>
+          <input type="date" name="date" value="<%= date %>" class="border rounded p-2 bg-gray-900 text-gray-100" />
+        </div>
+        <button type="submit" class="bg-grumpy-orange hover:bg-grumpy-dark2 text-grumpy-offwhite px-4 py-2 rounded-lg font-semibold shadow transition border border-grumpy-orange">Show</button>
+      </form>
+      <table class="w-full table-auto border rounded-lg overflow-hidden shadow text-sm">
+        <thead class="bg-grumpy-dark2 text-grumpy-orange">
           <tr>
-            <td><%= row.date %></td>
-            <td><%= row.work %> min</td>
-            <td><%= row.travel %> min</td>
-            <td><%= row.breaks %> min</td>
-            <td><%= row.extra %> min</td>
-            <td><%= row.flex %> min</td>
+            <th class="px-3 py-2 font-semibold">Date</th>
+            <th class="px-3 py-2 font-semibold">Work</th>
+            <th class="px-3 py-2 font-semibold">Travel</th>
+            <th class="px-3 py-2 font-semibold">Breaks</th>
+            <th class="px-3 py-2 font-semibold">Extra</th>
+            <th class="px-3 py-2 font-semibold">Flex</th>
           </tr>
-        <% }) %>
-      </tbody>
-    </table>
-    <div class="mt-4 font-bold">Total Flex: <%= totalFlex %> min</div>
+        </thead>
+        <tbody>
+          <% summary.forEach(row => { %>
+            <tr class="even:bg-grumpy-dark hover:bg-grumpy-dark2 transition">
+              <td class="px-3 py-2"><%= row.date %></td>
+              <td class="px-3 py-2"><%= row.work %> min</td>
+              <td class="px-3 py-2"><%= row.travel %> min</td>
+              <td class="px-3 py-2"><%= row.breaks %> min</td>
+              <td class="px-3 py-2"><%= row.extra %> min</td>
+              <td class="px-3 py-2 font-bold"><%= row.flex %> min</td>
+            </tr>
+          <% }) %>
+        </tbody>
+      </table>
+      <div class="mt-4 font-bold text-lg text-grumpy-orange">Total Flex: <%= totalFlex %> min</div>
+    </div>
   </main>
-  <footer class="bg-gray-200 text-center p-2 text-xs">&copy; <%= new Date().getFullYear() %> Grumpy Tracker</footer>
+  <footer class="bg-gradient-to-r from-gray-800 to-gray-900 text-center p-4 text-xs text-gray-400 border-t border-gray-700">&copy; <%= new Date().getFullYear() %> Grumpy Tracker</footer>
 </body>
 </html>

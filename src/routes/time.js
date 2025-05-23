@@ -13,15 +13,53 @@ router.get("/time", async (req, res) => {
     where: { user_id: req.user.id },
     orderBy: { date: "desc" },
   });
-  res.render("time-list", { entries, user: req.user, csrfToken: req.csrfToken() });
+  // Calculate flexToday and flexTotal
+  let flexToday = 0;
+  let flexTotal = 0;
+  if (entries.length) {
+    // Fetch user settings for normal work time
+    let normal = 480;
+    const userSettings = await prisma.settings.findUnique({ where: { user_id: req.user.id } });
+    if (userSettings) normal = userSettings.normal_work_time;
+    const today = new Date().toISOString().slice(0, 10);
+    for (const e of entries) {
+      const work = (e.work_end_time && e.work_start_time) ? (new Date(e.work_end_time) - new Date(e.work_start_time)) / 60000 : 0;
+      const breaks = (e.break_start_time || []).reduce((sum, b, i) => {
+        const end = (e.break_end_time||[])[i];
+        return sum + (end && b ? (new Date(end) - new Date(b)) / 60000 : 0);
+      }, 0);
+      const extra = e.extra_time || 0;
+      const flex = work - breaks + extra - normal;
+      flexTotal += flex;
+      if (e.date instanceof Date ? e.date.toISOString().slice(0,10) === today : e.date === today) {
+        flexToday += flex;
+      }
+    }
+  }
+  res.render("time-list", { entries, user: req.user, csrfToken: req.csrfToken(), flexToday, flexTotal });
 });
 
 // New time entry form
 router.get("/time/new", (req, res) => {
-  let entry = null;
+  let entry = {
+    date: '',
+    work_start_time: '',
+    work_end_time: '',
+    travel_start_time: '',
+    travel_end_time: '',
+    break_start_time: [],
+    break_end_time: [],
+    extra_time: '',
+    comments: ''
+  };
   let error = null;
   if (req.query.error) error = req.query.error;
-  if (req.query.entry) entry = JSON.parse(req.query.entry);
+  if (req.query.entry) {
+    try {
+      const parsed = JSON.parse(req.query.entry);
+      entry = { ...entry, ...parsed };
+    } catch {}
+  }
   res.render("time-form", { entry, user: req.user, error, csrfToken: req.csrfToken() });
 });
 

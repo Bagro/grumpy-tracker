@@ -6,21 +6,22 @@
   <title>GDPR - Grumpy Tracker</title>
   <link href="/public/tailwind.css" rel="stylesheet">
 </head>
-<body class="bg-gray-50 min-h-screen flex flex-col">
-  <header class="bg-blue-900 text-white p-4">
-    <h1 class="text-2xl font-bold">GDPR: Data Export & Delete</h1>
+<body class="bg-grumpy-dark min-h-screen flex flex-col font-sans text-grumpy-offwhite">
+  <header class="bg-grumpy-dark2 text-grumpy-offwhite p-4 shadow-lg flex items-center gap-4">
+    <img src="/public/logo.png" alt="Grumpy Tracker Logo" class="h-10 w-10 rounded-full bg-grumpy-dark2 border-2 border-grumpy-orange shadow" />
+    <h1 class="text-2xl font-bold tracking-tight">GDPR: Data Export & Delete</h1>
   </header>
-  <main class="flex-1 p-4 max-w-md mx-auto">
+  <main class="flex-1 p-4 max-w-md mx-auto w-full">
     <div class="mb-4">
       <form method="get" action="/gdpr/export">
-        <button type="submit" class="w-full bg-blue-700 text-white py-2 rounded hover:bg-blue-800 mb-2">Export My Data (JSON)</button>
+        <button type="submit" class="w-full bg-grumpy-orange text-grumpy-offwhite py-2 rounded hover:bg-grumpy-dark2 hover:text-grumpy-orange border border-grumpy-orange transition font-semibold mb-2">Export My Data (JSON)</button>
       </form>
       <form method="post" action="/gdpr/delete" onsubmit="return confirm('Are you sure? This cannot be undone!')">
-        <button type="submit" class="w-full bg-red-700 text-white py-2 rounded hover:bg-red-800">Delete My Account & Data</button>
+        <button type="submit" class="w-full bg-red-700 text-grumpy-offwhite py-2 rounded hover:bg-grumpy-dark2 hover:text-grumpy-orange border border-grumpy-orange transition font-semibold">Delete My Account & Data</button>
       </form>
     </div>
-    <a href="/profile" class="text-blue-700 underline">Back to Profile</a>
+    <a href="/profile" class="text-grumpy-orange underline hover:text-grumpy-offwhite transition">Back to Profile</a>
   </main>
-  <footer class="bg-gray-200 text-center p-2 text-xs">&copy; <%= new Date().getFullYear() %> Grumpy Tracker</footer>
+  <%- include('partials/footer') %>
 </body>
 </html>

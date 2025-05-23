@@ -101,7 +101,7 @@ app.get('/', async (req, res) => {
     if (e.date.toISOString().slice(0,10) === today) flexToday += flex;
     flexTotal += flex;
   }
-  res.render('index', { user: req.user, flexToday, flexTotal });
+  res.render('index', { user: req.user, flexToday, flexTotal, csrfToken: req.csrfToken() });
 });
 
 // Auth routes
@@ -114,10 +114,11 @@ app.use(adminRoutes);
 
 // Error handler for CSRF and others
 app.use((err, req, res, next) => {
+  console.error('INTERNAL ERROR:', err);
   if (err.code === 'EBADCSRFTOKEN') {
     return res.status(403).send('Form tampered with.');
   }
-  res.status(500).send('Internal Server Error');
+  res.status(500).send('Internal Server Error: ' + (err.message || 'Unknown error'));
 });
 
 // TODO: Add routes, auth, db, i18n, error handling

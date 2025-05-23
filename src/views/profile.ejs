@@ -6,29 +6,30 @@
   <title>Profile - Grumpy Tracker</title>
   <link href="/public/tailwind.css" rel="stylesheet">
 </head>
-<body class="bg-gray-50 min-h-screen flex flex-col">
-  <header class="bg-blue-900 text-white p-4">
-    <h1 class="text-2xl font-bold">Profile</h1>
+<body class="bg-grumpy-dark min-h-screen flex flex-col font-sans text-grumpy-offwhite">
+  <header class="bg-grumpy-dark2 text-grumpy-offwhite p-4 shadow-lg flex items-center gap-4">
+    <img src="/public/logo.png" alt="Grumpy Tracker Logo" class="h-10 w-10 rounded-full bg-grumpy-dark2 border-2 border-grumpy-orange shadow" />
+    <h1 class="text-2xl font-bold tracking-tight">Profile</h1>
   </header>
-  <main class="flex-1 p-4 max-w-md mx-auto">
+  <main class="flex-1 p-4 max-w-md mx-auto w-full">
     <% if (error) { %>
       <div class="bg-red-100 text-red-700 p-2 rounded mb-2"><%= error %></div>
     <% } %>
     <% if (success) { %>
       <div class="bg-green-100 text-green-700 p-2 rounded mb-2"><%= success %></div>
     <% } %>
-    <form method="post" action="/profile" class="bg-white shadow p-6 rounded space-y-4">
+    <form method="post" action="/profile" class="bg-grumpy-dark2 shadow-2xl p-6 rounded-2xl space-y-4 border border-grumpy-orange">
       <div>
         <label for="name" class="block mb-1">Name</label>
-        <input id="name" name="name" type="text" required class="w-full border rounded p-2" value="<%= user.name %>" />
+        <input id="name" name="name" type="text" required class="w-full border rounded p-2 bg-grumpy-dark text-grumpy-offwhite" value="<%= user.name %>" />
       </div>
       <div>
         <label for="email" class="block mb-1">Email</label>
-        <input id="email" name="email" type="email" required class="w-full border rounded p-2" value="<%= user.email %>" />
+        <input id="email" name="email" type="email" required class="w-full border rounded p-2 bg-grumpy-dark text-grumpy-offwhite" value="<%= user.email %>" />
       </div>
       <div>
         <label for="language" class="block mb-1">Language</label>
-        <select id="language" name="language" class="w-full border rounded p-2">
+        <select id="language" name="language" class="w-full border rounded p-2 bg-grumpy-dark text-grumpy-offwhite">
           <option value="en" <%= user.preferred_language === 'en' ? 'selected' : '' %>>English</option>
           <option value="sv" <%= user.preferred_language === 'sv' ? 'selected' : '' %>>Svenska</option>
           <option value="fi" <%= user.preferred_language === 'fi' ? 'selected' : '' %>>Suomi</option>
@@ -39,19 +40,19 @@
           <option value="da" <%= user.preferred_language === 'da' ? 'selected' : '' %>>Dansk</option>
         </select>
       </div>
-      <hr />
+      <hr class="border-grumpy-orange" />
       <div>
         <label for="password" class="block mb-1">Current Password</label>
-        <input id="password" name="password" type="password" class="w-full border rounded p-2" />
+        <input id="password" name="password" type="password" class="w-full border rounded p-2 bg-grumpy-dark text-grumpy-offwhite" />
       </div>
       <div>
         <label for="new_password" class="block mb-1">New Password</label>
-        <input id="new_password" name="new_password" type="password" class="w-full border rounded p-2" />
+        <input id="new_password" name="new_password" type="password" class="w-full border rounded p-2 bg-grumpy-dark text-grumpy-offwhite" />
       </div>
       <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
-      <button type="submit" class="w-full bg-blue-700 text-white py-2 rounded hover:bg-blue-800">Update Profile</button>
+      <button type="submit" class="w-full bg-grumpy-orange text-grumpy-offwhite py-2 rounded hover:bg-grumpy-dark2 hover:text-grumpy-orange border border-grumpy-orange transition font-semibold">Update Profile</button>
     </form>
   </main>
-  <footer class="bg-gray-200 text-center p-2 text-xs">&copy; <%= new Date().getFullYear() %> Grumpy Tracker</footer>
+  <%- include('partials/footer') %>
 </body>
 </html>

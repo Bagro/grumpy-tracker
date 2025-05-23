@@ -18,10 +18,10 @@
         <input type="text" id="key-<%= key %>" name="translations[<%= key %>]" value="<%= translations[key] %>" class="w-full border rounded px-2 py-1" />
       </div>
     <% }) %>
-    <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">
+    <button type="submit" class="bg-grumpy-orange text-grumpy-offwhite px-4 py-2 rounded hover:bg-grumpy-dark2 hover:text-grumpy-orange border border-grumpy-orange transition font-semibold">
       <%= t('admin.translations.save', 'Save Changes') %>
     </button>
-    <a href="/admin/translations" class="ml-4 text-gray-600 hover:underline"><%= t('admin.back', 'Back') %></a>
+    <a href="/admin/translations" class="ml-4 text-grumpy-orange hover:underline"><%= t('admin.back', 'Back') %></a>
   </form>
 </div>
 <%- include('partials/footer') %>

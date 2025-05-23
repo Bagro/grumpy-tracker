@@ -1,3 +1,11 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/* Grumpy Tracker custom palette */
+.bg-grumpy-dark { background-color: #181816; }
+.bg-grumpy-dark2 { background-color: #23211e; }
+.text-grumpy-orange { color: #e76a2e; }
+.text-grumpy-offwhite { color: #f6eadd; }
+.bg-grumpy-orange { background-color: #e76a2e; }
+.border-grumpy-orange { border-color: #e76a2e; }

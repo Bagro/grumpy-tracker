@@ -15,12 +15,12 @@
     <% languages.forEach(function(lang) { %>
       <li class="py-2 flex items-center justify-between">
         <span class="font-mono"><%= lang %></span>
-        <a href="/admin/translations/<%= lang %>" class="text-blue-600 hover:underline">
+        <a href="/admin/translations/<%= lang %>" class="text-grumpy-orange hover:underline">
           <%= t('admin.translations.edit', 'Edit') %>
         </a>
       </li>
     <% }) %>
   </ul>
-  <a href="/admin" class="mt-6 inline-block text-gray-600 hover:underline">&larr; <%= t('admin.back', 'Back to admin') %></a>
+  <a href="/admin" class="mt-6 inline-block text-grumpy-orange hover:underline">&larr; <%= t('admin.back', 'Back to admin') %></a>
 </div>
 <%- include('partials/footer') %>

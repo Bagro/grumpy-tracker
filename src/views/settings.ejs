@@ -6,30 +6,31 @@
   <title>Settings - Grumpy Tracker</title>
   <link href="/public/tailwind.css" rel="stylesheet">
 </head>
-<body class="bg-gray-50 min-h-screen flex flex-col">
-  <header class="bg-blue-900 text-white p-4">
-    <h1 class="text-2xl font-bold">Settings</h1>
+<body class="bg-grumpy-dark min-h-screen flex flex-col font-sans text-grumpy-offwhite">
+  <header class="bg-grumpy-dark2 text-grumpy-offwhite p-4 shadow-lg flex items-center gap-4">
+    <img src="/public/logo.png" alt="Grumpy Tracker Logo" class="h-10 w-10 rounded-full bg-grumpy-dark2 border-2 border-grumpy-orange shadow" />
+    <h1 class="text-2xl font-bold tracking-tight">Settings</h1>
   </header>
-  <main class="flex-1 p-4 max-w-md mx-auto">
+  <main class="flex-1 p-4 max-w-md mx-auto w-full">
     <% if (error) { %>
       <div class="bg-red-100 text-red-700 p-2 rounded mb-2"><%= error %></div>
     <% } %>
     <% if (success) { %>
       <div class="bg-green-100 text-green-700 p-2 rounded mb-2"><%= success %></div>
     <% } %>
-    <form method="post" action="/settings" class="bg-white shadow p-6 rounded space-y-4">
+    <form method="post" action="/settings" class="bg-grumpy-dark2 shadow-2xl p-6 rounded-2xl space-y-4 border border-grumpy-orange">
       <div>
         <label for="normal_work_time" class="block mb-1">Normal Work Time (minutes)</label>
-        <input id="normal_work_time" name="normal_work_time" type="number" min="0" required class="w-full border rounded p-2" value="<%= settings.normal_work_time %>" />
+        <input id="normal_work_time" name="normal_work_time" type="number" min="0" required class="w-full border rounded p-2 bg-grumpy-dark text-grumpy-offwhite" value="<%= settings.normal_work_time %>" />
       </div>
       <div>
         <label for="summer_work_time" class="block mb-1">Summer Work Time (minutes)</label>
-        <input id="summer_work_time" name="summer_work_time" type="number" min="0" required class="w-full border rounded p-2" value="<%= settings.summer_work_time %>" />
+        <input id="summer_work_time" name="summer_work_time" type="number" min="0" required class="w-full border rounded p-2 bg-grumpy-dark text-grumpy-offwhite" value="<%= settings.summer_work_time %>" />
       </div>
       <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
-      <button type="submit" class="w-full bg-blue-700 text-white py-2 rounded hover:bg-blue-800">Save Settings</button>
+      <button type="submit" class="w-full bg-grumpy-orange text-grumpy-offwhite py-2 rounded hover:bg-grumpy-dark2 hover:text-grumpy-orange border border-grumpy-orange transition font-semibold">Save Settings</button>
     </form>
   </main>
-  <footer class="bg-gray-200 text-center p-2 text-xs">&copy; <%= new Date().getFullYear() %> Grumpy Tracker</footer>
+  <%- include('partials/footer') %>
 </body>
 </html>

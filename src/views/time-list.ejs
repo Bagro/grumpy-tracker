@@ -1,59 +1,65 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Time Entries - Grumpy Tracker</title>
-  <link href="/public/tailwind.css" rel="stylesheet">
-</head>
-<body class="bg-gray-50 min-h-screen flex flex-col">
-  <header class="bg-blue-900 text-white p-4">
-    <h1 class="text-2xl font-bold">Time Entries</h1>
-    <a href="/time/new" class="text-blue-200 underline">+ New Entry</a>
-    <a href="/time/summary" class="text-blue-700 underline ml-4">Summary</a>
-    <a href="/time/export/csv" class="text-blue-700 underline ml-4">Export CSV</a>
-    <a href="/gdpr" class="text-blue-700 underline ml-4">GDPR: Export/Delete</a>
-    <form method="post" action="/logout" class="inline">
-      <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
-      <button type="submit" class="text-blue-700 underline ml-4">Logout</button>
-    </form>
-  </header>
-  <main class="flex-1 p-4">
-    <table class="w-full table-auto border">
-      <thead>
-        <tr>
-          <th>Date</th>
-          <th>Work Start</th>
-          <th>Work End</th>
-          <th>Breaks</th>
-          <th>Travel</th>
-          <th>Extra</th>
-          <th>Comments</th>
-        </tr>
-      </thead>
-      <tbody>
-        <% entries.forEach(e => { %>
-          <tr>
-            <td><%= e.date.toISOString().slice(0,10) %></td>
-            <td><%= e.work_start_time.toISOString().slice(11,16) %></td>
-            <td><%= e.work_end_time.toISOString().slice(11,16) %></td>
-            <td>
-              <% (e.break_start_time || []).forEach((b, i) => { %>
-                <div><%= b.toISOString().slice(11,16) %> - <%= (e.break_end_time[i]||'').toISOString().slice(11,16) %></div>
-              <% }) %>
-            </td>
-            <td>
-              <% if (e.travel_start_time) { %>
-                <div><%= e.travel_start_time.toISOString().slice(11,16) %> - <%= e.travel_end_time ? e.travel_end_time.toISOString().slice(11,16) : '' %></div>
-              <% } %>
-            </td>
-            <td><%= e.extra_time ? e.extra_time + ' min' : '' %></td>
-            <td><%= e.comments %></td>
-          </tr>
-        <% }) %>
-      </tbody>
-    </table>
-  </main>
-  <footer class="bg-gray-200 text-center p-2 text-xs">&copy; <%= new Date().getFullYear() %> Grumpy Tracker</footer>
-</body>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Time Entries - Grumpy Tracker</title>
+    <link href="/public/tailwind.css" rel="stylesheet">
+  </head>
+  <body class="bg-grumpy-dark min-h-screen flex flex-col font-sans text-grumpy-offwhite">
+    <header class="bg-grumpy-dark2 text-grumpy-offwhite p-4 shadow-lg flex items-center gap-4">
+      <img src="/public/logo.png" alt="Grumpy Tracker Logo" class="h-10 w-10 rounded-full bg-grumpy-dark2 border-2 border-grumpy-orange shadow" />
+      <h1 class="text-2xl font-extrabold tracking-tight text-grumpy-offwhite">Time Entries</h1>
+      <nav class="ml-auto flex gap-4">
+        <a href="/time/new" class="hover:text-grumpy-orange transition">+ New Entry</a>
+        <a href="/time/summary" class="hover:text-grumpy-orange transition">Summary</a>
+        <a href="/time/export/csv" class="hover:text-grumpy-orange transition">Export CSV</a>
+        <a href="/gdpr" class="hover:text-grumpy-orange transition">GDPR</a>
+        <form method="post" action="/logout" class="inline">
+          <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
+          <button type="submit" class="hover:text-grumpy-orange transition">Logout</button>
+        </form>
+      </nav>
+    </header>
+    <main class="flex-1 flex flex-col items-center justify-center">
+      <div class="w-full max-w-4xl bg-grumpy-dark2 shadow-2xl rounded-2xl p-10 border border-grumpy-orange">
+        <table class="w-full table-auto border border-grumpy-orange rounded-2xl shadow mb-6">
+          <thead class="bg-grumpy-dark2 text-grumpy-orange">
+            <tr>
+              <th>Date</th>
+              <th>Start</th>
+              <th>End</th>
+              <th>Break</th>
+              <th>Travel</th>
+              <th>Extra</th>
+              <th>Comments</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <% entries.forEach(function(entry) { %>
+              <tr class="even:bg-grumpy-dark hover:bg-grumpy-dark2 transition">
+                <td><%= entry.date %></td>
+                <td><%= entry.work_start_time %></td>
+                <td><%= entry.work_end_time %></td>
+                <td><%= entry.break_start_time && entry.break_end_time ? entry.break_start_time + ' - ' + entry.break_end_time : '' %></td>
+                <td><%= entry.travel_start_time && entry.travel_end_time ? entry.travel_start_time + ' - ' + entry.travel_end_time : '' %></td>
+                <td><%= entry.extra_time || '' %></td>
+                <td><%= entry.comments || '' %></td>
+                <td>
+                  <a href="/time/<%= entry.id %>/edit" class="text-grumpy-orange underline hover:text-grumpy-offwhite transition">Edit</a>
+                  <form method="post" action="/time/<%= entry.id %>/delete" class="inline" onsubmit="return confirm('Delete entry?')">
+                    <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
+                    <button type="submit" class="text-red-700 underline ml-2 hover:text-grumpy-orange transition">Delete</button>
+                  </form>
+                </td>
+              </tr>
+            <% }) %>
+          </tbody>
+        </table>
+        <%- include('partials/flex-summary', { flexToday, flexTotal }) %>
+      </div>
+    </main>
+    <%- include('partials/footer') %>
+  </body>
 </html>

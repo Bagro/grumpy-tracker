@@ -6,21 +6,32 @@
     <title>Grumpy Tracker</title>
     <link href="/public/tailwind.css" rel="stylesheet">
   </head>
-  <body class="bg-gray-50 min-h-screen flex flex-col">
-    <header class="bg-blue-900 text-white p-4">
-      <h1 class="text-2xl font-bold">Grumpy Tracker</h1>
+  <body class="bg-grumpy-dark min-h-screen flex flex-col font-sans text-grumpy-offwhite">
+    <header class="bg-grumpy-dark2 text-grumpy-offwhite p-4 shadow-lg flex items-center gap-4">
+      <img src="/public/logo.png" alt="Grumpy Tracker Logo" class="h-12 w-12 rounded-full bg-grumpy-dark2 border-2 border-grumpy-orange shadow" />
+      <h1 class="text-3xl font-extrabold tracking-tight text-grumpy-offwhite">Grumpy Tracker</h1>
     </header>
-    <main class="flex-1 p-4">
-      <% if (typeof flexToday !== 'undefined') { %>
-        <% include('partials/flex-summary', { flexToday, flexTotal }) %>
-      <% } %>
-      <% if (user) { %>
-        <p>Welcome, <%= user.name %>!</p>
-        <a href="/time" class="text-blue-700 underline">View Time Entries</a>
-      <% } else { %>
-        <p>Welcome! Please <a href="/login" class="text-blue-700 underline">log in</a>.</p>
-      <% } %>
+    <main class="flex-1 flex flex-col items-center justify-center">
+      <div class="w-full max-w-lg bg-grumpy-dark2 shadow-2xl rounded-2xl p-10 border border-grumpy-orange">
+        <% if (typeof flexToday !== 'undefined') { %>
+          <% include('partials/flex-summary', { flexToday, flexTotal }) %>
+        <% } %>
+        <% if (user) { %>
+          <p class="text-xl mb-6">Welcome, <span class="font-semibold text-grumpy-orange"><%= user.name %></span>!</p>
+          <a href="/time" class="block w-full text-center bg-grumpy-orange hover:bg-grumpy-dark2 text-grumpy-offwhite py-3 rounded-lg font-semibold shadow transition mb-3 border border-grumpy-orange">View Time Entries</a>
+          <a href="/profile" class="block w-full text-center bg-grumpy-dark2 hover:bg-grumpy-orange text-grumpy-offwhite py-3 rounded-lg font-semibold shadow transition mb-3 border border-grumpy-orange">Profile</a>
+          <a href="/settings" class="block w-full text-center bg-grumpy-dark2 hover:bg-grumpy-orange text-grumpy-offwhite py-3 rounded-lg font-semibold shadow transition mb-3 border border-grumpy-orange">Settings</a>
+          <form method="post" action="/logout" class="mt-4">
+            <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
+            <button type="submit" class="block w-full text-center bg-grumpy-dark2 hover:bg-grumpy-orange text-grumpy-orange hover:text-grumpy-offwhite py-3 rounded-lg font-semibold shadow transition border border-grumpy-orange">Logout</button>
+          </form>
+        <% } else { %>
+          <p class="text-xl mb-6">Welcome! Please log in to continue.</p>
+          <a href="/login" class="block w-full text-center bg-grumpy-orange hover:bg-grumpy-dark2 text-grumpy-offwhite py-3 rounded-lg font-semibold shadow transition mb-3 border border-grumpy-orange">Log in</a>
+          <a href="/register" class="block w-full text-center bg-grumpy-dark2 hover:bg-grumpy-orange text-grumpy-offwhite py-3 rounded-lg font-semibold shadow transition border border-grumpy-orange">Register</a>
+        <% } %>
+      </div>
     </main>
-    <footer class="bg-gray-200 text-center p-2 text-xs">&copy; <%= new Date().getFullYear() %> Grumpy Tracker</footer>
+    <%- include('partials/footer') %>
   </body>
 </html>

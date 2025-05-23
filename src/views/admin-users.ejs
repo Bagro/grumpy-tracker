@@ -6,14 +6,15 @@
   <title>Admin: Users - Grumpy Tracker</title>
   <link href="/public/tailwind.css" rel="stylesheet">
 </head>
-<body class="bg-gray-50 min-h-screen flex flex-col">
-  <header class="bg-blue-900 text-white p-4">
-    <h1 class="text-2xl font-bold">Admin: User Management</h1>
+<body class="bg-grumpy-dark min-h-screen flex flex-col font-sans text-grumpy-offwhite">
+  <header class="bg-grumpy-dark2 text-grumpy-offwhite p-4 shadow-lg flex items-center gap-4">
+    <img src="/public/logo.png" alt="Grumpy Tracker Logo" class="h-10 w-10 rounded-full bg-grumpy-dark2 border-2 border-grumpy-orange shadow" />
+    <h1 class="text-2xl font-bold tracking-tight">Admin: User Management</h1>
   </header>
-  <main class="flex-1 p-4 max-w-2xl mx-auto">
-    <table class="w-full table-auto border mb-4">
+  <main class="flex-1 p-4 max-w-2xl mx-auto w-full">
+    <table class="w-full table-auto border mb-4 bg-grumpy-dark2 text-grumpy-offwhite border-grumpy-orange rounded-2xl shadow">
       <thead>
-        <tr>
+        <tr class="bg-grumpy-dark">
           <th>Name</th>
           <th>Email</th>
           <th>Language</th>
@@ -24,7 +25,7 @@
       </thead>
       <tbody>
         <% users.forEach(u => { %>
-          <tr>
+          <tr class="even:bg-grumpy-dark">
             <td><%= u.name %></td>
             <td><%= u.email %></td>
             <td><%= u.preferred_language %></td>
@@ -32,23 +33,23 @@
             <td><%= u.deactivated ? 'Deactivated' : 'Active' %></td>
             <td>
               <form method="post" action="/admin/users/<%= u.id %>/toggle" style="display:inline">
-                <button type="submit" class="text-blue-700 underline"><%= u.deactivated ? 'Reactivate' : 'Deactivate' %></button>
+                <button type="submit" class="text-grumpy-orange underline hover:text-grumpy-offwhite transition"><%= u.deactivated ? 'Reactivate' : 'Deactivate' %></button>
               </form>
               <form method="post" action="/admin/users/<%= u.id %>/delete" style="display:inline" onsubmit="return confirm('Delete user?')">
-                <button type="submit" class="text-red-700 underline ml-2">Delete</button>
+                <button type="submit" class="text-red-700 underline ml-2 hover:text-grumpy-orange transition">Delete</button>
               </form>
             </td>
           </tr>
         <% }) %>
       </tbody>
     </table>
-    <a href="/" class="text-blue-700 underline">Back to Dashboard</a>
+    <a href="/" class="text-grumpy-orange underline hover:text-grumpy-offwhite transition">Back to Dashboard</a>
   </main>
-  <footer class="bg-gray-200 text-center p-2 text-xs">&copy; <%= new Date().getFullYear() %> Grumpy Tracker</footer>
-  <nav class="bg-white shadow">
+  <%- include('partials/footer') %>
+  <nav class="bg-grumpy-dark2 shadow mt-4 rounded-2xl">
     <ul class="flex space-x-4 p-4">
-      <li><a href="/admin/users" class="text-blue-700 hover:underline">Users</a></li>
-      <li><a href="/admin/translations" class="text-blue-700 hover:underline">Translation Management</a></li>
+      <li><a href="/admin/users" class="text-grumpy-orange hover:underline">Users</a></li>
+      <li><a href="/admin/translations" class="text-grumpy-orange hover:underline">Translation Management</a></li>
     </ul>
   </nav>
 </body>
