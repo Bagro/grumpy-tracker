@@ -1,3 +1,16 @@
+<% 
+function formatFlexTime(min) {
+  min = Number(min) || 0;
+  const sign = min < 0 ? '-' : '';
+  min = Math.abs(min);
+  if (min >= 60) {
+    const h = Math.floor(min / 60);
+    const m = min % 60;
+    return `${sign}${h} h${m > 0 ? ' ' + m + ' min' : ''}`;
+  }
+  return `${sign}${min} min`;
+}
+%>
 <!DOCTYPE html>
 <html lang="<%= (user && user.preferred_language) || 'en' %>">
   <head>
@@ -9,27 +22,81 @@
   <body class="bg-grumpy-dark min-h-screen flex flex-col font-sans text-grumpy-offwhite">
     <!-- Remove duplicate header and logo, only keep menu -->
     <%- include('partials/menu', { user, csrfToken, currentPath: request.path }) %>
-    <main class="flex-1 flex flex-col items-center justify-center">
-      <div class="w-full max-w-lg bg-grumpy-dark2 shadow-2xl rounded-2xl p-10 border border-grumpy-orange">
-        <% if (typeof flexToday !== 'undefined') { %>
-          <% include('partials/flex-summary', { flexToday, flexTotal }) %>
-        <% } %>
-        <% if (user) { %>
-          <p class="text-xl mb-6"><%= t('welcome', 'Welcome!') %> <span class="font-semibold text-grumpy-orange"><%= user.name %></span>!</p>
-          <a href="/time" class="block w-full text-center bg-grumpy-orange hover:bg-grumpy-dark2 text-grumpy-offwhite py-3 rounded-lg font-semibold shadow transition mb-3 border border-grumpy-orange"><%= t('view_time_entries', 'View Time Entries') %></a>
-          <a href="/profile" class="block w-full text-center bg-grumpy-dark2 hover:bg-grumpy-orange text-grumpy-offwhite py-3 rounded-lg font-semibold shadow transition mb-3 border border-grumpy-orange"><%= t('profile') %></a>
-          <a href="/settings" class="block w-full text-center bg-grumpy-dark2 hover:bg-grumpy-orange text-grumpy-offwhite py-3 rounded-lg font-semibold shadow transition mb-3 border border-grumpy-orange"><%= t('settings') %></a>
-          <form method="post" action="/logout" class="mt-4">
-            <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
-            <button type="submit" class="block w-full text-center bg-grumpy-dark2 hover:bg-grumpy-orange text-grumpy-orange hover:text-grumpy-offwhite py-3 rounded-lg font-semibold shadow transition border border-grumpy-orange"><%= t('logout') %></button>
+    <main class="flex-1 flex flex-col items-center justify-center p-6">
+      <div class="w-full max-w-6xl grid grid-cols-1 md:grid-cols-2 gap-8">
+        <!-- Flex Time Card -->
+        <div class="bg-grumpy-dark2 border border-grumpy-orange rounded-2xl shadow-lg p-8 flex flex-col items-center">
+          <h2 class="text-xl font-bold text-grumpy-orange mb-4">
+            <%= t('dashboard.flex_time', 'Flex Time for') %> 
+            <span class="capitalize">
+              <%= t('dashboard.' + period, period.charAt(0).toUpperCase() + period.slice(1)) %>
+            </span>
+          </h2>
+          <div class="flex flex-col gap-2 w-full">
+            <div class="flex justify-between items-center">
+              <span class="font-semibold text-grumpy-offwhite"><%= t('dashboard.flex_time_work', 'Flex (Work only)') %>:</span>
+              <span class="text-2xl font-extrabold text-grumpy-orange"><%= formatFlexTime(flexPeriodWork) %></span>
+            </div>
+            <div class="flex justify-between items-center">
+              <span class="font-semibold text-grumpy-offwhite"><%= t('dashboard.flex_time_work_travel', 'Flex (Work + Travel)') %>:</span>
+              <span class="text-2xl font-extrabold text-grumpy-orange"><%= formatFlexTime(flexPeriodWorkTravel) %></span>
+            </div>
+          </div>
+        </div>
+        <!-- Flex Graph Card -->
+        <div class="bg-grumpy-dark2 border border-grumpy-orange rounded-2xl shadow-lg p-8 flex flex-col items-center">
+          <h2 class="text-xl font-bold text-grumpy-orange mb-4"><%= t('dashboard.flex_graph', 'Work & Travel Time') %></h2>
+          <form method="get" class="mb-4 flex gap-2 items-center">
+            <label for="period" class="text-grumpy-offwhite font-semibold"><%= t('dashboard.period', 'Period') %>:</label>
+            <select id="period" name="period" class="bg-grumpy-dark2 border border-grumpy-orange rounded p-1 text-grumpy-offwhite">
+              <option value="week" <%= period === 'week' ? 'selected' : '' %>><%= t('dashboard.week', 'Week') %></option>
+              <option value="month" <%= period === 'month' ? 'selected' : '' %>><%= t('dashboard.month', 'Month') %></option>
+              <option value="year" <%= period === 'year' ? 'selected' : '' %>><%= t('dashboard.year', 'Year') %></option>
+            </select>
+            <button type="submit" class="bg-grumpy-orange text-grumpy-dark2 px-3 py-1 rounded font-semibold hover:bg-grumpy-dark2 hover:text-grumpy-orange border border-grumpy-orange transition"><%= t('dashboard.show', 'Show') %></button>
           </form>
-        <% } else { %>
-          <p class="text-xl mb-6"><%= t('welcome', 'Welcome!') %> <%= t('please_login', 'Please log in to continue.') %></p>
-          <a href="/login" class="block w-full text-center bg-grumpy-orange hover:bg-grumpy-dark2 text-grumpy-offwhite py-3 rounded-lg font-semibold shadow transition mb-3 border border-grumpy-orange"><%= t('login') %></a>
-          <a href="/register" class="block w-full text-center bg-grumpy-dark2 hover:bg-grumpy-orange text-grumpy-offwhite py-3 rounded-lg font-semibold shadow transition border border-grumpy-orange"><%= t('register') %></a>
-        <% } %>
+          <canvas id="flexChart" width="400" height="200"></canvas>
+        </div>
       </div>
     </main>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+      const ctx = document.getElementById('flexChart').getContext('2d');
+      const flexChart = new Chart(ctx, {
+        type: 'line',
+        data: {
+          labels: <%- JSON.stringify(chartLabels) %>,
+          datasets: [
+            {
+              label: "<%= t('dashboard.work_time', 'Work Time') %>",
+              data: <%- JSON.stringify(chartWork) %>,
+              borderColor: '#e76a2e',
+              backgroundColor: 'rgba(231,106,46,0.1)',
+              fill: true,
+              tension: 0.3
+            },
+            {
+              label: "<%= t('dashboard.work_travel_time', 'Work + Travel Time') %>",
+              data: <%- JSON.stringify(chartWorkTravel) %>,
+              borderColor: '#f6eadd',
+              backgroundColor: 'rgba(246,234,221,0.1)',
+              fill: true,
+              tension: 0.3
+            }
+          ]
+        },
+        options: {
+          responsive: true,
+          plugins: {
+            legend: { labels: { color: '#f6eadd' } }
+          },
+          scales: {
+            x: { ticks: { color: '#f6eadd' } },
+            y: { ticks: { color: '#f6eadd' } }
+          }
+        }
+      });
+    </script>
     <%- include('partials/footer') %>
   </body>
 </html>
