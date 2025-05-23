@@ -22,29 +22,10 @@ function formatFlexTime(min) {
   <body class="bg-grumpy-dark min-h-screen flex flex-col font-sans text-grumpy-offwhite">
     <!-- Remove duplicate header and logo, only keep menu -->
     <%- include('partials/menu', { user, csrfToken, currentPath: request.path }) %>
-    <main class="flex-1 flex flex-col items-center justify-center p-6">
-      <div class="w-full max-w-6xl grid grid-cols-1 md:grid-cols-2 gap-8">
-        <!-- Flex Time Card -->
-        <div class="bg-grumpy-dark2 border border-grumpy-orange rounded-2xl shadow-lg p-8 flex flex-col items-center">
-          <h2 class="text-xl font-bold text-grumpy-orange mb-4">
-            <%= t('dashboard.flex_time', 'Flex Time for') %> 
-            <span class="capitalize">
-              <%= t('dashboard.' + period, period.charAt(0).toUpperCase() + period.slice(1)) %>
-            </span>
-          </h2>
-          <div class="flex flex-col gap-2 w-full">
-            <div class="flex justify-between items-center">
-              <span class="font-semibold text-grumpy-offwhite"><%= t('dashboard.flex_time_work', 'Flex (Work only)') %>:</span>
-              <span class="text-2xl font-extrabold text-grumpy-orange"><%= formatFlexTime(flexPeriodWork) %></span>
-            </div>
-            <div class="flex justify-between items-center">
-              <span class="font-semibold text-grumpy-offwhite"><%= t('dashboard.flex_time_work_travel', 'Flex (Work + Travel)') %>:</span>
-              <span class="text-2xl font-extrabold text-grumpy-orange"><%= formatFlexTime(flexPeriodWorkTravel) %></span>
-            </div>
-          </div>
-        </div>
+    <main class="flex-1 flex flex-col p-6">
+      <div class="w-full max-w-5xl mx-auto flex flex-row gap-6 items-start">
         <!-- Flex Graph Card -->
-        <div class="bg-grumpy-dark2 border border-grumpy-orange rounded-2xl shadow-lg p-8 flex flex-col items-center">
+        <div class="bg-grumpy-dark2 border border-grumpy-orange rounded-2xl shadow-lg p-8 flex flex-col flex-1 min-w-0 max-w-3xl">
           <h2 class="text-xl font-bold text-grumpy-orange mb-4"><%= t('dashboard.flex_graph', 'Work & Travel Time') %></h2>
           <form method="get" class="mb-4 flex gap-2 items-center">
             <label for="period" class="text-grumpy-offwhite font-semibold"><%= t('dashboard.period', 'Period') %>:</label>
@@ -57,45 +38,69 @@ function formatFlexTime(min) {
           </form>
           <canvas id="flexChart" width="400" height="200"></canvas>
         </div>
+        <!-- Desktop: Flex Time Card to the right of graph -->
+        <div class="md:flex flex-col max-w-xs w-64 bg-grumpy-dark2 border border-grumpy-orange rounded-2xl shadow-xl p-6 pointer-events-auto self-start">
+          <div class="w-full">
+            <h2 class="text-lg font-bold text-grumpy-orange mb-3">
+              <%= t('dashboard.flex_time', 'Flex Time for') %> 
+              <span class="capitalize">
+                <%= t('dashboard.' + period, period.charAt(0).toUpperCase() + period.slice(1)) %>
+              </span>
+            </h2>
+            <div class="flex flex-col gap-2 w-full">
+              <div class="flex justify-between items-center">
+                <span class="font-semibold text-grumpy-offwhite"><%= t('dashboard.flex_time_work', 'Flex (Work only)') %>:</span>
+                <span class="text-xl font-extrabold text-grumpy-orange"><%= formatFlexTime(flexPeriodWork) %></span>
+              </div>
+              <div class="flex justify-between items-center">
+                <span class="font-semibold text-grumpy-offwhite"><%= t('dashboard.flex_time_work_travel', 'Flex (Work + Travel)') %>:</span>
+                <span class="text-xl font-extrabold text-grumpy-orange"><%= formatFlexTime(flexPeriodWorkTravel) %></span>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
     </main>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script>
-      const ctx = document.getElementById('flexChart').getContext('2d');
-      const flexChart = new Chart(ctx, {
-        type: 'line',
-        data: {
-          labels: <%- JSON.stringify(chartLabels) %>,
-          datasets: [
-            {
-              label: "<%= t('dashboard.work_time', 'Work Time') %>",
-              data: <%- JSON.stringify(chartWork) %>,
-              borderColor: '#e76a2e',
-              backgroundColor: 'rgba(231,106,46,0.1)',
-              fill: true,
-              tension: 0.3
-            },
-            {
-              label: "<%= t('dashboard.work_travel_time', 'Work + Travel Time') %>",
-              data: <%- JSON.stringify(chartWorkTravel) %>,
-              borderColor: '#f6eadd',
-              backgroundColor: 'rgba(246,234,221,0.1)',
-              fill: true,
-              tension: 0.3
-            }
-          ]
-        },
-        options: {
-          responsive: true,
-          plugins: {
-            legend: { labels: { color: '#f6eadd' } }
-          },
-          scales: {
-            x: { ticks: { color: '#f6eadd' } },
-            y: { ticks: { color: '#f6eadd' } }
-          }
-        }
-      });
+var chartLabels = JSON.parse('<%- JSON.stringify(chartLabels) %>');
+var chartWork = JSON.parse('<%- JSON.stringify(chartWork) %>');
+var chartWorkTravel = JSON.parse('<%- JSON.stringify(chartWorkTravel) %>');
+const ctx = document.getElementById('flexChart').getContext('2d');
+const flexChart = new Chart(ctx, {
+  type: 'line',
+  data: {
+    labels: chartLabels,
+    datasets: [
+      {
+        label: "<%= t('dashboard.work_time', 'Work Time') %>",
+        data: chartWork,
+        borderColor: '#e76a2e',
+        backgroundColor: 'rgba(231,106,46,0.1)',
+        fill: true,
+        tension: 0.3
+      },
+      {
+        label: "<%= t('dashboard.work_travel_time', 'Work + Travel Time') %>",
+        data: chartWorkTravel,
+        borderColor: '#f6eadd',
+        backgroundColor: 'rgba(246,234,221,0.1)',
+        fill: true,
+        tension: 0.3
+      }
+    ]
+  },
+  options: {
+    responsive: true,
+    plugins: {
+      legend: { labels: { color: '#f6eadd' } }
+    },
+    scales: {
+      x: { ticks: { color: '#f6eadd' } },
+      y: { ticks: { color: '#f6eadd' } }
+    }
+  }
+});
     </script>
     <%- include('partials/footer') %>
   </body>
