@@ -1,6 +1,16 @@
 <%- include('partials/header', { user }) %>
 <div class="max-w-2xl mx-auto p-4">
   <h1 class="text-2xl font-bold mb-4"><%= t('admin.translations.title', 'Translation Management') %></h1>
+  <% if (success && success.length) { %>
+    <div class="bg-green-100 border border-green-400 text-green-700 px-4 py-2 rounded mb-4">
+      <%= success[0] %>
+    </div>
+  <% } %>
+  <% if (error && error.length) { %>
+    <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-2 rounded mb-4">
+      <%= error[0] %>
+    </div>
+  <% } %>
   <ul class="divide-y divide-gray-200">
     <% languages.forEach(function(lang) { %>
       <li class="py-2 flex items-center justify-between">

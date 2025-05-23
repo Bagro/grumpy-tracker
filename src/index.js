@@ -18,6 +18,7 @@ import gdprRoutes from './routes/gdpr.js';
 import adminRoutes from './routes/admin.js';
 import setupI18n from './i18n/index.js';
 import { PrismaClient } from '@prisma/client';
+import flash from 'connect-flash';
 
 // Load env vars
 dotenv.config();
@@ -58,12 +59,22 @@ app.use(middleware.handle(i18next));
 // CSRF protection
 app.use(csurf());
 
+// Connect-flash middleware
+app.use(flash());
+
 // Middleware: redirect unauthenticated users to login (except /login, /register)
 app.use((req, res, next) => {
   const publicPaths = ['/login', '/register', '/public', '/logout'];
   if (!req.user && !publicPaths.some(p => req.path.startsWith(p))) {
     return res.redirect('/login');
   }
+  next();
+});
+
+// Make flash messages available in all views
+app.use((req, res, next) => {
+  res.locals.success = req.flash('success');
+  res.locals.error = req.flash('error');
   next();
 });
 
