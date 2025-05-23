@@ -24,10 +24,6 @@
   "name": "Nimi",
   "language": "Keel",
   "settings": "Seaded",
-  "summary": "Kokkuvõte",
-  "export_csv": "Ekspordi CSV",
-  "delete_account": "Kustuta konto",
-  "flex_time": "Pausiaeg",
   "normal_work_time": "Tavaline tööaeg",
   "summer_work_time": "Suve tööaeg",
   "minutes": "minutit",
@@ -52,5 +48,13 @@
   "week": "Nädal",
   "month": "Kuu",
   "total_flex": "Kogu pausiaeg:",
-  "delete_entry_confirm": "Kustuta kanne?"
+  "delete_entry_confirm": "Kustuta kanne?",
+  "work_periods": "Erinevad tööajad (nt suvi, talv, projekt)",
+  "add": "Lisa erinev tööaeg",
+  "start": "Algus",
+  "end": "Lõpp",
+  "work_time": "Tööaeg",
+  "hours_short": "t",
+  "minutes_short": "min",
+  "confirm_delete_work_period": "Kas olete kindel, et soovite selle erineva tööaja kustutada?"
 }

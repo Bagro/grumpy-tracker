@@ -26,5 +26,16 @@
   "normal_work_time": "Normal Work Time",
   "summer_work_time": "Summer Work Time",
   "error": "Error",
-  "success": "Success"
+  "success": "Success",
+  "save_settings": "Save Settings",
+  "work_periods": "Custom Work Periods (e.g. summer, winter, project)",
+  "add": "Add custom work period",
+  "start": "Start",
+  "end": "End",
+  "work_time": "Work Time",
+  "hours_short": "h",
+  "minutes_short": "min",
+  "edit": "Edit",
+  "delete": "Delete",
+  "confirm_delete_work_period": "Are you sure you want to delete this custom work period?"
 }

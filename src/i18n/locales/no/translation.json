@@ -24,10 +24,6 @@
   "name": "Navn",
   "language": "Språk",
   "settings": "Innstillinger",
-  "summary": "Sammendrag",
-  "export_csv": "Eksporter CSV",
-  "delete_account": "Slett konto",
-  "flex_time": "Fleksitid",
   "normal_work_time": "Normal arbeidstid",
   "summer_work_time": "Sommer arbeidstid",
   "minutes": "minutter",
@@ -52,5 +48,13 @@
   "week": "Uke",
   "month": "Måned",
   "total_flex": "Total fleksitid:",
-  "delete_entry_confirm": "Slett registrering?"
+  "delete_entry_confirm": "Slett registrering?",
+  "work_periods": "Avvikende arbeidstid (f.eks. sommer, vinter, prosjekt)",
+  "add": "Legg til avvikende arbeidstid",
+  "start": "Start",
+  "end": "Slutt",
+  "work_time": "Arbeidstid",
+  "hours_short": "t",
+  "minutes_short": "min",
+  "confirm_delete_work_period": "Er du sikker på at du vil slette denne avvikende arbeidstiden?"
 }

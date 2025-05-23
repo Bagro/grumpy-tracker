@@ -24,10 +24,6 @@
   "name": "Nimi",
   "language": "Kieli",
   "settings": "Asetukset",
-  "summary": "Yhteenveto",
-  "export_csv": "Vie CSV",
-  "delete_account": "Poista tili",
-  "flex_time": "Joustoaika",
   "normal_work_time": "Normaali työaika",
   "summer_work_time": "Kesätyöaika",
   "minutes": "minuuttia",
@@ -52,5 +48,13 @@
   "week": "Viikko",
   "month": "Kuukausi",
   "total_flex": "Joustoaika yhteensä:",
-  "delete_entry_confirm": "Poista kirjaus?"
+  "delete_entry_confirm": "Poista kirjaus?",
+  "work_periods": "Poikkeavat työajat (esim. kesä, talvi, projekti)",
+  "add": "Lisää poikkeava työaika",
+  "start": "Alku",
+  "end": "Loppu",
+  "work_time": "Työaika",
+  "hours_short": "h",
+  "minutes_short": "min",
+  "confirm_delete_work_period": "Haluatko varmasti poistaa tämän poikkeavan työajan?"
 }

@@ -42,35 +42,37 @@
       <form id="add-workperiod-form" method="post" action="/settings/work-period" class="p-3 rounded bg-grumpy-dark2 border border-grumpy-orange space-y-2 hidden mb-4">
         <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
         <div class="mb-2">
-          <label class="block text-xs mb-1">Namn</label>
-          <input name="name" placeholder="Namn" class="border rounded p-2 w-full bg-grumpy-dark text-grumpy-offwhite" required />
+          <label class="block text-xs mb-1"><%= t('name', 'Namn') %></label>
+          <input name="name" placeholder="<%= t('name', 'Namn') %>" class="border rounded p-2 w-full bg-grumpy-dark text-grumpy-offwhite" required />
         </div>
         <div class="mb-2">
-          <label class="block text-xs mb-1">Start</label>
+          <label class="block text-xs mb-1"><%= t('start', 'Start') %></label>
           <input name="start" type="date" class="border rounded p-2 w-full bg-grumpy-dark text-grumpy-offwhite" required />
         </div>
         <div class="mb-2">
-          <label class="block text-xs mb-1">Slut</label>
+          <label class="block text-xs mb-1"><%= t('end', 'Slut') %></label>
           <input name="end" type="date" class="border rounded p-2 w-full bg-grumpy-dark text-grumpy-offwhite" required />
         </div>
         <div class="mb-2">
-          <label class="block text-xs mb-1">Arbetstid</label>
+          <label class="block text-xs mb-1"><%= t('work_time', 'Arbetstid') %></label>
           <div class="flex flex-row gap-2 items-center">
-            <input name="work_time_h" type="number" min="0" class="w-20 border rounded p-2 bg-grumpy-dark text-grumpy-offwhite" required />h
-            <input name="work_time_m" type="number" min="0" max="59" class="w-20 border rounded p-2 bg-grumpy-dark text-grumpy-offwhite" required />min
+            <input name="work_time_h" type="number" min="0" class="w-20 border rounded p-2 bg-grumpy-dark text-grumpy-offwhite" required />
+            <span class="self-center"><%= t('hours_short', 'h') %></span>
+            <input name="work_time_m" type="number" min="0" max="59" class="w-20 border rounded p-2 bg-grumpy-dark text-grumpy-offwhite" required />
+            <span class="self-center"><%= t('minutes_short', 'min') %></span>
           </div>
         </div>
         <div>
-          <button type="submit" class="bg-grumpy-orange text-grumpy-dark2 rounded px-2 py-1 font-bold w-full">Lägg till</button>
+          <button type="submit" class="bg-grumpy-orange text-grumpy-dark2 rounded px-2 py-1 font-bold w-full"><%= t('add', 'Lägg till avvikande arbetstid') %></button>
         </div>
       </form>
       <table class="w-full text-sm mb-2">
         <thead>
           <tr>
-            <th class="px-2 py-1">Namn</th>
-            <th class="px-2 py-1">Start</th>
-            <th class="px-2 py-1">Slut</th>
-            <th class="px-2 py-1">Arbetstid</th>
+            <th class="px-2 py-1"><%= t('name', 'Namn') %></th>
+            <th class="px-2 py-1"><%= t('start', 'Start') %></th>
+            <th class="px-2 py-1"><%= t('end', 'Slut') %></th>
+            <th class="px-2 py-1"><%= t('work_time', 'Arbetstid') %></th>
             <th></th>
           </tr>
         </thead>
@@ -80,9 +82,9 @@
               <td><b><%= p.name %></b></td>
               <td><%= p.start.toISOString().slice(0,10) %></td>
               <td><%= p.end.toISOString().slice(0,10) %></td>
-              <td><%= Math.floor(p.work_time_minutes/60) %>h <%= p.work_time_minutes%60 %>min</td>
+              <td><%= Math.floor(p.work_time_minutes/60) %><%= t('hours_short', 'h') %> <%= p.work_time_minutes%60 %><%= t('minutes_short', 'min') %></td>
               <td class="text-right">
-                <button type="button" class="text-grumpy-orange underline edit-workperiod-btn" data-idx="<%= idx %>">Redigera</button>
+                <button type="button" class="text-grumpy-orange underline edit-workperiod-btn" data-idx="<%= idx %>"><%= t('edit', 'Redigera') %></button>
                 <form method="post" action="/settings/work-period/delete" style="display:inline" onsubmit="return confirm('<%= t('confirm_delete_work_period', 'Är du säker på att du vill ta bort denna avvikande arbetstid?') %>');">
                   <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
                   <input type="hidden" name="id" value="<%= p.id %>" />
@@ -96,27 +98,29 @@
                   <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
                   <input type="hidden" name="id" value="<%= p.id %>" />
                   <div class="mb-2">
-                    <label class="block text-xs mb-1">Namn</label>
+                    <label class="block text-xs mb-1"><%= t('name', 'Namn') %></label>
                     <input name="name" value="<%= p.name %>" class="border rounded p-2 w-full bg-grumpy-dark text-grumpy-offwhite" required />
                   </div>
                   <div class="mb-2">
-                    <label class="block text-xs mb-1">Start</label>
+                    <label class="block text-xs mb-1"><%= t('start', 'Start') %></label>
                     <input name="start" type="date" value="<%= p.start.toISOString().slice(0,10) %>" class="border rounded p-2 w-full bg-grumpy-dark text-grumpy-offwhite" required />
                   </div>
                   <div class="mb-2">
-                    <label class="block text-xs mb-1">Slut</label>
+                    <label class="block text-xs mb-1"><%= t('end', 'Slut') %></label>
                     <input name="end" type="date" value="<%= p.end.toISOString().slice(0,10) %>" class="border rounded p-2 w-full bg-grumpy-dark text-grumpy-offwhite" required />
                   </div>
                   <div class="mb-2">
-                    <label class="block text-xs mb-1">Arbetstid</label>
+                    <label class="block text-xs mb-1"><%= t('work_time', 'Arbetstid') %></label>
                     <div class="flex flex-row gap-2 items-center">
-                      <input name="work_time_h" type="number" min="0" value="<%= Math.floor(p.work_time_minutes/60) %>" class="w-20 border rounded p-2 bg-grumpy-dark text-grumpy-offwhite" required />h
-                      <input name="work_time_m" type="number" min="0" max="59" value="<%= p.work_time_minutes%60 %>" class="w-20 border rounded p-2 bg-grumpy-dark text-grumpy-offwhite" required />min
+                      <input name="work_time_h" type="number" min="0" value="<%= Math.floor(p.work_time_minutes/60) %>" class="w-20 border rounded p-2 bg-grumpy-dark text-grumpy-offwhite" required />
+                      <span class="self-center"><%= t('hours_short', 'h') %></span>
+                      <input name="work_time_m" type="number" min="0" max="59" value="<%= p.work_time_minutes%60 %>" class="w-20 border rounded p-2 bg-grumpy-dark text-grumpy-offwhite" required />
+                      <span class="self-center"><%= t('minutes_short', 'min') %></span>
                     </div>
                   </div>
                   <div class="flex flex-row gap-2">
-                    <button type="submit" class="bg-grumpy-orange text-grumpy-dark2 rounded px-2 py-1 font-bold flex-1">Spara</button>
-                    <button type="button" class="text-grumpy-orange underline cancel-edit-workperiod-btn flex-1" data-idx="<%= idx %>">Avbryt</button>
+                    <button type="submit" class="bg-grumpy-orange text-grumpy-dark2 rounded px-2 py-1 font-bold flex-1"><%= t('save', 'Spara') %></button>
+                    <button type="button" class="text-grumpy-orange underline cancel-edit-workperiod-btn flex-1" data-idx="<%= idx %>"><%= t('cancel', 'Avbryt') %></button>
                   </div>
                 </form>
               </td>

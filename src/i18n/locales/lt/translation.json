@@ -24,10 +24,6 @@
   "name": "Vardas",
   "language": "Kalba",
   "settings": "Nustatymai",
-  "summary": "Santrauka",
-  "export_csv": "Eksportuoti CSV",
-  "delete_account": "Ištrinti paskyrą",
-  "flex_time": "Lankstus laikas",
   "normal_work_time": "Įprastas darbo laikas",
   "summer_work_time": "Vasaros darbo laikas",
   "minutes": "minutės",
@@ -52,5 +48,13 @@
   "week": "Savaitė",
   "month": "Mėnuo",
   "total_flex": "Bendras lankstus laikas:",
-  "delete_entry_confirm": "Ištrinti įrašą?"
+  "delete_entry_confirm": "Ištrinti įrašą?",
+  "work_periods": "Nukrypstantys darbo laikai (pvz., vasara, žiema, projektas)",
+  "add": "Pridėti nukrypstantį darbo laiką",
+  "start": "Pradžia",
+  "end": "Pabaiga",
+  "work_time": "Darbo laikas",
+  "hours_short": "val",
+  "minutes_short": "min",
+  "confirm_delete_work_period": "Ar tikrai norite ištrinti šį nukrypstantį darbo laiką?"
 }

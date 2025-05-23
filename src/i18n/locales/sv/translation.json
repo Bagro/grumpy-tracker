@@ -28,7 +28,7 @@
   "export_csv": "Exportera CSV",
   "delete_account": "Radera konto",
   "flex_time": "Flextid",
-  "normal_work_time": "Normal arbetstid",
+  "normal_work_time": "Normaltid",
   "summer_work_time": "Sommartid arbetstid",
   "minutes": "minuter",
   "error": "Fel",
@@ -52,5 +52,13 @@
   "week": "Vecka",
   "month": "Månad",
   "total_flex": "Total flextid:",
-  "delete_entry_confirm": "Radera post?"
+  "delete_entry_confirm": "Radera post?",
+  "work_periods": "Avvikande arbetstid (t.ex. sommar, vinter, projekt)",
+  "add": "Lägg till avvikande arbetstid",
+  "start": "Start",
+  "end": "Slut",
+  "work_time": "Arbetstid",
+  "hours_short": "h",
+  "minutes_short": "min",
+  "confirm_delete_work_period": "Är du säker på att du vill ta bort denna avvikande arbetstid?"
 }

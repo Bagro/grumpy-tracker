@@ -52,5 +52,13 @@
   "week": "Nedēļa",
   "month": "Mēnesis",
   "total_flex": "Kopējais elastīgais laiks:",
-  "delete_entry_confirm": "Dzēst ierakstu?"
+  "delete_entry_confirm": "Dzēst ierakstu?",
+  "work_periods": "Atkāpes darba laikos (piem., vasara, ziema, projekts)",
+  "add": "Pievienot atkāpes darba laiku",
+  "start": "Sākums",
+  "end": "Beigas",
+  "work_time": "Darba laiks",
+  "hours_short": "st",
+  "minutes_short": "min",
+  "confirm_delete_work_period": "Vai tiešām vēlaties dzēst šo atkāpes darba laiku?"
 }
