@@ -35,6 +35,7 @@ router.get("/time", async (req, res) => {
   }
   let flexToday = 0;
   let flexTotal = 0;
+  let flexTotalTravel = 0;
   const userSettings = await prisma.settings.findUnique({ where: { user_id: req.user.id } });
   const today = new Date().toISOString().slice(0, 10);
   const entries = entriesRaw.map(e => {
@@ -54,6 +55,14 @@ router.get("/time", async (req, res) => {
     const breaksMin = breaks.reduce((sum, b) => sum + (typeof b.start === 'number' && typeof b.end === 'number' && b.end > b.start ? (b.end - b.start) : 0), 0);
     const extraMin = extraTimes.reduce((sum, et) => sum + (typeof et.start === 'number' && typeof et.end === 'number' && et.end > et.start ? (et.end - et.start) : 0), 0);
     const flex = work - breaksMin + extraMin - normal;
+    // Flex + Travel (samma logik som dashboard)
+    let flexTravel = flex;
+    if (typeof e.travel_start_time === 'number' && typeof e.travel_end_time === 'number' && typeof e.work_start_time === 'number' && typeof e.work_end_time === 'number') {
+      const beforeWork = e.work_start_time - e.travel_start_time;
+      const afterWork = e.travel_end_time - e.work_end_time;
+      flexTravel = work + beforeWork + afterWork - breaksMin + extraMin - normal;
+    }
+    flexTotalTravel += flexTravel;
     if (e.date === today) flexToday += flex;
     flexTotal += flex;
     return {
@@ -69,7 +78,7 @@ router.get("/time", async (req, res) => {
       comments: e.comments || ''
     };
   });
-  res.render("time-list", { entries, user: req.user, csrfToken: req.csrfToken(), flexToday, flexTotal });
+  res.render("time-list", { entries, user: req.user, csrfToken: req.csrfToken(), flexToday, flexTotal, flexTotalTravel });
 });
 
 // New time entry form
