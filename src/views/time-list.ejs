@@ -1,16 +1,3 @@
-<% 
-function formatFlexTime(min) {
-  min = Number(min) || 0;
-  const sign = min < 0 ? '-' : '';
-  min = Math.abs(min);
-  if (min >= 60) {
-    const h = Math.floor(min / 60);
-    const m = min % 60;
-    return `${sign}${h} h${m > 0 ? ' ' + m + ' min' : ''}`;
-  }
-  return `${sign}${min} min`;
-}
-%>
 <!DOCTYPE html>
 <html lang="<%= (user && user.preferred_language) || 'en' %>">
   <head>
@@ -24,7 +11,7 @@ function formatFlexTime(min) {
     <%- include('partials/menu', { user, csrfToken, currentPath: request.path }) %>
     <main class="flex-1 flex flex-col items-center">
       <!-- Flex summary rad överst -->
-      <div class="w-full max-w-4xl mb-6">
+      <div class="w-full max-w-4xl mt-6 mb-6">
         <div class="flex flex-row justify-evenly items-center bg-grumpy-dark2 border border-grumpy-orange rounded-2xl shadow-xl p-4">
           <div class="flex flex-col items-center">
             <span class="font-semibold text-grumpy-offwhite"><%= t('dashboard.flex_time_work', 'Work') %>:</span>
@@ -38,15 +25,15 @@ function formatFlexTime(min) {
       </div>
       <!-- Tabell med tidposter -->
       <div class="w-full max-w-4xl bg-grumpy-dark2 shadow-2xl rounded-2xl p-10 border border-grumpy-orange">
-        <table class="w-full table-auto border border-grumpy-orange rounded-2xl shadow mb-6">
+        <table class="w-full table-auto rounded-2xl shadow mb-6">
           <thead class="bg-grumpy-dark2 text-grumpy-orange">
             <tr>
-              <th><%= t('date', 'Date') %></th>
-              <th><%= t('travel_start', 'Travel Start') %></th>
-              <th><%= t('work_start', 'Work Start') %></th>
-              <th><%= t('work_end', 'Work End') %></th>
-              <th><%= t('travel_end', 'Travel End') %></th>
-              <th><%= t('flex_time', 'Flex') %></th>
+              <th class="text-left"><%= t('date', 'Date') %></th>
+              <th class="text-left"><%= t('travel_start', 'Travel Start') %></th>
+              <th class="text-left"><%= t('work_start', 'Work Start') %></th>
+              <th class="text-left"><%= t('work_end', 'Work End') %></th>
+              <th class="text-left"><%= t('travel_end', 'Travel End') %></th>
+              <th class="text-left"><%= t('flex_time', 'Flex') %></th>
               <th></th>
             </tr>
           </thead>
@@ -119,8 +106,18 @@ function formatFlexTime(min) {
     <%- include('partials/footer') %>
   </body>
 </html>
-
-<% 
+<%
+function formatFlexTime(min) {
+  min = Number(min) || 0;
+  const sign = min < 0 ? '-' : '';
+  min = Math.abs(min);
+  if (min >= 60) {
+    const h = Math.floor(min / 60);
+    const m = min % 60;
+    return `${sign}${h} h${m > 0 ? ' ' + m + ' min' : ''}`;
+  }
+  return `${sign}${min} min`;
+}
 function minToTime(mins) {
   if (mins === null || mins === undefined || mins === '') return '';
   const h = Math.floor(mins / 60);

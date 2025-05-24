@@ -38,7 +38,7 @@ router.get("/time", async (req, res) => {
   let flexTotalTravel = 0;
   const userSettings = await prisma.settings.findUnique({ where: { user_id: req.user.id } });
   const today = new Date().toISOString().slice(0, 10);
-  const entries = entriesRaw.map(e => {
+  const entries = await Promise.all(entriesRaw.map(async e => {
     // Breaks
     const breaks = (e.break_start_time || []).map((b, i) => ({
       start: b,
@@ -50,7 +50,7 @@ router.get("/time", async (req, res) => {
       end: et.end
     }));
     // Flex
-    const normal = userSettings ? userSettings.normal_work_time : 480;
+    const normal = await getWorkTimeForDate(new Date(e.date), userSettings, req.user.id);
     const work = (typeof e.work_end_time === 'number' && typeof e.work_start_time === 'number') ? (e.work_end_time - e.work_start_time) : 0;
     const breaksMin = breaks.reduce((sum, b) => sum + (typeof b.start === 'number' && typeof b.end === 'number' && b.end > b.start ? (b.end - b.start) : 0), 0);
     const extraMin = extraTimes.reduce((sum, et) => sum + (typeof et.start === 'number' && typeof et.end === 'number' && et.end > et.start ? (et.end - et.start) : 0), 0);
@@ -62,9 +62,9 @@ router.get("/time", async (req, res) => {
       const afterWork = e.travel_end_time - e.work_end_time;
       flexTravel = work + beforeWork + afterWork - breaksMin + extraMin - normal;
     }
-    flexTotalTravel += flexTravel;
     if (e.date === today) flexToday += flex;
     flexTotal += flex;
+    flexTotalTravel += flexTravel;
     return {
       id: e.id,
       date: e.date,
@@ -77,7 +77,7 @@ router.get("/time", async (req, res) => {
       flex: Math.round(flex),
       comments: e.comments || ''
     };
-  });
+  }));
   res.render("time-list", { entries, user: req.user, csrfToken: req.csrfToken(), flexToday, flexTotal, flexTotalTravel });
 });
 
