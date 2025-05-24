@@ -164,67 +164,6 @@ router.post("/time/new", async (req, res) => {
   }
 });
 
-// Time summary (daily/weekly/monthly)
-router.get("/time/summary", async (req, res) => {
-  if (!req.user) return res.redirect("/login");
-  const { period = "week", date } = req.query;
-  const baseDate = date ? new Date(date) : new Date();
-  let start, end;
-  if (period === "day") {
-    start = new Date(baseDate);
-    end = new Date(baseDate);
-    end.setDate(end.getDate() + 1);
-  } else if (period === "week") {
-    start = new Date(baseDate);
-    start.setDate(start.getDate() - start.getDay());
-    end = new Date(start);
-    end.setDate(end.getDate() + 7);
-  } else if (period === "month") {
-    start = new Date(baseDate.getFullYear(), baseDate.getMonth(), 1);
-    end = new Date(baseDate.getFullYear(), baseDate.getMonth() + 1, 1);
-  }
-  const entries = await prisma.timeEntry.findMany({
-    where: {
-      user_id: req.user.id,
-      date: { gte: start, lt: end },
-    },
-    orderBy: { date: "asc" },
-  });
-  // Fetch all extraTimes for these entries
-  const entryIds = entries.map(e => e.id);
-  const extraTimes = await prisma.extraTime.findMany({ where: { time_entry_id: { in: entryIds } } });
-  const extraMap = {};
-  for (const et of extraTimes) {
-    if (!extraMap[et.time_entry_id]) extraMap[et.time_entry_id] = [];
-    extraMap[et.time_entry_id].push(et);
-  }
-  const userSettings = await prisma.settings.findUnique({ where: { user_id: req.user.id } });
-  const summaryMap = {};
-  let totalFlex = 0;
-  for (const e of entries) {
-    const d = e.date.toISOString().slice(0, 10);
-    if (!summaryMap[d]) summaryMap[d] = { work: 0, travel: 0, breaks: 0, extra: 0, flex: 0 };
-    const normal = await getWorkTimeForDate(e.date instanceof Date ? e.date : new Date(e.date), userSettings, req.user.id);
-    const work = (e.work_end_time - e.work_start_time) / 60000;
-    const travel = e.travel_start_time && e.travel_end_time ? (e.travel_end_time - e.travel_start_time) / 60000 : 0;
-    const breaks = (e.break_start_time || []).reduce((sum, b, i) => {
-      const end = (e.break_end_time||[])[i];
-      return sum + (end && b ? (end - b) / 60000 : 0);
-    }, 0);
-    // Sum all extra intervals for this entry
-    const extra = (extraMap[e.id] || []).reduce((sum, et) => sum + ((et.end - et.start) / 60000), 0);
-    const flex = work - breaks + extra - normal;
-    summaryMap[d].work += work;
-    summaryMap[d].travel += travel;
-    summaryMap[d].breaks += breaks;
-    summaryMap[d].extra += extra;
-    summaryMap[d].flex += flex;
-    totalFlex += flex;
-  }
-  const summary = Object.entries(summaryMap).map(([date, row]) => ({ date, ...row }));
-  res.render("time-summary", { summary, totalFlex, period, date: baseDate.toISOString().slice(0,10), user: req.user, csrfToken: req.csrfToken() });
-});
-
 // CSV export of time entries
 router.get('/time/export/csv', async (req, res) => {
   if (!req.user) return res.redirect('/login');
