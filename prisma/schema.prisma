@@ -28,13 +28,13 @@ model TimeEntry {
   id                String   @id @default(uuid())
   user              User     @relation(fields: [user_id], references: [id])
   user_id           String
-  date              DateTime
-  travel_start_time DateTime?
-  work_start_time   DateTime
-  work_end_time     DateTime
-  break_start_time  DateTime[]
-  break_end_time    DateTime[]
-  travel_end_time   DateTime?
+  date              String   // YYYY-MM-DD
+  travel_start_time Int?
+  work_start_time   Int
+  work_end_time     Int
+  break_start_time  Int[]
+  break_end_time    Int[]
+  travel_end_time   Int?
   extraTimes        ExtraTime[]
   comments          String?
   created_at        DateTime @default(now())
@@ -47,8 +47,8 @@ model ExtraTime {
   id         String   @id @default(uuid())
   timeEntry  TimeEntry @relation(fields: [time_entry_id], references: [id])
   time_entry_id String
-  start      DateTime
-  end        DateTime
+  start      Int   // minuter från midnatt
+  end        Int   // minuter från midnatt
   type       String? // e.g. "evening", "overtime", etc
   created_at DateTime @default(now())
   updated_at DateTime @updatedAt

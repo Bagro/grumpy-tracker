@@ -60,5 +60,6 @@
   "work_time": "Arbetstid",
   "hours_short": "h",
   "minutes_short": "min",
-  "confirm_delete_work_period": "Är du säker på att du vill ta bort denna avvikande arbetstid?"
+  "confirm_delete_work_period": "Är du säker på att du vill ta bort denna avvikande arbetstid?",
+  "time_entry_exists": "Du har redan en tidpost för detta datum."
 }

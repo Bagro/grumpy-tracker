@@ -60,5 +60,6 @@
   "work_time": "Darba laiks",
   "hours_short": "st",
   "minutes_short": "min",
-  "confirm_delete_work_period": "Vai tiešām vēlaties dzēst šo atkāpes darba laiku?"
+  "confirm_delete_work_period": "Vai tiešām vēlaties dzēst šo atkāpes darba laiku?",
+  "time_entry_exists": "Jums jau ir ieraksts šim datumam."
 }

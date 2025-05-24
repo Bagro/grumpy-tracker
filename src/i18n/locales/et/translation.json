@@ -56,5 +56,6 @@
   "work_time": "Tööaeg",
   "hours_short": "t",
   "minutes_short": "min",
-  "confirm_delete_work_period": "Kas olete kindel, et soovite selle erineva tööaja kustutada?"
+  "confirm_delete_work_period": "Kas olete kindel, et soovite selle erineva tööaja kustutada?",
+  "time_entry_exists": "Sul on selle kuupäeva kohta juba kirje olemas."
 }

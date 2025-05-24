@@ -56,5 +56,6 @@
   "work_time": "Arbejdstid",
   "hours_short": "t",
   "minutes_short": "min",
-  "confirm_delete_work_period": "Er du sikker på, at du vil slette denne afvigende arbejdstid?"
+  "confirm_delete_work_period": "Er du sikker på, at du vil slette denne afvigende arbejdstid?",
+  "time_entry_exists": "Du har allerede en tidsregistrering for denne dato."
 }

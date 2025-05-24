@@ -19,19 +19,19 @@
           </div>
           <div class="mb-4">
             <label for="travel_start_time" class="block mb-1"><%= t('travel_start') %></label>
-            <input id="travel_start_time" name="travel_start_time" type="time" class="w-full border rounded p-2 bg-grumpy-dark text-grumpy-offwhite" value="<%= entry.travel_start_time ? (entry.travel_start_time instanceof Date ? (new Date(entry.travel_start_time.getTime() - entry.travel_start_time.getTimezoneOffset()*60000)).toISOString().slice(11,16) : (typeof entry.travel_start_time === 'string' && entry.travel_start_time.length >= 5 ? (new Date(new Date('1970-01-01T'+entry.travel_start_time+'Z').getTime() - new Date().getTimezoneOffset()*60000)).toISOString().slice(11,16) : entry.travel_start_time)) : '' %>" />
+            <input id="travel_start_time" name="travel_start_time" type="time" class="w-full border rounded p-2 bg-grumpy-dark text-grumpy-offwhite" value="<%= entry.travel_start_time || '' %>" />
           </div>
           <div class="mb-4">
             <label for="work_start_time" class="block mb-1"><%= t('work_start') %></label>
-            <input id="work_start_time" name="work_start_time" type="time" required class="w-full border rounded p-2 bg-grumpy-dark text-grumpy-offwhite" value="<%= entry.work_start_time ? (entry.work_start_time instanceof Date ? (new Date(entry.work_start_time.getTime() - entry.work_start_time.getTimezoneOffset()*60000)).toISOString().slice(11,16) : (typeof entry.work_start_time === 'string' && entry.work_start_time.length >= 5 ? (new Date(new Date('1970-01-01T'+entry.work_start_time+'Z').getTime() - new Date().getTimezoneOffset()*60000)).toISOString().slice(11,16) : entry.work_start_time)) : '' %>" />
+            <input id="work_start_time" name="work_start_time" type="time" required class="w-full border rounded p-2 bg-grumpy-dark text-grumpy-offwhite" value="<%= entry.work_start_time || '' %>" />
           </div>
           <div class="mb-4">
             <label for="work_end_time" class="block mb-1"><%= t('work_end') %></label>
-            <input id="work_end_time" name="work_end_time" type="time" required class="w-full border rounded p-2 bg-grumpy-dark text-grumpy-offwhite" value="<%= entry.work_end_time ? (entry.work_end_time instanceof Date ? (new Date(entry.work_end_time.getTime() - entry.work_end_time.getTimezoneOffset()*60000)).toISOString().slice(11,16) : (typeof entry.work_end_time === 'string' && entry.work_end_time.length >= 5 ? (new Date(new Date('1970-01-01T'+entry.work_end_time+'Z').getTime() - new Date().getTimezoneOffset()*60000)).toISOString().slice(11,16) : entry.work_end_time)) : '' %>" />
+            <input id="work_end_time" name="work_end_time" type="time" required class="w-full border rounded p-2 bg-grumpy-dark text-grumpy-offwhite" value="<%= entry.work_end_time || '' %>" />
           </div>
           <div class="mb-4">
             <label for="travel_end_time" class="block mb-1"><%= t('travel_end') %></label>
-            <input id="travel_end_time" name="travel_end_time" type="time" class="w-full border rounded p-2 bg-grumpy-dark text-grumpy-offwhite" value="<%= entry.travel_end_time ? (entry.travel_end_time instanceof Date ? (new Date(entry.travel_end_time.getTime() - entry.travel_end_time.getTimezoneOffset()*60000)).toISOString().slice(11,16) : (typeof entry.travel_end_time === 'string' && entry.travel_end_time.length >= 5 ? (new Date(new Date('1970-01-01T'+entry.travel_end_time+'Z').getTime() - new Date().getTimezoneOffset()*60000)).toISOString().slice(11,16) : entry.travel_end_time)) : '' %>" />
+            <input id="travel_end_time" name="travel_end_time" type="time" class="w-full border rounded p-2 bg-grumpy-dark text-grumpy-offwhite" value="<%= entry.travel_end_time || '' %>" />
           </div>
           <div class="mb-4">
             <label class="block mb-1"><%= t('breaks', 'Breaks (multiple allowed)') %></label>
@@ -40,8 +40,8 @@
               <% if (breaks.length) { %>
                 <% breaks.forEach(function(b) { %>
                   <div class="flex space-x-2 mb-1">
-                    <input name="break_start_time" type="time" class="border rounded p-2 bg-grumpy-dark text-grumpy-offwhite" value="<%= b.start ? (b.start instanceof Date ? b.start.toISOString().slice(11,16) : (typeof b.start === 'string' && b.start.length >= 5 ? b.start.slice(0,5) : b.start)) : '' %>" />
-                    <input name="break_end_time" type="time" class="border rounded p-2 bg-grumpy-dark text-grumpy-offwhite" value="<%= b.end ? (b.end instanceof Date ? b.end.toISOString().slice(11,16) : (typeof b.end === 'string' && b.end.length >= 5 ? b.end.slice(0,5) : b.end)) : '' %>" />
+                    <input name="break_start_time" type="time" class="border rounded p-2 bg-grumpy-dark text-grumpy-offwhite" value="<%= b.start || '' %>" />
+                    <input name="break_end_time" type="time" class="border rounded p-2 bg-grumpy-dark text-grumpy-offwhite" value="<%= b.end || '' %>" />
                   </div>
                 <% }) %>
               <% } else { %>
@@ -60,8 +60,8 @@
               <% if (extraTimes.length) { %>
                 <% extraTimes.forEach(function(et, i) { %>
                   <div class="flex space-x-2 mb-1 extra-time-row">
-                    <input name="extra_time_start" type="time" class="border rounded p-2 bg-grumpy-dark text-grumpy-offwhite" value="<%= et.start ? (et.start instanceof Date ? et.start.toISOString().slice(11,16) : (typeof et.start === 'string' && et.start.length >= 5 ? et.start.slice(0,5) : et.start)) : '' %>" />
-                    <input name="extra_time_end" type="time" class="border rounded p-2 bg-grumpy-dark text-grumpy-offwhite" value="<%= et.end ? (et.end instanceof Date ? et.end.toISOString().slice(11,16) : (typeof et.end === 'string' && et.end.length >= 5 ? et.end.slice(0,5) : et.end)) : '' %>" />
+                    <input name="extra_time_start" type="time" class="border rounded p-2 bg-grumpy-dark text-grumpy-offwhite" value="<%= et.start || '' %>" />
+                    <input name="extra_time_end" type="time" class="border rounded p-2 bg-grumpy-dark text-grumpy-offwhite" value="<%= et.end || '' %>" />
                     <button type="button" class="text-red-500 font-bold remove-extra-time" title="<%= t('remove', 'Remove') %>">&times;</button>
                   </div>
                 <% }) %>

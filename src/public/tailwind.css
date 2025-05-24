@@ -1086,6 +1086,11 @@ select {
   border-radius: 0.5rem;
 }
 
+.rounded-b-xl {
+  border-bottom-right-radius: 0.75rem;
+  border-bottom-left-radius: 0.75rem;
+}
+
 .border {
   border-width: 1px;
 }
@@ -1347,6 +1352,10 @@ select {
 .text-red-700 {
   --tw-text-opacity: 1;
   color: rgb(185 28 28 / var(--tw-text-opacity, 1));
+}
+
+.text-grumpy-offwhite\/80 {
+  color: rgb(246 234 221 / 0.8);
 }
 
 .underline {

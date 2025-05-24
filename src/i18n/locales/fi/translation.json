@@ -56,5 +56,6 @@
   "work_time": "Työaika",
   "hours_short": "h",
   "minutes_short": "min",
-  "confirm_delete_work_period": "Haluatko varmasti poistaa tämän poikkeavan työajan?"
+  "confirm_delete_work_period": "Haluatko varmasti poistaa tämän poikkeavan työajan?",
+  "time_entry_exists": "Sinulla on jo merkintä tälle päivälle."
 }

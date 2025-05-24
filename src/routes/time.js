@@ -7,34 +7,68 @@ import { getWorkTimeForDate } from '../utils.js';
 const prisma = new PrismaClient();
 const router = express.Router();
 
+// Helper: HH:mm -> minuter
+function timeToMinutes(t) {
+  if (!t || typeof t !== 'string' || !/^\d{2}:\d{2}$/.test(t)) return 0;
+  const [h, m] = t.split(':');
+  return parseInt(h, 10) * 60 + parseInt(m, 10);
+}
+// Helper: skillnad i minuter mellan två HH:mm
+function diffMinutes(start, end) {
+  return timeToMinutes(end) - timeToMinutes(start);
+}
+
 // List time entries for current user
 router.get("/time", async (req, res) => {
   if (!req.user) return res.redirect("/login");
-  const entries = await prisma.timeEntry.findMany({
+  const entriesRaw = await prisma.timeEntry.findMany({
     where: { user_id: req.user.id },
     orderBy: { date: "desc" },
   });
+  const entryIds = entriesRaw.map(e => e.id);
+  const extraTimesAll = await prisma.extraTime.findMany({ where: { time_entry_id: { in: entryIds } } });
+  // Map extraTimes to entry id
+  const extraMap = {};
+  for (const et of extraTimesAll) {
+    if (!extraMap[et.time_entry_id]) extraMap[et.time_entry_id] = [];
+    extraMap[et.time_entry_id].push(et);
+  }
   let flexToday = 0;
   let flexTotal = 0;
-  if (entries.length) {
-    const userSettings = await prisma.settings.findUnique({ where: { user_id: req.user.id } });
-    const today = new Date().toISOString().slice(0, 10);
-    for (const e of entries) {
-      const entryDate = e.date instanceof Date ? e.date : new Date(e.date);
-      const normal = await getWorkTimeForDate(entryDate, userSettings, req.user.id);
-      const work = (e.work_end_time && e.work_start_time) ? (new Date(e.work_end_time) - new Date(e.work_start_time)) / 60000 : 0;
-      const breaks = (e.break_start_time || []).reduce((sum, b, i) => {
-        const end = (e.break_end_time||[])[i];
-        return sum + (end && b ? (new Date(end) - new Date(b)) / 60000 : 0);
-      }, 0);
-      const extra = e.extra_time || 0;
-      const flex = work - breaks + extra - normal;
-      flexTotal += flex;
-      if (e.date instanceof Date ? e.date.toISOString().slice(0,10) === today : e.date === today) {
-        flexToday += flex;
-      }
-    }
-  }
+  const userSettings = await prisma.settings.findUnique({ where: { user_id: req.user.id } });
+  const today = new Date().toISOString().slice(0, 10);
+  const entries = entriesRaw.map(e => {
+    // Breaks
+    const breaks = (e.break_start_time || []).map((b, i) => ({
+      start: b,
+      end: (e.break_end_time||[])[i]
+    })).filter(b => b.start !== undefined && b.end !== undefined && b.start !== null && b.end !== null);
+    // Extra
+    const extraTimes = (extraMap[e.id] || []).map(et => ({
+      start: et.start,
+      end: et.end
+    }));
+    // Flex
+    const normal = userSettings ? userSettings.normal_work_time : 480;
+    const work = (typeof e.work_end_time === 'number' && typeof e.work_start_time === 'number') ? (e.work_end_time - e.work_start_time) : 0;
+    const breaksMin = breaks.reduce((sum, b) => sum + (typeof b.start === 'number' && typeof b.end === 'number' && b.end > b.start ? (b.end - b.start) : 0), 0);
+    const extraMin = extraTimes.reduce((sum, et) => sum + (typeof et.start === 'number' && typeof et.end === 'number' && et.end > et.start ? (et.end - et.start) : 0), 0);
+    const flex = work - breaksMin + extraMin - normal;
+    if (e.date === today) flexToday += flex;
+    flexTotal += flex;
+    return {
+      id: e.id,
+      date: e.date,
+      travel_start_time: e.travel_start_time || '',
+      work_start_time: e.work_start_time || '',
+      work_end_time: e.work_end_time || '',
+      travel_end_time: e.travel_end_time || '',
+      breaks,
+      extraTimes,
+      flex: Math.round(flex),
+      comments: e.comments || ''
+    };
+  });
   res.render("time-list", { entries, user: req.user, csrfToken: req.csrfToken(), flexToday, flexTotal });
 });
 
@@ -66,21 +100,26 @@ router.get("/time/new", (req, res) => {
 router.post("/time/new", async (req, res) => {
   try {
     const { date, work_start_time, work_end_time, travel_start_time, travel_end_time, break_start_time, break_end_time, extra_time_start, extra_time_end, comments } = req.body;
-    function parseTime(date, time) {
-      if (!date || !time) return null;
-      if (!/^\d{2}:\d{2}$/.test(time)) return null;
-      const [h, m] = time.split(":");
-      const d = new Date(date);
-      d.setHours(Number(h), Number(m), 0, 0);
-      return d;
-    }
+    // Spara tider som minuter från midnatt
     const entryDate = date;
-    const workStart = parseTime(entryDate, work_start_time);
-    const workEnd = parseTime(entryDate, work_end_time);
-    const travelStart = travel_start_time ? parseTime(entryDate, travel_start_time) : null;
-    const travelEnd = travel_end_time ? parseTime(entryDate, travel_end_time) : null;
-    const breaksStart = Array.isArray(break_start_time) ? break_start_time.map(t => parseTime(entryDate, t)).filter(Boolean) : [];
-    const breaksEnd = Array.isArray(break_end_time) ? break_end_time.map(t => parseTime(entryDate, t)).filter(Boolean) : [];
+    // Check for existing entry for this user and date
+    const existing = await prisma.timeEntry.findFirst({
+      where: { user_id: req.user.id, date: entryDate },
+    });
+    if (existing) {
+      return res.render("time-form", {
+        entry: req.body,
+        user: req.user,
+        error: req.t ? req.t('time_entry_exists', 'You already have a time entry for this date.') : 'You already have a time entry for this date.',
+        csrfToken: req.csrfToken(),
+      });
+    }
+    const workStart = timeToMinutes(work_start_time);
+    const workEnd = timeToMinutes(work_end_time);
+    const travelStart = travel_start_time ? timeToMinutes(travel_start_time) : null;
+    const travelEnd = travel_end_time ? timeToMinutes(travel_end_time) : null;
+    const breaksStart = Array.isArray(break_start_time) ? break_start_time.map(timeToMinutes) : (break_start_time ? [timeToMinutes(break_start_time)] : []);
+    const breaksEnd = Array.isArray(break_end_time) ? break_end_time.map(timeToMinutes) : (break_end_time ? [timeToMinutes(break_end_time)] : []);
     // Handle multiple extra times
     let extraTimes = [];
     if (extra_time_start && extra_time_end) {
@@ -88,9 +127,9 @@ router.post("/time/new", async (req, res) => {
       const ends = Array.isArray(extra_time_end) ? extra_time_end : [extra_time_end];
       for (let i = 0; i < starts.length; ++i) {
         if (starts[i] && ends[i]) {
-          const start = parseTime(entryDate, starts[i]);
-          const end = parseTime(entryDate, ends[i]);
-          if (start && end && end > start) {
+          const start = timeToMinutes(starts[i]);
+          const end = timeToMinutes(ends[i]);
+          if (start >= 0 && end > start) {
             extraTimes.push({ start, end });
           }
         }
@@ -99,7 +138,7 @@ router.post("/time/new", async (req, res) => {
     const created = await prisma.timeEntry.create({
       data: {
         user_id: req.user.id,
-        date: parseISO(entryDate),
+        date: entryDate,
         work_start_time: workStart,
         work_end_time: workEnd,
         travel_start_time: travelStart,
@@ -241,7 +280,21 @@ router.get("/time/:id/edit", async (req, res) => {
   if (!entry) return res.status(404).send("Not found");
   // Fetch extraTimes
   const extraTimes = await prisma.extraTime.findMany({ where: { time_entry_id: entry.id } });
-  entry.extraTimes = extraTimes.map(et => ({ start: et.start, end: et.end }));
+  // Helper: Int (minuter från midnatt) -> HH:mm
+  function minToTime(mins) {
+    if (mins === null || mins === undefined || mins === '') return '';
+    const h = Math.floor(mins / 60);
+    const m = mins % 60;
+    return (h < 10 ? '0' : '') + h + ':' + (m < 10 ? '0' : '') + m;
+  }
+  // Convert all time fields to HH:mm for the form
+  entry.travel_start_time = minToTime(entry.travel_start_time);
+  entry.work_start_time = minToTime(entry.work_start_time);
+  entry.work_end_time = minToTime(entry.work_end_time);
+  entry.travel_end_time = minToTime(entry.travel_end_time);
+  entry.break_start_time = Array.isArray(entry.break_start_time) ? entry.break_start_time.map(minToTime) : [];
+  entry.break_end_time = Array.isArray(entry.break_end_time) ? entry.break_end_time.map(minToTime) : [];
+  entry.extraTimes = extraTimes.map(et => ({ start: minToTime(et.start), end: minToTime(et.end) }));
   res.render("time-form", { entry, user: req.user, error: null, csrfToken: req.csrfToken() });
 });
 

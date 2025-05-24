@@ -15,39 +15,83 @@
           <thead class="bg-grumpy-dark2 text-grumpy-orange">
             <tr>
               <th><%= t('date', 'Date') %></th>
-              <th><%= t('work_start', 'Start') %></th>
-              <th><%= t('work_end', 'End') %></th>
-              <th><%= t('break', 'Break') %></th>
-              <th><%= t('travel', 'Travel') %></th>
-              <th><%= t('extra_time', 'Extra') %></th>
-              <th><%= t('comments', 'Comments') %></th>
-              <th><%= t('actions', 'Actions') %></th>
+              <th><%= t('travel_start', 'Travel Start') %></th>
+              <th><%= t('work_start', 'Work Start') %></th>
+              <th><%= t('work_end', 'Work End') %></th>
+              <th><%= t('travel_end', 'Travel End') %></th>
+              <th><%= t('flex_time', 'Flex') %></th>
+              <th></th>
             </tr>
           </thead>
           <tbody>
-            <% entries.forEach(function(entry) { %>
+            <% entries.forEach(function(entry, idx) { %>
               <tr class="even:bg-grumpy-dark hover:bg-grumpy-dark2 transition">
                 <td><%= entry.date %></td>
-                <td><%= entry.work_start_time %></td>
-                <td><%= entry.work_end_time %></td>
-                <td><%= entry.break_start_time && entry.break_end_time ? entry.break_start_time + ' - ' + entry.break_end_time : '' %></td>
-                <td><%= entry.travel_start_time && entry.travel_end_time ? entry.travel_start_time + ' - ' + entry.travel_end_time : '' %></td>
-                <td><%= entry.extra_time || '' %></td>
-                <td><%= entry.comments || '' %></td>
+                <td><%= minToTime(entry.travel_start_time) %></td>
+                <td><%= minToTime(entry.work_start_time) %></td>
+                <td><%= minToTime(entry.work_end_time) %></td>
+                <td><%= minToTime(entry.travel_end_time) %></td>
+                <td><%= entry.flex %> min</td>
                 <td>
-                  <a href="/time/<%= entry.id %>/edit" class="text-grumpy-orange underline hover:text-grumpy-offwhite transition"><%= t('edit', 'Edit') %></a>
+                  <% if ((entry.breaks && entry.breaks.length) || (entry.extraTimes && entry.extraTimes.length)) { %>
+                    <button type="button" class="text-grumpy-orange underline toggle-details" data-idx="<%= idx %>"><%= t('show_details', 'Visa mer') %></button>
+                  <% } %>
+                  <a href="/time/<%= entry.id %>/edit" class="text-grumpy-orange underline hover:text-grumpy-offwhite transition ml-2"><%= t('edit', 'Edit') %></a>
                   <form method="post" action="/time/<%= entry.id %>/delete" class="inline" onsubmit="return confirm('<%= t('delete_entry_confirm', 'Delete entry?') %>');">
                     <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
                     <button type="submit" class="text-red-700 underline ml-2 hover:text-grumpy-orange transition"><%= t('delete', 'Delete') %></button>
                   </form>
                 </td>
               </tr>
+              <% if ((entry.breaks && entry.breaks.length) || (entry.extraTimes && entry.extraTimes.length)) { %>
+              <tr class="details-row hidden" data-idx="<%= idx %>">
+                <td colspan="7" class="bg-grumpy-dark p-3 rounded-b-xl">
+                  <% if (entry.breaks && entry.breaks.length) { %>
+                    <div class="mb-2">
+                      <span class="font-semibold"><%= t('breaks', 'Breaks') %>:</span>
+                      <% entry.breaks.forEach(function(b, i) { %>
+                        <span class="inline-block ml-2"><%= minToTime(b.start) %> - <%= minToTime(b.end) %></span>
+                      <% }) %>
+                    </div>
+                  <% } %>
+                  <% if (entry.extraTimes && entry.extraTimes.length) { %>
+                    <div>
+                      <span class="font-semibold"><%= t('extra_time', 'Extra Time') %>:</span>
+                      <% entry.extraTimes.forEach(function(et, i) { %>
+                        <span class="inline-block ml-2"><%= minToTime(et.start) %> - <%= minToTime(et.end) %></span>
+                      <% }) %>
+                    </div>
+                  <% } %>
+                  <% if (entry.comments) { %>
+                    <div class="mt-2 text-sm text-grumpy-offwhite/80"><%= t('comments', 'Comments') %>: <%= entry.comments %></div>
+                  <% } %>
+                </td>
+              </tr>
+              <% } %>
             <% }) %>
           </tbody>
         </table>
+        <script>
+          document.querySelectorAll('.toggle-details').forEach(function(btn) {
+            btn.addEventListener('click', function() {
+              var idx = this.getAttribute('data-idx');
+              var row = document.querySelector('.details-row[data-idx="' + idx + '"]');
+              if (row) row.classList.toggle('hidden');
+            });
+          });
+        </script>
         <%- include('partials/flex-summary', { flexToday, flexTotal }) %>
       </div>
     </main>
     <%- include('partials/footer') %>
   </body>
 </html>
+
+<% 
+function minToTime(mins) {
+  if (mins === null || mins === undefined || mins === '') return '';
+  const h = Math.floor(mins / 60);
+  const m = mins % 60;
+  return (h < 10 ? '0' : '') + h + ':' + (m < 10 ? '0' : '') + m;
+}
+%>

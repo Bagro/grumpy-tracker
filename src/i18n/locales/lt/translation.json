@@ -56,5 +56,6 @@
   "work_time": "Darbo laikas",
   "hours_short": "val",
   "minutes_short": "min",
-  "confirm_delete_work_period": "Ar tikrai norite ištrinti šį nukrypstantį darbo laiką?"
+  "confirm_delete_work_period": "Ar tikrai norite ištrinti šį nukrypstantį darbo laiką?",
+  "time_entry_exists": "Jūs jau turite įrašą šiai datai."
 }
