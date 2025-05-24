@@ -1,105 +1,101 @@
-# grumpy-tracker
+# Grumpy Tracker
 
-Grumpy Tracker är ett tidrapporteringssystem för att hålla koll på arbetstid och flextid.
+Grumpy Tracker is a time tracking system for keeping track of work hours and flex time.
 
-## Funktioner
+## Features
 
-- Tidrapportering: arbete, resor, raster, extra tid
-- Flexberäkning och sammanställning
-- Flerspråkigt stöd (svenska, engelska, finska, norska, lettiska, estniska, litauiska, danska)
-- Användarprofiler och inställningar
-- GDPR: export och radering av data
-- Admin: användar- och översättningshantering
-- Responsiv design med Tailwind CSS
+- Time reporting: work, travel, breaks, extra time
+- Flex calculation and summary
+- Multilingual support (Swedish, English, Finnish, Norwegian, Latvian, Estonian, Lithuanian, Danish)
+- User profiles and settings
+- GDPR: data export and deletion
+- Admin: user and translation management
+- Responsive design with Tailwind CSS
 
-## Kom igång
+## Getting Started
 
-### Förutsättningar
+### Prerequisites
 
-- [Node.js](https://nodejs.org/) (v18 eller senare rekommenderas)
-- [Docker](https://www.docker.com/) (för enkel lokal utveckling)
-- [PostgreSQL](https://www.postgresql.org/) (om du inte kör via Docker)
+- [Node.js](https://nodejs.org/) (v18 or later recommended)
+- [Docker](https://www.docker.com/) (for easy local development)
+- [PostgreSQL](https://www.postgresql.org/) (if not running via Docker)
 
-### 1. Klona repot
+### 1. Clone the repository
 
 ```sh
-git clone https://github.com/ditt-användarnamn/grumpy-tracker.git
+git clone https://github.com/Bagro/grumpy-tracker.git
 cd grumpy-tracker
 ```
 
-### 2. Skapa miljövariabler
+### 2. Create environment variables
 
-Kopiera `.env.example` till `.env` och fyll i (eller skapa en `.env`):
+Copy `.env.example` to `.env` and fill in (or create a `.env`):
 
 ```
 DATABASE_URL=postgres://grumpy:grumpy@localhost:5432/grumpytracker
-SESSION_SECRET=byt-mig
+SESSION_SECRET=change-me
 ```
 
-### 3. Starta med Docker (rekommenderat)
+### 3. Start with Docker (recommended)
 
 ```sh
 docker-compose up --build
 ```
 
-- Appen körs på [http://localhost:3000](http://localhost:3000)
-- Databasen körs på port 5432
+- The app runs at [http://localhost:3000](http://localhost:3000)
+- The database runs on port 5432
 
-### 4. Alternativ: Starta lokalt utan Docker
+### 4. Alternative: Run locally without Docker
 
-1. Starta PostgreSQL och skapa databasen `grumpytracker`
-2. Installera beroenden:
+1. Start PostgreSQL and create the database `grumpytracker`
+2. Install dependencies:
 
    ```sh
    npm install
    ```
 
-3. Kör databas-migreringar:
+3. Run database migrations:
 
    ```sh
    npx prisma migrate dev --name init
    ```
 
-4. Bygg Tailwind CSS (engångsbygge):
+4. Build Tailwind CSS (one-time build):
 
    ```sh
    npm run tailwind:build
    ```
 
-   Eller kör i "watch"-läge för automatisk uppdatering vid ändringar:
+   Or run in "watch" mode for automatic updates on changes:
 
    ```sh
    npm run tailwind:watch
    ```
 
-5. Starta appen:
+5. Start the app:
 
    ```sh
    npm run dev
    ```
 
-### 5. Skapa admin-användare
+### 5. Create admin user
 
-Första användaren med e-post `admin@grumpy.local` får admin-rättigheter.
+The first user with the email `admin@grumpy.local` gets admin rights.
 
-### 6. Testa
+### 6. Test
 
-Kör tester med:
+Run tests with:
 
 ```sh
 npm test
 ```
 
-## Kodstil & Arkitektur
+## Code Style & Architecture
 
 - Backend: Node.js, Express, Prisma, Passport.js, i18next
-- Frontend: EJS, Tailwind CSS, htmx (valfritt)
-- Se [`.github/copilot-instructions.md`](.github/copilot-instructions.md) för kodstandard och arkitektur
+- Frontend: EJS, Tailwind CSS, htmx (optional)
+- See [`.github/copilot-instructions.md`](.github/copilot-instructions.md) for code standards and architecture
 
-## Licens
+## License
 
-MIT
-
----
-
-För mer info, se [prd.md](prd.md).
+This project is licensed under the MIT License. See the LICENSE file for details.
