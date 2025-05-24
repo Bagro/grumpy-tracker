@@ -103,6 +103,15 @@ app.get('/', async (req, res) => {
   if (!req.user) return res.redirect('/login');
   // Fetch all entries for user
   const entries = await prisma.timeEntry.findMany({ where: { user_id: req.user.id } });
+  const entryIds = entries.map(e => e.id);
+  // Fetch all extraTimes for these entries
+  const extraTimesAll = await prisma.extraTime.findMany({ where: { time_entry_id: { in: entryIds } } });
+  // Map extraTimes to entry id
+  const extraMap = {};
+  for (const et of extraTimesAll) {
+    if (!extraMap[et.time_entry_id]) extraMap[et.time_entry_id] = [];
+    extraMap[et.time_entry_id].push(et);
+  }
   let flexTodayWork = 0, flexTodayWorkTravel = 0;
   let flexTotalWork = 0, flexTotalWorkTravel = 0;
   let flexPeriodWork = 0, flexPeriodWorkTravel = 0;
@@ -125,7 +134,7 @@ app.get('/', async (req, res) => {
     start = new Date(now);
     start.setDate(now.getDate() - day);
     end = new Date(start);
-    end.setDate(start.getDate() + 7);
+    end.setDate(end.getDate() + 7);
   }
   // Map for graph
   const dayMap = {};
@@ -134,27 +143,20 @@ app.get('/', async (req, res) => {
     const dayKey = d.toISOString().slice(0,10);
     // Use correct work time for this entry
     const normal = await getWorkTimeForDate(d, userSettings, req.user.id);
-    // Flex (work only)
-    const workMinutes = (e.work_end_time && e.work_start_time) ? (new Date(e.work_end_time).getTime() - new Date(e.work_start_time).getTime()) / 60000 : 0;
-    const breakMinutes = (e.break_start_time || []).reduce((sum, b, i) => {
-      const end = (e.break_end_time||[])[i];
-      if (b && end) {
-        return sum + ((new Date(end).getTime() - new Date(b).getTime()) / 60000);
-      }
-      return sum;
-    }, 0);
-    const extra = e.extra_time || 0;
-    const flexWork = workMinutes - breakMinutes + extra - normal;
+    // Work, breaks, extra (all in minutes)
+    const workMinutes = (typeof e.work_end_time === 'number' && typeof e.work_start_time === 'number') ? (e.work_end_time - e.work_start_time) : 0;
+    const breakMinutes = (Array.isArray(e.break_start_time) && Array.isArray(e.break_end_time)) ? e.break_start_time.reduce((sum, b, i) => {
+      const end = e.break_end_time[i];
+      return sum + (typeof b === 'number' && typeof end === 'number' && end > b ? (end - b) : 0);
+    }, 0) : 0;
+    const extraMinutes = (extraMap[e.id] || []).reduce((sum, et) => sum + (typeof et.start === 'number' && typeof et.end === 'number' && et.end > et.start ? (et.end - et.start) : 0), 0);
+    const flexWork = workMinutes - breakMinutes + extraMinutes - normal;
     // Flex (work + travel) - correct formula: (work_end - work_start) + (work_start - travel_start) + (travel_end - work_end) - breaks + extra - normal
     let flexWorkTravel = flexWork;
-    if (e.travel_start_time && e.travel_end_time && e.work_start_time && e.work_end_time) {
-      const travelStart = new Date(e.travel_start_time).getTime();
-      const workStart = new Date(e.work_start_time).getTime();
-      const workEnd = new Date(e.work_end_time).getTime();
-      const travelEnd = new Date(e.travel_end_time).getTime();
-      const beforeWork = workStart - travelStart;
-      const afterWork = travelEnd - workEnd;
-      flexWorkTravel = workMinutes + (beforeWork / 60000) + (afterWork / 60000) - breakMinutes + extra - normal;
+    if (typeof e.travel_start_time === 'number' && typeof e.travel_end_time === 'number' && typeof e.work_start_time === 'number' && typeof e.work_end_time === 'number') {
+      const beforeWork = e.work_start_time - e.travel_start_time;
+      const afterWork = e.travel_end_time - e.work_end_time;
+      flexWorkTravel = workMinutes + beforeWork + afterWork - breakMinutes + extraMinutes - normal;
     }
     if (dayKey === today) {
       flexTodayWork += flexWork;
@@ -162,24 +164,20 @@ app.get('/', async (req, res) => {
     }
     flexTotalWork += flexWork;
     flexTotalWorkTravel += flexWorkTravel;
-    // For graph, only include days in period
+    // För period-summering: summera flex för alla entries i perioden
     if (d >= start && d < end) {
+      flexPeriodWork += flexWork;
+      flexPeriodWorkTravel += flexWorkTravel;
       if (!dayMap[dayKey]) dayMap[dayKey] = { work: 0, workTravel: 0 };
       dayMap[dayKey].work += workMinutes;
       // Calculate workTravel for graph (same logic as flexWorkTravel, but without -breaks, +extra, -normal)
       let workTravelForGraph = workMinutes;
-      if (e.travel_start_time && e.travel_end_time && e.work_start_time && e.work_end_time) {
-        const travelStart = new Date(e.travel_start_time).getTime();
-        const workStart = new Date(e.work_start_time).getTime();
-        const workEnd = new Date(e.work_end_time).getTime();
-        const travelEnd = new Date(e.travel_end_time).getTime();
-        const beforeWork = workStart - travelStart;
-        const afterWork = travelEnd - workEnd;
-        workTravelForGraph = workMinutes + (beforeWork / 60000) + (afterWork / 60000);
+      if (typeof e.travel_start_time === 'number' && typeof e.travel_end_time === 'number' && typeof e.work_start_time === 'number' && typeof e.work_end_time === 'number') {
+        const beforeWork = e.work_start_time - e.travel_start_time;
+        const afterWork = e.travel_end_time - e.work_end_time;
+        workTravelForGraph = workMinutes + beforeWork + afterWork;
       }
       dayMap[dayKey].workTravel += workTravelForGraph;
-      flexPeriodWork += flexWork;
-      flexPeriodWorkTravel += flexWorkTravel;
     }
   }
   // Prepare chart data
