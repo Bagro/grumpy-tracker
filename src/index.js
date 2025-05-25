@@ -130,11 +130,14 @@ app.get('/', async (req, res) => {
     start = new Date(now.getFullYear(), now.getMonth(), 1);
     end = new Date(now.getFullYear(), now.getMonth() + 1, 1);
   } else { // week
+    // Always use Monday as the first day of the week
     const day = now.getDay();
+    // getDay(): 0=Sunday, 1=Monday, ..., 6=Saturday
+    const diffToMonday = (day === 0 ? -6 : 1 - day); // If Sunday, go back 6 days; else, go back to Monday
     start = new Date(now);
-    start.setDate(now.getDate() - day);
+    start.setDate(now.getDate() + diffToMonday);
     end = new Date(start);
-    end.setDate(end.getDate() + 7);
+    end.setDate(start.getDate() + 7);
   }
   // Map for graph
   const dayMap = {};
