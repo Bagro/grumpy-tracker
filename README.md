@@ -1,3 +1,22 @@
+<!-- ============================= -->
+<!-- 🚨🚨🚨 100% AI-GENERATED CODE 🚨🚨🚨 -->
+<!-- ⚠️ NO HUMAN HAS REVIEWED THIS! ⚠️ -->
+<!-- 🤖 Use at your own risk! 🤖 -->
+<!-- ============================= -->
+
+# ⚠️🤖🚨 **AI-GENERATED PROJECT DISCLAIMER** 🚨🤖⚠️
+
+> **🟡 This project is 100% AI-generated! 🟡**
+>
+> - 🤖 _All code, documentation, and logic were created by artificial intelligence._
+> - 👀 _No human has reviewed or audited this code._
+> - 🧪 _Use at your own risk! Bugs, security issues, and weirdness are possible._
+> - 📝 _Contributions and code reviews are **highly encouraged**!_
+>
+> **If you see this, you know you're living in the future.**
+
+---
+
 # Grumpy Tracker
 
 Grumpy Tracker is a time tracking system for keeping track of work hours and flex time.
