@@ -1,0 +1,50 @@
+version: "3.9"
+
+services:
+  db:
+    image: postgres:15
+    restart: always
+    environment:
+      POSTGRES_DB: grumpytracker
+      POSTGRES_USER: grumpy
+      POSTGRES_PASSWORD: grumpysecret
+    volumes:
+      - db_data:/var/lib/postgresql/data
+      - ./db_backups:/backups  # Backup folder accessible outside container
+    ports:
+      - "5432:5432"
+
+  app:
+    image: ghcr.io/bagro/grumpy-tracker:latest
+    restart: always
+    environment:
+      DATABASE_URL: postgres://grumpy:grumpysecret@db:5432/grumpytracker
+      NODE_ENV: production
+    ports:
+      - "3000:3000"
+    depends_on:
+      - db
+
+  db-backup:
+    image: debian:bookworm-slim
+    restart: always
+    depends_on:
+      - db
+    environment:
+      PGPASSWORD: grumpysecret
+      PGUSER: grumpy
+      PGDATABASE: grumpytracker
+      PGHOST: db
+      BACKUP_KEEP_DAYS: 7  # Change to keep more/less days
+    volumes:
+      - ./db_backups:/backups
+    entrypoint: ["/bin/bash", "-c"]
+    command: |
+      apt-get update && apt-get install -y postgresql-client cron gzip && \
+      echo "0 2 * * * pg_dump -h $PGHOST -U $PGUSER $PGDATABASE | gzip > /backups/grumpytracker-$(date +\%Y-\%m-\%d).sql.gz && find /backups -type f -name '*.sql.gz' -mtime +${BACKUP_KEEP_DAYS:-7} -delete" > /etc/cron.d/db-backup && \
+      chmod 0644 /etc/cron.d/db-backup && \
+      crontab /etc/cron.d/db-backup && \
+      cron -f
+
+volumes:
+  db_data:
