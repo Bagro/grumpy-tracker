@@ -7,5 +7,6 @@ RUN npm install
 COPY . .
 RUN npx prisma generate
 RUN npx tailwindcss -i ./src/public/input.css -o ./src/public/tailwind.css --minify || true
+RUN chmod +x ./start.sh
 EXPOSE 3000
-CMD ["npm", "run", "start"]
+CMD ["./start.sh"]
