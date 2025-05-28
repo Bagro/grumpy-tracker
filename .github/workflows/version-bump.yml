@@ -34,3 +34,8 @@ jobs:
           git add package.json
           git commit -m "ci: bump version [skip ci]"
           git push
+      - name: Trigger Docker Publish
+        uses: peter-evans/repository-dispatch@v3
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          event-type: docker-publish
