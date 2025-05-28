@@ -251,21 +251,14 @@ router.post("/time/:id/edit", async (req, res) => {
   try {
     if (!req.user) return res.redirect("/login");
     const { date, work_start_time, work_end_time, travel_start_time, travel_end_time, break_start_time, break_end_time, extra_time_start, extra_time_end, comments } = req.body;
-    function parseTime(date, time) {
-      if (!date || !time) return null;
-      if (!/^\d{2}:\d{2}$/.test(time)) return null;
-      const [h, m] = time.split(":");
-      const d = new Date(date);
-      d.setHours(Number(h), Number(m), 0, 0);
-      return d;
-    }
+    // Spara tider som minuter från midnatt
     const entryDate = date;
-    const workStart = parseTime(entryDate, work_start_time);
-    const workEnd = parseTime(entryDate, work_end_time);
-    const travelStart = travel_start_time ? parseTime(entryDate, travel_start_time) : null;
-    const travelEnd = travel_end_time ? parseTime(entryDate, travel_end_time) : null;
-    const breaksStart = Array.isArray(break_start_time) ? break_start_time.map(t => parseTime(entryDate, t)).filter(Boolean) : [];
-    const breaksEnd = Array.isArray(break_end_time) ? break_end_time.map(t => parseTime(entryDate, t)).filter(Boolean) : [];
+    const workStart = timeToMinutes(work_start_time);
+    const workEnd = timeToMinutes(work_end_time);
+    const travelStart = travel_start_time ? timeToMinutes(travel_start_time) : null;
+    const travelEnd = travel_end_time ? timeToMinutes(travel_end_time) : null;
+    const breaksStart = Array.isArray(break_start_time) ? break_start_time.map(timeToMinutes) : (break_start_time ? [timeToMinutes(break_start_time)] : []);
+    const breaksEnd = Array.isArray(break_end_time) ? break_end_time.map(timeToMinutes) : (break_end_time ? [timeToMinutes(break_end_time)] : []);
     // Handle multiple extra times
     let extraTimes = [];
     if (extra_time_start && extra_time_end) {
@@ -273,9 +266,9 @@ router.post("/time/:id/edit", async (req, res) => {
       const ends = Array.isArray(extra_time_end) ? extra_time_end : [extra_time_end];
       for (let i = 0; i < starts.length; ++i) {
         if (starts[i] && ends[i]) {
-          const start = parseTime(entryDate, starts[i]);
-          const end = parseTime(entryDate, ends[i]);
-          if (start && end && end > start) {
+          const start = timeToMinutes(starts[i]);
+          const end = timeToMinutes(ends[i]);
+          if (start >= 0 && end > start) {
             extraTimes.push({ start, end });
           }
         }
@@ -284,7 +277,7 @@ router.post("/time/:id/edit", async (req, res) => {
     await prisma.timeEntry.update({
       where: { id: req.params.id, user_id: req.user.id },
       data: {
-        date: parseISO(entryDate),
+        date: entryDate,
         work_start_time: workStart,
         work_end_time: workEnd,
         travel_start_time: travelStart,
@@ -308,6 +301,18 @@ router.post("/time/:id/edit", async (req, res) => {
     res.redirect("/time");
   } catch (err) {
     res.render("time-form", { entry: req.body, user: req.user, error: err.message, csrfToken: req.csrfToken() });
+  }
+});
+
+// Delete time entry
+router.post("/time/:id/delete", async (req, res) => {
+  try {
+    if (!req.user) return res.redirect("/login");
+    await prisma.extraTime.deleteMany({ where: { time_entry_id: req.params.id } });
+    await prisma.timeEntry.delete({ where: { id: req.params.id, user_id: req.user.id } });
+    res.redirect("/time");
+  } catch (err) {
+    res.status(500).send("Failed to delete time entry: " + err.message);
   }
 });
 
