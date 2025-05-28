@@ -20,6 +20,7 @@ import setupI18n from './i18n/index.js';
 import { PrismaClient } from '@prisma/client';
 import flash from 'connect-flash';
 import { getWorkTimeForDate } from './utils.js';
+import pgSession from 'connect-pg-simple';
 
 // Load env vars
 dotenv.config();
@@ -43,6 +44,10 @@ app.use(express.json());
 
 // Session
 app.use(session({
+  store: new (pgSession(session))({
+    conString: process.env.DATABASE_URL,
+    tableName: 'session'
+  }),
   secret: process.env.SESSION_SECRET || 'changeme',
   resave: false,
   saveUninitialized: false,
@@ -221,10 +226,18 @@ app.use(adminRoutes);
 // Error handler for CSRF and others
 app.use((err, req, res, next) => {
   console.error('INTERNAL ERROR:', err);
-  if (err.code === 'EBADCSRFTOKEN') {
-    return res.status(403).send('Form tampered with.');
+  if (res.headersSent) {
+    // Prevent double-send errors
+    return next(err);
   }
-  res.status(500).send('Internal Server Error: ' + (err.message || 'Unknown error'));
+  if (err.code === 'EBADCSRFTOKEN') {
+    // CSRF error
+    if (req.xhr || req.headers.accept?.includes('json')) {
+      return res.status(403).json({ error: 'Invalid CSRF token' });
+    }
+    return res.status(403).render('error', { message: 'Invalid CSRF token', error: err });
+  }
+  res.status(500).render('error', { message: 'Internal Server Error', error: err });
 });
 
 // TODO: Add routes, auth, db, i18n, error handling

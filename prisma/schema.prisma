@@ -72,3 +72,13 @@ model Settings {
   user_id           String   @unique
   normal_work_time  Int      @default(480) // minutes
 }
+
+/// Session table for connect-pg-simple (managed by Prisma)
+model Session {
+  sid         String   @id @db.VarChar(255)
+  sess        Json
+  expire      DateTime @db.Timestamp(6)
+  created_at  DateTime @default(now())
+
+  @@map("session")
+}

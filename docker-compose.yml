@@ -19,9 +19,8 @@ services:
       - '3000:3000'
     environment:
       DATABASE_URL: postgres://grumpy:grumpy@db:5432/grumpytracker
+      NODE_ENV: production
     depends_on:
       - db
-    volumes:
-      - .:/app
 volumes:
   pgdata:
