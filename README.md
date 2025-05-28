@@ -109,6 +109,25 @@ Run tests with:
 npm test
 ```
 
+## Verify Prisma migrations in Docker
+
+To ensure all tables are created automatically when using Docker and a prebuilt image:
+
+1. Make sure the `prisma/migrations/` directory exists in your repo and is NOT listed in `.dockerignore` or `.gitignore`.
+2. Rebuild and restart the database:
+
+   ```zsh
+   docker compose down
+   docker compose up --build -d db
+   sleep 10
+   docker compose run --rm app npx prisma migrate deploy
+   docker compose exec db psql -U grumpy -d grumpytracker -c '\dt'
+   ```
+
+3. You should now see all tables from `schema.prisma` (e.g. User, TimeEntry, ExtraTime, Settings, WorkPeriod, session, _prisma_migrations).
+
+If you only see the _prisma_migrations table, the migration files are missing from the image. Make sure `prisma/migrations/` is included in both the repo and the Docker image.
+
 ## Code Style & Architecture
 
 - Backend: Node.js, Express, Prisma, Passport.js, i18next

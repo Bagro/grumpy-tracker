@@ -4,3 +4,5 @@ dist
 coverage
 .DS_Store
 .env
+# Viktigt: uteslut INTE migrations!
+# /prisma/migrations/ ska INTE vara med här
