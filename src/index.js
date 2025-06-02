@@ -81,7 +81,7 @@ app.use(csurf());
 // Connect-flash middleware
 app.use(flash());
 
-// Middleware: redirect unauthenticated users to login (except /login, /register)
+// Middleware: redirect unauthenticated users to login (except /login, /register, /public, /logout)
 app.use((req, res, next) => {
   const publicPaths = ['/login', '/register', '/public', '/logout'];
   if (!req.user && !publicPaths.some(p => req.path.startsWith(p))) {
@@ -136,18 +136,29 @@ app.get('/', async (req, res) => {
     end = new Date(now.getFullYear(), now.getMonth() + 1, 1);
   } else { // week
     // Always use Monday as the first day of the week
-    const day = now.getDay();
-    // getDay(): 0=Sunday, 1=Monday, ..., 6=Saturday
-    const diffToMonday = (day === 0 ? -6 : 1 - day); // If Sunday, go back 6 days; else, go back to Monday
+    const day = now.getDay(); // 0=Sunday, 1=Monday, ..., 6=Saturday
+    // Calculate how many days to subtract to get to Monday
+    const diffToMonday = (day === 0 ? 6 : day - 1); // Sunday (6), Monday (0), Tuesday (1), ...
     start = new Date(now);
-    start.setDate(now.getDate() + diffToMonday);
+    start.setDate(now.getDate() - diffToMonday);
+    start.setHours(0, 0, 0, 0);
     end = new Date(start);
     end.setDate(start.getDate() + 7);
+    end.setHours(0, 0, 0, 0);
+    // For week period, ensure chartLabels are always Monday-Sunday
+    chartLabels = [];
+    let weekCursor = new Date(start);
+    for (let i = 0; i < 7; i++) {
+      chartLabels.push(weekCursor.toISOString().slice(0, 10));
+      weekCursor.setDate(weekCursor.getDate() + 1);
+    }
   }
   // Map for graph
   const dayMap = {};
   for (const e of entries) {
     const d = e.date instanceof Date ? e.date : new Date(e.date);
+    // Debug: print date comparison
+    console.log('Entry date:', d, 'Start:', start, 'End:', end, 'd >= start:', d >= start, 'd < end:', d < end);
     const dayKey = d.toISOString().slice(0,10);
     // Use correct work time for this entry
     const normal = await getWorkTimeForDate(d, userSettings, req.user.id);
@@ -197,8 +208,29 @@ app.get('/', async (req, res) => {
     cursor.setDate(cursor.getDate() + (period === 'year' ? 30 : period === 'month' ? 1 : 1));
   }
   chartLabels = days;
-  chartWork = days.map(d => dayMap[d]?.work || 0);
-  chartWorkTravel = days.map(d => dayMap[d]?.workTravel || 0);
+  // Convert minutes to hours (with decimals)
+  chartWork = days.map(d => (dayMap[d]?.work || 0) / 60);
+  chartWorkTravel = days.map(d => (dayMap[d]?.workTravel || 0) / 60);
+  // Normal time line (hours)
+  let chartNormal = [];
+  for (const d of days) {
+    const dateObj = new Date(d);
+    let normalMinutes = 480;
+    if (userSettings) {
+      normalMinutes = await getWorkTimeForDate(dateObj, userSettings, req.user.id);
+    }
+    chartNormal.push(normalMinutes / 60);
+  }
+  // Debug: log chart data
+  console.log('chartLabels', chartLabels);
+  console.log('chartWork', chartWork);
+  console.log('chartWorkTravel', chartWorkTravel);
+  console.log('chartNormal', chartNormal);
+
+  // Debug: print user id and all loaded entries
+  console.log('Current user id:', req.user.id);
+  console.log('Loaded entries:', entries);
+
   res.render('index', {
     user: req.user,
     flexPeriodWork: Math.round(flexPeriodWork),
@@ -210,6 +242,7 @@ app.get('/', async (req, res) => {
     chartLabels,
     chartWork,
     chartWorkTravel,
+    chartNormal,
     period,
     csrfToken: req.csrfToken()
   });

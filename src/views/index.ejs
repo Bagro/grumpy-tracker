@@ -65,6 +65,8 @@ function formatFlexTime(min) {
 var chartLabels = JSON.parse('<%- JSON.stringify(chartLabels) %>');
 var chartWork = JSON.parse('<%- JSON.stringify(chartWork) %>');
 var chartWorkTravel = JSON.parse('<%- JSON.stringify(chartWorkTravel) %>');
+var chartNormal = JSON.parse('<%- JSON.stringify(chartNormal) %>');
+var hoursShort = "<%= t('hours_short', 'h') %>";
 const ctx = document.getElementById('flexChart').getContext('2d');
 const flexChart = new Chart(ctx, {
   type: 'line',
@@ -86,6 +88,16 @@ const flexChart = new Chart(ctx, {
         backgroundColor: 'rgba(246,234,221,0.1)',
         fill: true,
         tension: 0.3
+      },
+      {
+        label: "<%= t('dashboard.normal_time', 'Normal Time') %>",
+        data: chartNormal,
+        borderColor: '#3b82f6', // blue
+        borderDash: [6, 6],
+        pointRadius: 0,
+        fill: false,
+        tension: 0,
+        borderWidth: 2
       }
     ]
   },
@@ -96,7 +108,19 @@ const flexChart = new Chart(ctx, {
     },
     scales: {
       x: { ticks: { color: '#f6eadd' } },
-      y: { ticks: { color: '#f6eadd' } }
+      y: {
+        ticks: {
+          color: '#f6eadd',
+          callback: function(value) {
+            return value + ' ' + hoursShort;
+          }
+        },
+        title: {
+          display: true,
+          text: hoursShort,
+          color: '#f6eadd'
+        }
+      }
     }
   }
 });

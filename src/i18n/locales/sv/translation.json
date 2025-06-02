@@ -59,5 +59,6 @@
   "dashboard.year": "År",
   "dashboard.show": "Visa",
   "dashboard.work_time": "Arbete",
-  "dashboard.work_travel_time": "+ Restid"
+  "dashboard.work_travel_time": "+ Restid",
+  "dashboard.normal_time": "Normaltid"
 }
