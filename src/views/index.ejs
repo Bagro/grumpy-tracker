@@ -28,15 +28,15 @@ function formatFlexTime(min) {
         <div class="flex flex-col max-w-xs w-full md:w-64 bg-grumpy-dark2 border border-grumpy-orange rounded-2xl shadow-xl p-4 sm:p-6 pointer-events-auto self-start md:self-start mx-auto md:mx-0 h-full">
           <div class="w-full">
             <h2 class="text-lg font-bold text-grumpy-orange mb-3">
-              <%= t('dashboard.flex_time', 'Flex Time') %>
+              <%= t('flex_time', 'Flex Time') %>
             </h2>
             <div class="flex flex-col gap-2 w-full">
               <div class="flex justify-between items-center">
-                <span class="font-semibold text-grumpy-offwhite"><%= t('dashboard.flex_time_work_total', 'Total Work') %>:</span>
+                <span class="font-semibold text-grumpy-offwhite"><%= t('dashboard.flex_time_work', 'Work') %>:</span>
                 <span class="text-xl font-extrabold text-grumpy-orange"><%= formatFlexTime(flexTotalWork) %></span>
               </div>
               <div class="flex justify-between items-center">
-                <span class="font-semibold text-grumpy-offwhite"><%= t('dashboard.flex_time_work_travel_total', 'Total + Travel') %>:</span>
+                <span class="font-semibold text-grumpy-offwhite"><%= t('dashboard.flex_time_work_travel', '+ Travel') %>:</span>
                 <span class="text-xl font-extrabold text-grumpy-orange"><%= formatFlexTime(flexTotalWorkTravel) %></span>
               </div>
             </div>

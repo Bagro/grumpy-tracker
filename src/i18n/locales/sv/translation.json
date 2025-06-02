@@ -11,6 +11,8 @@
   "register": "Registrera",
   "dashboard.flex_time_work": "Arbete",
   "dashboard.flex_time_work_travel": "+ Resa",
+  "dashboard.work_time": "Arbete",
+  "dashboard.work_travel_time": "+ Restid",
   "date": "Datum",
   "travel_start": "Resestart",
   "work_start": "Arbetsstart",
@@ -49,5 +51,13 @@
   "week": "Vecka",
   "month": "Månad",
   "total_flex": "Total flextid:",
-  "work_periods": "Avvikande arbetstid (t.ex. sommar, vinter, projekt)"
+  "work_periods": "Avvikande arbetstid (t.ex. sommar, vinter, projekt)",
+  "dashboard.flex_graph": "Arbets- och restid",
+  "dashboard.period": "Period",
+  "dashboard.week": "Vecka",
+  "dashboard.month": "Månad",
+  "dashboard.year": "År",
+  "dashboard.show": "Visa",
+  "dashboard.work_time": "Arbete",
+  "dashboard.work_travel_time": "+ Restid"
 }
