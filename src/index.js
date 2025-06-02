@@ -143,16 +143,19 @@ app.get('/', async (req, res) => {
   } else { // week
     let week = typeof selectedWeek === 'number' ? selectedWeek : getISOWeek(now);
     let year = now.getFullYear();
-    // Find Monday of the selected ISO week
-    const simple = new Date(year, 0, 1 + (week - 1) * 7);
-    const dow = simple.getDay();
-    let monday = simple;
-    if (dow <= 4)
-      monday.setDate(simple.getDate() - simple.getDay() + 1);
-    else
-      monday.setDate(simple.getDate() + 8 - simple.getDay());
+    // Always find Monday of the selected ISO week
+    function getMondayOfISOWeek(week, year) {
+      const simple = new Date(year, 0, 1 + (week - 1) * 7);
+      const dow = simple.getDay();
+      // 0 (Sun) -> 7
+      const day = dow === 0 ? 7 : dow;
+      // ISO week: Monday is 1
+      simple.setDate(simple.getDate() - day + 1);
+      simple.setHours(0, 0, 0, 0);
+      return simple;
+    }
+    const monday = getMondayOfISOWeek(week, year);
     start = new Date(monday);
-    start.setHours(0, 0, 0, 0);
     end = new Date(start);
     end.setDate(start.getDate() + 7);
     end.setHours(0, 0, 0, 0);
