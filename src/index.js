@@ -124,27 +124,39 @@ app.get('/', async (req, res) => {
   const userSettings = await prisma.settings.findUnique({ where: { user_id: req.user.id } });
   // For graph
   const period = req.query.period || 'week';
+  const selectedMonth = typeof req.query.month !== 'undefined' ? Number(req.query.month) : undefined;
+  const selectedWeek = typeof req.query.week !== 'undefined' ? Number(req.query.week) : undefined;
   let chartLabels = [], chartWork = [], chartWorkTravel = [];
   // Group entries by day for the selected period
   let start, end;
   const now = new Date();
+  let currentWeek = getISOWeek(now);
+  let currentMonth = now.getMonth();
   if (period === 'year') {
     start = new Date(now.getFullYear(), 0, 1);
     end = new Date(now.getFullYear() + 1, 0, 1);
   } else if (period === 'month') {
-    start = new Date(now.getFullYear(), now.getMonth(), 1);
-    end = new Date(now.getFullYear(), now.getMonth() + 1, 1);
+    const month = typeof selectedMonth === 'number' ? selectedMonth : now.getMonth();
+    start = new Date(now.getFullYear(), month, 1);
+    end = new Date(now.getFullYear(), month + 1, 1);
+    currentMonth = month;
   } else { // week
-    // Always use Monday as the first day of the week
-    const day = now.getDay(); // 0=Sunday, 1=Monday, ..., 6=Saturday
-    // Calculate how many days to subtract to get to Monday
-    const diffToMonday = (day === 0 ? 6 : day - 1); // Sunday (6), Monday (0), Tuesday (1), ...
-    start = new Date(now);
-    start.setDate(now.getDate() - diffToMonday);
+    let week = typeof selectedWeek === 'number' ? selectedWeek : getISOWeek(now);
+    let year = now.getFullYear();
+    // Find Monday of the selected ISO week
+    const simple = new Date(year, 0, 1 + (week - 1) * 7);
+    const dow = simple.getDay();
+    let monday = simple;
+    if (dow <= 4)
+      monday.setDate(simple.getDate() - simple.getDay() + 1);
+    else
+      monday.setDate(simple.getDate() + 8 - simple.getDay());
+    start = new Date(monday);
     start.setHours(0, 0, 0, 0);
     end = new Date(start);
     end.setDate(start.getDate() + 7);
     end.setHours(0, 0, 0, 0);
+    currentWeek = week;
     // For week period, ensure chartLabels are always Monday-Sunday
     chartLabels = [];
     let weekCursor = new Date(start);
@@ -244,9 +256,22 @@ app.get('/', async (req, res) => {
     chartWorkTravel,
     chartNormal,
     period,
+    month: currentMonth,
+    week: currentWeek,
+    currentWeek,
+    currentMonth,
     csrfToken: req.csrfToken()
   });
 });
+
+// Helper to get ISO week number
+function getISOWeek(date) {
+  const d = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
+  const dayNum = d.getUTCDay() || 7;
+  d.setUTCDate(d.getUTCDate() + 4 - dayNum);
+  const yearStart = new Date(Date.UTC(d.getUTCFullYear(),0,1));
+  return Math.ceil((((d - yearStart) / 86400000) + 1)/7);
+}
 
 // Auth routes
 app.use(authRoutes);

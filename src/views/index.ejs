@@ -47,13 +47,31 @@ function formatFlexTime(min) {
           <h2 class="text-xl font-bold text-grumpy-orange mb-4"><%= t('dashboard.flex_graph', 'Work & Travel Time') %></h2>
           <form method="get" class="mb-4 flex flex-wrap gap-2 items-center">
             <label for="period" class="text-grumpy-offwhite font-semibold"><%= t('dashboard.period', 'Period') %>:</label>
-            <select id="period" name="period" class="bg-grumpy-dark2 border border-grumpy-orange rounded p-1 text-grumpy-offwhite">
+            <select id="period" name="period" class="bg-grumpy-dark2 border border-grumpy-orange rounded p-1 text-grumpy-offwhite" onchange="togglePeriodSelectors()">
               <option value="week" <%= period === 'week' ? 'selected' : '' %>><%= t('dashboard.week', 'Week') %></option>
               <option value="month" <%= period === 'month' ? 'selected' : '' %>><%= t('dashboard.month', 'Month') %></option>
               <option value="year" <%= period === 'year' ? 'selected' : '' %>><%= t('dashboard.year', 'Year') %></option>
             </select>
+            <select id="month-select" name="month" class="bg-grumpy-dark2 border border-grumpy-orange rounded p-1 text-grumpy-offwhite" style="display:none">
+              <% for (let m = 0; m < 12; m++) { %>
+                <option value="<%= m %>" <%= (typeof month !== 'undefined' && Number(month) === m) ? 'selected' : (new Date().getMonth() === m && period === 'month' ? 'selected' : '') %>><%= new Date(2000, m, 1).toLocaleString((user && user.preferred_language) || 'en', { month: 'long' }) %></option>
+              <% } %>
+            </select>
+            <select id="week-select" name="week" class="bg-grumpy-dark2 border border-grumpy-orange rounded p-1 text-grumpy-offwhite" style="display:none">
+              <% for (let w = 1; w <= 53; w++) { %>
+                <option value="<%= w %>" <%= (typeof week !== 'undefined' && Number(week) === w) ? 'selected' : (w === currentWeek && period === 'week' ? 'selected' : '') %>>W<%= w %></option>
+              <% } %>
+            </select>
             <button type="submit" class="bg-grumpy-orange text-grumpy-dark2 px-3 py-1 rounded font-semibold hover:bg-grumpy-dark2 hover:text-grumpy-orange border border-grumpy-orange transition"><%= t('dashboard.show', 'Show') %></button>
           </form>
+          <script>
+            function togglePeriodSelectors() {
+              var period = document.getElementById('period').value;
+              document.getElementById('month-select').style.display = period === 'month' ? '' : 'none';
+              document.getElementById('week-select').style.display = period === 'week' ? '' : 'none';
+            }
+            document.addEventListener('DOMContentLoaded', togglePeriodSelectors);
+          </script>
           <div class="w-full overflow-x-auto">
             <canvas id="flexChart" class="max-w-full" width="400" height="200"></canvas>
           </div>
