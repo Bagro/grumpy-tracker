@@ -847,6 +847,10 @@ select {
   margin-top: 2rem;
 }
 
+.ml-1 {
+  margin-left: 0.25rem;
+}
+
 .block {
   display: block;
 }
@@ -861,6 +865,10 @@ select {
 
 .flex {
   display: flex;
+}
+
+.inline-flex {
+  display: inline-flex;
 }
 
 .table {
@@ -887,6 +895,14 @@ select {
   height: 100%;
 }
 
+.h-4 {
+  height: 1rem;
+}
+
+.h-6 {
+  height: 1.5rem;
+}
+
 .min-h-screen {
   min-height: 100vh;
 }
@@ -909,6 +925,18 @@ select {
 
 .w-full {
   width: 100%;
+}
+
+.w-4 {
+  width: 1rem;
+}
+
+.w-48 {
+  width: 12rem;
+}
+
+.w-6 {
+  width: 1.5rem;
 }
 
 .min-w-0 {
@@ -949,6 +977,10 @@ select {
 
 .max-w-xs {
   max-width: 20rem;
+}
+
+.max-w-xl {
+  max-width: 36rem;
 }
 
 .flex-1 {
@@ -1011,6 +1043,10 @@ select {
   gap: 1.5rem;
 }
 
+.gap-1 {
+  gap: 0.25rem;
+}
+
 .space-x-2 > :not([hidden]) ~ :not([hidden]) {
   --tw-space-x-reverse: 0;
   margin-right: calc(0.5rem * var(--tw-space-x-reverse));
@@ -1071,6 +1107,16 @@ select {
 .rounded-b-xl {
   border-bottom-right-radius: 0.75rem;
   border-bottom-left-radius: 0.75rem;
+}
+
+.rounded-b {
+  border-bottom-right-radius: 0.25rem;
+  border-bottom-left-radius: 0.25rem;
+}
+
+.rounded-t {
+  border-top-left-radius: 0.25rem;
+  border-top-right-radius: 0.25rem;
 }
 
 .border {
@@ -1367,6 +1413,11 @@ select {
   box-shadow: var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow);
 }
 
+.blur {
+  --tw-blur: blur(8px);
+  filter: var(--tw-blur) var(--tw-brightness) var(--tw-contrast) var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate) var(--tw-sepia) var(--tw-drop-shadow);
+}
+
 .filter {
   filter: var(--tw-blur) var(--tw-brightness) var(--tw-contrast) var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate) var(--tw-sepia) var(--tw-drop-shadow);
 }
@@ -1415,6 +1466,11 @@ select {
   background-color: rgb(35 33 30 / var(--tw-bg-opacity, 1));
 }
 
+.hover\:bg-grumpy-orange:hover {
+  --tw-bg-opacity: 1;
+  background-color: rgb(231 106 46 / var(--tw-bg-opacity, 1));
+}
+
 .hover\:text-grumpy-offwhite:hover {
   --tw-text-opacity: 1;
   color: rgb(246 234 221 / var(--tw-text-opacity, 1));
@@ -1423,6 +1479,11 @@ select {
 .hover\:text-grumpy-orange:hover {
   --tw-text-opacity: 1;
   color: rgb(231 106 46 / var(--tw-text-opacity, 1));
+}
+
+.hover\:text-grumpy-dark2:hover {
+  --tw-text-opacity: 1;
+  color: rgb(35 33 30 / var(--tw-text-opacity, 1));
 }
 
 .hover\:underline:hover {
@@ -1443,6 +1504,18 @@ select {
 .focus\:ring-grumpy-orange:focus {
   --tw-ring-opacity: 1;
   --tw-ring-color: rgb(231 106 46 / var(--tw-ring-opacity, 1));
+}
+
+.group[open] .group-open\:block {
+  display: block;
+}
+
+.group:focus-within .group-focus-within\:block {
+  display: block;
+}
+
+.group:hover .group-hover\:block {
+  display: block;
 }
 
 @media (min-width: 640px) {

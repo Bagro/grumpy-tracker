@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="<%= (user && user.preferred_language) || 'en' %>">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title><%= t('absence.list', 'Absence Entries') %> - Grumpy Tracker</title>
+    <link href="/public/tailwind.css" rel="stylesheet">
+  </head>
+  <body class="bg-grumpy-dark min-h-screen flex flex-col font-sans text-grumpy-offwhite">
+    <%- include('partials/menu', { user, csrfToken, currentPath: request.path }) %>
+    <main class="flex-1 flex flex-col items-center mt-8">
+      <div class="w-full max-w-4xl mt-6 mb-6">
+        <div class="flex flex-row justify-between items-center mb-4">
+          <h1 class="text-2xl font-bold text-grumpy-orange flex items-center gap-2">
+            <svg class="w-6 h-6 text-grumpy-orange" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2a4 4 0 014-4h2a4 4 0 014 4v2"/></svg>
+            <%= t('absence.list', 'Absence Entries') %>
+          </h1>
+          <a href="/absence/new" class="bg-grumpy-orange text-grumpy-dark2 px-4 py-2 rounded font-semibold hover:bg-grumpy-dark2 hover:text-grumpy-orange border border-grumpy-orange transition"><%= t('absence.add', 'Add Absence') %></a>
+        </div>
+        <div class="bg-grumpy-dark2 shadow-2xl rounded-2xl p-10 border border-grumpy-orange">
+          <table class="w-full table-auto rounded-2xl shadow mb-6 bg-grumpy-dark2 border border-grumpy-orange">
+            <thead class="bg-grumpy-dark2 text-grumpy-orange">
+              <tr>
+                <th class="px-2 py-1"><%= t('date', 'Date') %></th>
+                <th class="px-2 py-1"><%= t('absence.type', 'Type') %></th>
+                <th class="px-2 py-1"><%= t('absence.full_day', 'Full Day') %></th>
+                <th class="px-2 py-1"><%= t('absence.start_time', 'Start') %></th>
+                <th class="px-2 py-1"><%= t('absence.end_time', 'End') %></th>
+                <th class="px-2 py-1"><%= t('comments', 'Comments') %></th>
+                <th class="px-2 py-1"></th>
+              </tr>
+            </thead>
+            <tbody>
+              <% absences.forEach(function(a) { %>
+                <tr class="even:bg-grumpy-dark hover:bg-grumpy-dark2 transition">
+                  <td class="px-2 py-1"><%= a.date %></td>
+                  <td class="px-2 py-1"><%= t('absence.' + a.type, a.type) %></td>
+                  <td class="px-2 py-1"><%= a.full_day ? t('yes', 'Yes') : t('no', 'No') %></td>
+                  <td class="px-2 py-1"><%= a.start_time != null ? a.start_time : '' %></td>
+                  <td class="px-2 py-1"><%= a.end_time != null ? a.end_time : '' %></td>
+                  <td class="px-2 py-1"><%= a.comments || '' %></td>
+                  <td class="px-2 py-1">
+                    <% const deleteConfirmText = t('delete_confirm', 'Delete?'); %>
+                    <form method="post" action="/absence/<%= a.id %>/delete" onsubmit="return confirm('<%= deleteConfirmText %>');" class="inline">
+                      <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
+                      <button type="submit" class="text-red-700 underline hover:text-grumpy-orange transition"><%= t('delete', 'Delete') %></button>
+                    </form>
+                  </td>
+                </tr>
+              <% }) %>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </main>
+    <%- include('partials/footer') %>
+  </body>
+</html>

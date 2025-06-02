@@ -16,6 +16,8 @@ import profileRoutes from './routes/profile.js';
 import settingsRoutes from './routes/settings.js';
 import gdprRoutes from './routes/gdpr.js';
 import adminRoutes from './routes/admin.js';
+import absenceRoutes from './routes/absence.js';
+import flexusageRoutes from './routes/flexusage.js';
 import setupI18n from './i18n/index.js';
 import { PrismaClient } from '@prisma/client';
 import flash from 'connect-flash';
@@ -117,6 +119,11 @@ app.get('/', async (req, res) => {
     if (!extraMap[et.time_entry_id]) extraMap[et.time_entry_id] = [];
     extraMap[et.time_entry_id].push(et);
   }
+  // Fetch absences and flex usages for user in the period
+  // We'll fetch for the whole year to cover all periods, then filter in-memory
+  const allAbsences = await prisma.absence.findMany({ where: { user_id: req.user.id } });
+  const allFlexUsages = await prisma.flexUsage.findMany({ where: { user_id: req.user.id } });
+
   let flexTodayWork = 0, flexTodayWorkTravel = 0;
   let flexTotalWork = 0, flexTotalWorkTravel = 0;
   let flexPeriodWork = 0, flexPeriodWorkTravel = 0;
@@ -143,13 +150,10 @@ app.get('/', async (req, res) => {
   } else { // week
     let week = typeof selectedWeek === 'number' ? selectedWeek : getISOWeek(now);
     let year = now.getFullYear();
-    // Always find Monday of the selected ISO week
     function getMondayOfISOWeek(week, year) {
       const simple = new Date(year, 0, 1 + (week - 1) * 7);
       const dow = simple.getDay();
-      // 0 (Sun) -> 7
       const day = dow === 0 ? 7 : dow;
-      // ISO week: Monday is 1
       simple.setDate(simple.getDate() - day + 1);
       simple.setHours(0, 0, 0, 0);
       return simple;
@@ -160,7 +164,6 @@ app.get('/', async (req, res) => {
     end.setDate(start.getDate() + 7);
     end.setHours(0, 0, 0, 0);
     currentWeek = week;
-    // For week period, ensure chartLabels are always Monday-Sunday
     chartLabels = [];
     let weekCursor = new Date(start);
     for (let i = 0; i < 7; i++) {
@@ -170,13 +173,41 @@ app.get('/', async (req, res) => {
   }
   // Map for graph
   const dayMap = {};
+  // Build a map of absences and flex usages by date
+  const absenceMap = {};
+  for (const a of allAbsences) {
+    if (!absenceMap[a.date]) absenceMap[a.date] = [];
+    absenceMap[a.date].push(a);
+  }
+  const flexUsageMap = {};
+  for (const f of allFlexUsages) {
+    if (!flexUsageMap[f.date]) flexUsageMap[f.date] = [];
+    flexUsageMap[f.date].push(f);
+  }
   for (const e of entries) {
     const d = e.date instanceof Date ? e.date : new Date(e.date);
-    // Debug: print date comparison
-    console.log('Entry date:', d, 'Start:', start, 'End:', end, 'd >= start:', d >= start, 'd < end:', d < end);
     const dayKey = d.toISOString().slice(0,10);
     // Use correct work time for this entry
-    const normal = await getWorkTimeForDate(d, userSettings, req.user.id);
+    let normal = await getWorkTimeForDate(d, userSettings, req.user.id);
+    // Adjust normal for absences (subtract partial, skip flex for full day)
+    let absenceMinutes = 0;
+    let fullDayAbsence = false;
+    if (absenceMap[dayKey]) {
+      for (const a of absenceMap[dayKey]) {
+        if (a.full_day) {
+          fullDayAbsence = true;
+          absenceMinutes += normal; // treat as full normal work time
+        } else if (a.start_time != null && a.end_time != null) {
+          absenceMinutes += (a.end_time - a.start_time);
+        }
+      }
+    }
+    // If full day absence, skip flex calculation for this day (no flex earned or lost)
+    if (fullDayAbsence) continue;
+    // Otherwise, reduce normal work time by partial absences
+    if (absenceMinutes > 0) {
+      normal = Math.max(0, normal - absenceMinutes);
+    }
     // Work, breaks, extra (all in minutes)
     const workMinutes = (typeof e.work_end_time === 'number' && typeof e.work_start_time === 'number') ? (e.work_end_time - e.work_start_time) : 0;
     const breakMinutes = (Array.isArray(e.break_start_time) && Array.isArray(e.break_end_time)) ? e.break_start_time.reduce((sum, b, i) => {
@@ -184,13 +215,37 @@ app.get('/', async (req, res) => {
       return sum + (typeof b === 'number' && typeof end === 'number' && end > b ? (end - b) : 0);
     }, 0) : 0;
     const extraMinutes = (extraMap[e.id] || []).reduce((sum, et) => sum + (typeof et.start === 'number' && typeof et.end === 'number' && et.end > et.start ? (et.end - et.start) : 0), 0);
-    const flexWork = workMinutes - breakMinutes + extraMinutes - normal;
-    // Flex (work + travel) - correct formula: (work_end - work_start) + (work_start - travel_start) + (travel_end - work_end) - breaks + extra - normal
+    let flexWork = workMinutes - breakMinutes + extraMinutes - normal;
+    // Subtract flex usage for this day
+    if (flexUsageMap[dayKey]) {
+      for (const f of flexUsageMap[dayKey]) {
+        if (f.full_day) {
+          flexWork -= normal; // full day = normal work time
+        } else if (f.amount != null) {
+          flexWork -= f.amount;
+        } else if (f.start_time != null && f.end_time != null) {
+          flexWork -= (f.end_time - f.start_time);
+        }
+      }
+    }
+    // Flex (work + travel)
     let flexWorkTravel = flexWork;
     if (typeof e.travel_start_time === 'number' && typeof e.travel_end_time === 'number' && typeof e.work_start_time === 'number' && typeof e.work_end_time === 'number') {
       const beforeWork = e.work_start_time - e.travel_start_time;
       const afterWork = e.travel_end_time - e.work_end_time;
       flexWorkTravel = workMinutes + beforeWork + afterWork - breakMinutes + extraMinutes - normal;
+      // Subtract flex usage for this day (same as above)
+      if (flexUsageMap[dayKey]) {
+        for (const f of flexUsageMap[dayKey]) {
+          if (f.full_day) {
+            flexWorkTravel -= normal;
+          } else if (f.amount != null) {
+            flexWorkTravel -= f.amount;
+          } else if (f.start_time != null && f.end_time != null) {
+            flexWorkTravel -= (f.end_time - f.start_time);
+          }
+        }
+      }
     }
     if (dayKey === today) {
       flexTodayWork += flexWork;
@@ -233,6 +288,19 @@ app.get('/', async (req, res) => {
     let normalMinutes = 480;
     if (userSettings) {
       normalMinutes = await getWorkTimeForDate(dateObj, userSettings, req.user.id);
+    }
+    // If full day absence, normalMinutes = 0 for chart
+    if (absenceMap[d] && absenceMap[d].some(a => a.full_day)) {
+      normalMinutes = 0;
+    } else if (absenceMap[d]) {
+      // Subtract partial absences
+      let absenceMinutes = 0;
+      for (const a of absenceMap[d]) {
+        if (!a.full_day && a.start_time != null && a.end_time != null) {
+          absenceMinutes += (a.end_time - a.start_time);
+        }
+      }
+      normalMinutes = Math.max(0, normalMinutes - absenceMinutes);
     }
     chartNormal.push(normalMinutes / 60);
   }
@@ -283,6 +351,8 @@ app.use(profileRoutes);
 app.use(settingsRoutes);
 app.use(gdprRoutes);
 app.use(adminRoutes);
+app.use(absenceRoutes);
+app.use(flexusageRoutes);
 
 // Error handler for CSRF and others
 app.use((err, req, res, next) => {
