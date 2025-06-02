@@ -60,5 +60,22 @@
   "dashboard.show": "Visa",
   "dashboard.work_time": "Arbete",
   "dashboard.work_travel_time": "+ Restid",
-  "dashboard.normal_time": "Normaltid"
+  "dashboard.normal_time": "Normaltid",
+  "absence": {
+    "new": "Registrera frånvaro",
+    "type": "Typ",
+    "vacation": "Semester",
+    "sickness": "Sjukdom",
+    "care_of_sick_child": "Vård av barn",
+    "full_day": "Heldag",
+    "start_time": "Starttid",
+    "end_time": "Sluttid"
+  },
+  "flexusage": {
+    "new": "Registrera flexuttag",
+    "full_day": "Heldag",
+    "start_time": "Starttid",
+    "end_time": "Sluttid",
+    "amount": "Belopp (hh:mm)"
+  }
 }

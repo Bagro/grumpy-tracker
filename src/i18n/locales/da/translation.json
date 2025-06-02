@@ -58,5 +58,22 @@
   "week": "Uge",
   "month": "Måned",
   "total_flex": "Total flextid:",
-  "work_periods": "Afvigende arbejdstid (f.eks. sommer, vinter, projekt)"
+  "work_periods": "Afvigende arbejdstid (f.eks. sommer, vinter, projekt)",
+  "absence": {
+    "new": "Registrer fravær",
+    "type": "Type",
+    "vacation": "Ferie",
+    "sickness": "Sygdom",
+    "care_of_sick_child": "Pasning af sygt barn",
+    "full_day": "Hele dagen",
+    "start_time": "Starttidspunkt",
+    "end_time": "Sluttidspunkt"
+  },
+  "flexusage": {
+    "new": "Registrer flextidsforbrug",
+    "full_day": "Hele dagen",
+    "start_time": "Starttidspunkt",
+    "end_time": "Sluttidspunkt",
+    "amount": "Beløb (tt:mm)"
+  }
 }

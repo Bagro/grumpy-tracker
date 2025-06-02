@@ -58,5 +58,22 @@
   "week": "Nädal",
   "month": "Kuu",
   "total_flex": "Kogu pausiaeg:",
-  "work_periods": "Erinevad tööajad (nt suvi, talv, projekt)"
+  "work_periods": "Erinevad tööajad (nt suvi, talv, projekt)",
+  "absence": {
+    "new": "Registreeri puudumine",
+    "type": "Tüüp",
+    "vacation": "Puhkus",
+    "sickness": "Haigus",
+    "care_of_sick_child": "Haige lapse hooldus",
+    "full_day": "Terve päev",
+    "start_time": "Algusaeg",
+    "end_time": "Lõpuaeg"
+  },
+  "flexusage": {
+    "new": "Registreeri paindaja kasutus",
+    "full_day": "Terve päev",
+    "start_time": "Algusaeg",
+    "end_time": "Lõpuaeg",
+    "amount": "Kogus (hh:mm)"
+  }
 }

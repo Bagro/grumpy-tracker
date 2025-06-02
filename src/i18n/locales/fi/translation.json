@@ -58,5 +58,22 @@
   "week": "Viikko",
   "month": "Kuukausi",
   "total_flex": "Joustoaika yhteensä:",
-  "work_periods": "Poikkeavat työajat (esim. kesä, talvi, projekti)"
+  "work_periods": "Poikkeavat työajat (esim. kesä, talvi, projekti)",
+  "absence": {
+    "new": "Ilmoita poissaolo",
+    "type": "Tyyppi",
+    "vacation": "Loma",
+    "sickness": "Sairaus",
+    "care_of_sick_child": "Sairaan lapsen hoito",
+    "full_day": "Koko päivä",
+    "start_time": "Alkuaika",
+    "end_time": "Loppuaika"
+  },
+  "flexusage": {
+    "new": "Ilmoita joustotyön käyttö",
+    "full_day": "Koko päivä",
+    "start_time": "Alkuaika",
+    "end_time": "Loppuaika",
+    "amount": "Määrä (hh:mm)"
+  }
 }

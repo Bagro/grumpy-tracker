@@ -58,5 +58,22 @@
   "week": "Nedēļa",
   "month": "Mēnesis",
   "total_flex": "Kopējais elastīgais laiks:",
-  "work_periods": "Atkāpes darba laikos (piem., vasara, ziema, projekts)"
+  "work_periods": "Atkāpes darba laikos (piem., vasara, ziema, projekts)",
+  "absence": {
+    "new": "Reģistrēt prombūtni",
+    "type": "Veids",
+    "vacation": "Atvaļinājums",
+    "sickness": "Slimība",
+    "care_of_sick_child": "Bērna kopšana",
+    "full_day": "Visa diena",
+    "start_time": "Sākuma laiks",
+    "end_time": "Beigu laiks"
+  },
+  "flexusage": {
+    "new": "Reģistrēt elastīgā laika izmantošanu",
+    "full_day": "Visa diena",
+    "start_time": "Sākuma laiks",
+    "end_time": "Beigu laiks",
+    "amount": "Daudzums (hh:mm)"
+  }
 }

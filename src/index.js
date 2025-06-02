@@ -189,7 +189,7 @@ app.get('/', async (req, res) => {
     const dayKey = d.toISOString().slice(0,10);
     // Use correct work time for this entry
     let normal = await getWorkTimeForDate(d, userSettings, req.user.id);
-    // Adjust normal for absences (subtract partial, skip flex for full day)
+    // Adjust normal for absences (subtract partial, handle full day)
     let absenceMinutes = 0;
     let fullDayAbsence = false;
     if (absenceMap[dayKey]) {
@@ -202,10 +202,11 @@ app.get('/', async (req, res) => {
         }
       }
     }
-    // If full day absence, skip flex calculation for this day (no flex earned or lost)
-    if (fullDayAbsence) continue;
-    // Otherwise, reduce normal work time by partial absences
-    if (absenceMinutes > 0) {
+    // If full day absence, all work time is flex (normal=0)
+    if (fullDayAbsence) {
+      normal = 0;
+    } else if (absenceMinutes > 0) {
+      // Otherwise, reduce normal work time by partial absences
       normal = Math.max(0, normal - absenceMinutes);
     }
     // Work, breaks, extra (all in minutes)
@@ -220,7 +221,7 @@ app.get('/', async (req, res) => {
     if (flexUsageMap[dayKey]) {
       for (const f of flexUsageMap[dayKey]) {
         if (f.full_day) {
-          flexWork -= normal; // full day = normal work time
+          flexWork -= normal; // full day = normal work time (now 0 if full absence)
         } else if (f.amount != null) {
           flexWork -= f.amount;
         } else if (f.start_time != null && f.end_time != null) {

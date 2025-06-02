@@ -49,18 +49,61 @@ router.get("/time", async (req, res) => {
       start: et.start,
       end: et.end
     }));
+    // Absence and flex usage integration (match dashboard logic)
+    const d = e.date instanceof Date ? e.date : new Date(e.date);
+    const dayKey = d.toISOString().slice(0,10);
+    let normal = await getWorkTimeForDate(d, userSettings, req.user.id);
+    // Fetch absences for this day
+    const absences = await prisma.absence.findMany({ where: { user_id: req.user.id, date: dayKey } });
+    let absenceMinutes = 0;
+    let fullDayAbsence = false;
+    for (const a of absences) {
+      if (a.full_day) {
+        fullDayAbsence = true;
+        absenceMinutes += normal;
+      } else if (a.start_time != null && a.end_time != null) {
+        absenceMinutes += (a.end_time - a.start_time);
+      }
+    }
+    if (fullDayAbsence) {
+      normal = 0;
+    } else if (absenceMinutes > 0) {
+      normal = Math.max(0, normal - absenceMinutes);
+    }
     // Flex
-    const normal = await getWorkTimeForDate(new Date(e.date), userSettings, req.user.id);
     const work = (typeof e.work_end_time === 'number' && typeof e.work_start_time === 'number') ? (e.work_end_time - e.work_start_time) : 0;
     const breaksMin = breaks.reduce((sum, b) => sum + (typeof b.start === 'number' && typeof b.end === 'number' && b.end > b.start ? (b.end - b.start) : 0), 0);
     const extraMin = extraTimes.reduce((sum, et) => sum + (typeof et.start === 'number' && typeof et.end === 'number' && et.end > et.start ? (et.end - et.start) : 0), 0);
-    const flex = work - breaksMin + extraMin - normal;
+    let flex = work - breaksMin + extraMin - normal;
+    // Subtract flex usage for this day (fix: always subtract, even if normal=0)
+    const flexusages = await prisma.flexUsage.findMany({ where: { user_id: req.user.id, date: dayKey } });
+    for (const f of flexusages) {
+      if (f.full_day) {
+        // Subtract the user's normal work time for this date (not the possibly reduced normal)
+        const normalForDay = await getWorkTimeForDate(d, userSettings, req.user.id);
+        flex -= normalForDay;
+      } else if (f.amount != null) {
+        flex -= f.amount;
+      } else if (f.start_time != null && f.end_time != null) {
+        flex -= (f.end_time - f.start_time);
+      }
+    }
     // Flex + Travel (samma logik som dashboard)
     let flexTravel = flex;
     if (typeof e.travel_start_time === 'number' && typeof e.travel_end_time === 'number' && typeof e.work_start_time === 'number' && typeof e.work_end_time === 'number') {
       const beforeWork = e.work_start_time - e.travel_start_time;
       const afterWork = e.travel_end_time - e.work_end_time;
       flexTravel = work + beforeWork + afterWork - breaksMin + extraMin - normal;
+      for (const f of flexusages) {
+        if (f.full_day) {
+          const normalForDay = await getWorkTimeForDate(d, userSettings, req.user.id);
+          flexTravel -= normalForDay;
+        } else if (f.amount != null) {
+          flexTravel -= f.amount;
+        } else if (f.start_time != null && f.end_time != null) {
+          flexTravel -= (f.end_time - f.start_time);
+        }
+      }
     }
     if (e.date === today) flexToday += flex;
     flexTotal += flex;

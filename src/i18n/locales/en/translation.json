@@ -50,5 +50,22 @@
   "week": "Week",
   "month": "Month",
   "total_flex": "Total flex time:",
-  "work_periods": "Custom Work Periods (e.g. summer, winter, project)"
+  "work_periods": "Custom Work Periods (e.g. summer, winter, project)",
+  "absence": {
+    "new": "Register Absence",
+    "type": "Type",
+    "vacation": "Vacation",
+    "sickness": "Sickness",
+    "care_of_sick_child": "Care of Sick Child",
+    "full_day": "Full Day",
+    "start_time": "Start Time",
+    "end_time": "End Time"
+  },
+  "flexusage": {
+    "new": "Register Flex Usage",
+    "full_day": "Full Day",
+    "start_time": "Start Time",
+    "end_time": "End Time",
+    "amount": "Amount (hh:mm)"
+  }
 }

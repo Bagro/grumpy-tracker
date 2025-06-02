@@ -58,5 +58,22 @@
   "week": "Uke",
   "month": "Måned",
   "total_flex": "Total fleksitid:",
-  "work_periods": "Avvikende arbeidstid (f.eks. sommer, vinter, prosjekt)"
+  "work_periods": "Avvikende arbeidstid (f.eks. sommer, vinter, prosjekt)",
+  "absence": {
+    "new": "Registrer fravær",
+    "type": "Type",
+    "vacation": "Ferie",
+    "sickness": "Sykdom",
+    "care_of_sick_child": "Omsorg for sykt barn",
+    "full_day": "Hel dag",
+    "start_time": "Starttid",
+    "end_time": "Sluttid"
+  },
+  "flexusage": {
+    "new": "Registrer fleksitidsbruk",
+    "full_day": "Hel dag",
+    "start_time": "Starttid",
+    "end_time": "Sluttid",
+    "amount": "Beløp (tt:mm)"
+  }
 }

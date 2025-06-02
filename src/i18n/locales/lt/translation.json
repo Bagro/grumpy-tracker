@@ -58,5 +58,22 @@
   "week": "Savaitė",
   "month": "Mėnuo",
   "total_flex": "Bendras lankstus laikas:",
-  "work_periods": "Nukrypstantys darbo laikai (pvz., vasara, žiema, projektas)"
+  "work_periods": "Nukrypstantys darbo laikai (pvz., vasara, žiema, projektas)",
+  "absence": {
+    "new": "Registruoti nebuvimą",
+    "type": "Tipas",
+    "vacation": "Atostogos",
+    "sickness": "Liga",
+    "care_of_sick_child": "Vaiko priežiūra",
+    "full_day": "Visa diena",
+    "start_time": "Pradžios laikas",
+    "end_time": "Pabaigos laikas"
+  },
+  "flexusage": {
+    "new": "Registruoti lankstaus laiko naudojimą",
+    "full_day": "Visa diena",
+    "start_time": "Pradžios laikas",
+    "end_time": "Pabaigos laikas",
+    "amount": "Kiekis (hh:mm)"
+  }
 }
