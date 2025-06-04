@@ -66,9 +66,15 @@ router.get("/absence/new", (req, res) => {
 // Create absence
 router.post("/absence/new", async (req, res) => {
   try {
-    const { date, type, full_day, start_time, end_time, comments } = req.body;
+    let { date, type, full_day, start_time, end_time, comments } = req.body;
     if (!date || !type) {
       return res.render("absence-form", { absence: req.body, user: req.user, error: "Missing required fields", csrfToken: req.csrfToken() });
+    }
+    // Enforce flex_leave rules
+    if (type === "flex_leave") {
+      full_day = true;
+      start_time = null;
+      end_time = null;
     }
     await prisma.absence.create({
       data: {
@@ -76,8 +82,8 @@ router.post("/absence/new", async (req, res) => {
         date,
         type,
         full_day: full_day === "on" || full_day === true,
-        start_time: full_day === "on" ? null : (start_time ? parseInt(start_time) : null),
-        end_time: full_day === "on" ? null : (end_time ? parseInt(end_time) : null),
+        start_time: full_day === "on" || type === "flex_leave" ? null : (start_time ? parseInt(start_time) : null),
+        end_time: full_day === "on" || type === "flex_leave" ? null : (end_time ? parseInt(end_time) : null),
         comments,
       },
     });
@@ -158,6 +164,61 @@ router.post("/absence/flex_leave", async (req, res) => {
     res.redirect("/absence");
   } catch (err) {
     res.status(500).send("Failed to create flex leave: " + err.message);
+  }
+});
+
+// Edit absence form
+router.get("/absence/:id", async (req, res) => {
+  if (!req.user) return res.redirect("/login");
+  const absence = await prisma.absence.findUnique({ where: { id: req.params.id, user_id: req.user.id } });
+  if (!absence) return res.status(404).render("error", { message: "Absence not found", user: req.user });
+  res.render("absence-form", { absence, user: req.user, error: null, csrfToken: req.csrfToken() });
+});
+
+// (Future) Edit absence - ensure flex_leave rules are enforced
+router.post("/absence/:id", async (req, res) => {
+  try {
+    let { date, type, full_day, start_time, end_time, comments } = req.body;
+    if (!date || !type) {
+      return res.render("absence-form", { absence: req.body, user: req.user, error: "Missing required fields", csrfToken: req.csrfToken() });
+    }
+    // Enforce flex_leave rules
+    if (type === "flex_leave") {
+      full_day = true;
+      start_time = null;
+      end_time = null;
+    }
+    await prisma.absence.update({
+      where: { id: req.params.id, user_id: req.user.id },
+      data: {
+        date,
+        type,
+        full_day: full_day === "on" || full_day === true,
+        start_time: full_day === "on" || type === "flex_leave" ? null : (start_time ? parseInt(start_time) : null),
+        end_time: full_day === "on" || type === "flex_leave" ? null : (end_time ? parseInt(end_time) : null),
+        comments,
+      },
+    });
+    // Efter att en absence ändrats, räkna om flex_balance för användaren (hela dagen)
+    const timeEntries = await prisma.timeEntry.findMany({ where: { user_id: req.user.id, date } });
+    let totalFlex = 0;
+    for (const entry of timeEntries) {
+      const extraTimes = await prisma.extraTime.findMany({ where: { time_entry_id: entry.id } });
+      const flex = await calculateFlexForEntry({
+        userId: req.user.id,
+        date: entry.date,
+        work_start_time: entry.work_start_time,
+        work_end_time: entry.work_end_time,
+        break_start_time: entry.break_start_time,
+        break_end_time: entry.break_end_time,
+        extraTimes
+      });
+      totalFlex += flex;
+    }
+    await prisma.user.update({ where: { id: req.user.id }, data: { flex_balance: { set: totalFlex } } });
+    res.redirect("/absence");
+  } catch (err) {
+    res.render("absence-form", { absence: req.body, user: req.user, error: err.message, csrfToken: req.csrfToken() });
   }
 });
 

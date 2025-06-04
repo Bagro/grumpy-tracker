@@ -41,6 +41,7 @@
                   <td class="px-2 py-1"><%= a.comments || '' %></td>
                   <td class="px-2 py-1">
                     <% const deleteConfirmText = t('delete_confirm', 'Delete?'); %>
+                    <a href="/absence/<%= a.id %>" class="text-grumpy-orange underline hover:text-grumpy-offwhite transition mr-2"><%= t('edit', 'Edit') %></a>
                     <form method="post" action="/absence/<%= a.id %>/delete" onsubmit="return confirm('<%= deleteConfirmText %>');" class="inline">
                       <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
                       <button type="submit" class="text-red-700 underline hover:text-grumpy-orange transition"><%= t('delete', 'Delete') %></button>
