@@ -19,20 +19,12 @@
             </h2>
             <div class="flex flex-col gap-2 w-full">
               <div class="flex justify-between items-center">
-                <span class="font-semibold text-grumpy-offwhite"><%= t('dashboard.flex_balance', 'Flex Balance') %>:</span>
+                <span class="font-semibold text-grumpy-offwhite"><%= t('dashboard.flex_time_work', 'Arbete:') %></span>
                 <span class="text-xl font-extrabold text-grumpy-orange"><%= formatFlexTime(user.flex_balance) %></span>
               </div>
               <div class="flex justify-between items-center">
-                <span class="font-semibold text-grumpy-offwhite"><%= t('dashboard.flex_balance_travel', 'Flex + Travel') %>:</span>
+                <span class="font-semibold text-grumpy-offwhite"><%= t('dashboard.flex_time_work_travel', '+ Restid:') %></span>
                 <span class="text-xl font-extrabold text-grumpy-orange"><%= formatFlexTime(user.flex_balance_travel) %></span>
-              </div>
-              <div class="flex justify-between items-center">
-                <span class="font-semibold text-grumpy-offwhite"><%= t('dashboard.flex_time_work', 'Work') %>:</span>
-                <span class="text-xl font-extrabold text-grumpy-orange"><%= formatFlexTime(flexTotalWork) %></span>
-              </div>
-              <div class="flex justify-between items-center">
-                <span class="font-semibold text-grumpy-offwhite"><%= t('dashboard.flex_time_work_travel', '+ Travel') %>:</span>
-                <span class="text-xl font-extrabold text-grumpy-orange"><%= formatFlexTime(flexTotalWorkTravel) %></span>
               </div>
             </div>
           </div>

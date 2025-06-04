@@ -35,8 +35,9 @@ router.get("/time", async (req, res) => {
     extraMap[et.time_entry_id].push(et);
   }
   let flexToday = 0;
-  let flexTotal = 0;
-  let flexTotalTravel = 0;
+  // Hämta summerad flex från användaren istället för att summera här
+  const flexTotal = req.user.flex_balance || 0;
+  const flexTotalTravel = req.user.flex_balance_travel || 0;
   const userSettings = await prisma.settings.findUnique({ where: { user_id: req.user.id } });
   const today = new Date().toISOString().slice(0, 10);
   const entries = await Promise.all(entriesRaw.map(async e => {
@@ -107,8 +108,6 @@ router.get("/time", async (req, res) => {
       }
     }
     if (e.date === today) flexToday += flex;
-    flexTotal += flex;
-    flexTotalTravel += flexTravel;
     return {
       id: e.id,
       date: e.date,
