@@ -33,8 +33,24 @@
               <% absences.forEach(function(a, idx) { %>
                 <tr class="even:bg-grumpy-dark hover:bg-grumpy-dark2 transition">
                   <td><%= a.date %></td>
-                  <td><%= t('absence.' + a.type, a.type) %></td>
-                  <td><%= a.full_day ? t('yes', 'Yes') : t('no', 'No') %></td>
+                  <td>
+                    <% if (a.type === 'vacation') { %>
+                      <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-yellow-400 mx-auto" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 21v-2a4 4 0 014-4h10a4 4 0 014 4v2" /><circle cx="12" cy="7" r="4" stroke="currentColor" stroke-width="2" fill="none"/></svg>
+                    <% } else if (a.type === 'sickness') { %>
+                      <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-green-400 mx-auto" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-3-3v6m9 0a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                    <% } else if (a.type === 'care_of_sick_child') { %>
+                      <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-blue-400 mx-auto" fill="none" viewBox="0 0 24 24" stroke="currentColor"><circle cx="12" cy="7" r="4" stroke="currentColor" stroke-width="2" fill="none"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5.5 21v-2a4.5 4.5 0 019 0v2"/></svg>
+                    <% } else if (a.type === 'flex_leave') { %>
+                      <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-grumpy-orange mx-auto" fill="none" viewBox="0 0 24 24" stroke="currentColor"><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2" fill="none"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h8"/></svg>
+                    <% } else { %>
+                      <span class="text-xs text-grumpy-offwhite"><%= t('absence.' + a.type, a.type) %></span>
+                    <% } %>
+                  </td>
+                  <td>
+                    <% if (a.full_day) { %>
+                      <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-grumpy-orange mx-auto" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7" /></svg>
+                    <% } %>
+                  </td>
                   <td><%= minToTime(a.start_time) %></td>
                   <td><%= minToTime(a.end_time) %></td>
                   <td><%= a.comments || '' %></td>
