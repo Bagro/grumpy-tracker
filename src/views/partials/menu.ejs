@@ -1,3 +1,16 @@
+<% 
+function formatFlexTime(min) {
+  min = Number(min) || 0;
+  const sign = min < 0 ? '-' : '';
+  min = Math.abs(min);
+  if (min >= 60) {
+    const h = Math.floor(min / 60);
+    const m = min % 60;
+    return `${sign}${h} h${m > 0 ? ' ' + m + ' min' : ''}`;
+  }
+  return `${sign}${min} min`;
+}
+%>
 <nav class="bg-grumpy-dark2 text-grumpy-offwhite border-b border-grumpy-orange">
   <div class="max-w-7xl mx-auto flex flex-row gap-4 px-4 py-2 items-center relative">
     <a href="/" class="flex items-center gap-2 font-bold text-xl hover:text-grumpy-orange">
@@ -74,6 +87,12 @@
         <a href="/register" class="hover:text-grumpy-orange block py-2"><%= t('register', 'Register') %></a>
       <% } %>
     </div>
+    <% if (user) { %>
+      <div class="ml-4 flex items-center gap-2">
+        <span class="font-semibold text-grumpy-orange"><%= t('dashboard.flex_balance', 'Flex Balance') %>:</span>
+        <span class="font-mono text-grumpy-orange"><%= typeof user.flex_balance !== 'undefined' ? formatFlexTime(user.flex_balance) : '-' %></span>
+      </div>
+    <% } %>
     <script>
       // Hamburger menu toggle
       const menuToggle = document.getElementById('menu-toggle');
