@@ -28,14 +28,14 @@
       <div>
         <label for="language" class="block mb-1"><%= t('language', 'Language') %></label>
         <select id="language" name="language" class="w-full border rounded p-2 bg-grumpy-dark text-grumpy-offwhite">
-          <option value="en" <%= user.preferred_language === 'en' ? 'selected' : '' %>>English</option>
-          <option value="sv" <%= user.preferred_language === 'sv' ? 'selected' : '' %>>Svenska</option>
-          <option value="fi" <%= user.preferred_language === 'fi' ? 'selected' : '' %>>Suomi</option>
-          <option value="no" <%= user.preferred_language === 'no' ? 'selected' : '' %>>Norsk</option>
-          <option value="lv" <%= user.preferred_language === 'lv' ? 'selected' : '' %>>Latviešu</option>
-          <option value="et" <%= user.preferred_language === 'et' ? 'selected' : '' %>>Eesti</option>
-          <option value="lt" <%= user.preferred_language === 'lt' ? 'selected' : '' %>>Lietuvių</option>
-          <option value="da" <%= user.preferred_language === 'da' ? 'selected' : '' %>>Dansk</option>
+          <option value="en" <%= user.preferred_language === 'en' ? 'selected' : '' %>><%= t('language.en', 'English') %></option>
+          <option value="sv" <%= user.preferred_language === 'sv' ? 'selected' : '' %>><%= t('language.sv', 'Swedish') %></option>
+          <option value="fi" <%= user.preferred_language === 'fi' ? 'selected' : '' %>><%= t('language.fi', 'Finnish') %></option>
+          <option value="no" <%= user.preferred_language === 'no' ? 'selected' : '' %>><%= t('language.no', 'Norwegian') %></option>
+          <option value="lv" <%= user.preferred_language === 'lv' ? 'selected' : '' %>><%= t('language.lv', 'Latvian') %></option>
+          <option value="et" <%= user.preferred_language === 'et' ? 'selected' : '' %>><%= t('language.et', 'Estonian') %></option>
+          <option value="lt" <%= user.preferred_language === 'lt' ? 'selected' : '' %>><%= t('language.lt', 'Lithuanian') %></option>
+          <option value="da" <%= user.preferred_language === 'da' ? 'selected' : '' %>><%= t('language.da', 'Danish') %></option>
         </select>
       </div>
       <hr class="border-grumpy-orange" />

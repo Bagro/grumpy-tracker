@@ -84,7 +84,12 @@
               <td><%= p.end.toISOString().slice(0,10) %></td>
               <td><%= Math.floor(p.work_time_minutes/60) %><%= t('hours_short', 'h') %> <%= p.work_time_minutes%60 %><%= t('minutes_short', 'min') %></td>
               <td class="text-right">
-                <button type="button" class="text-grumpy-orange underline edit-workperiod-btn" data-idx="<%= idx %>"><%= t('edit', 'Redigera') %></button>
+                <button type="button" class="edit-workperiod-btn" data-idx="<%= idx %>" title="<%= t('edit', 'Edit') %>">
+                  <span class="sr-only"><%= t('edit', 'Edit') %></span>
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-grumpy-orange hover:text-grumpy-offwhite transition inline" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536M9 13l6-6m2 2l-6 6m-2 2h6a2 2 0 002-2v-6a2 2 0 00-2-2h-6a2 2 0 00-2 2v6a2 2 0 002 2z" />
+                  </svg>
+                </button>
                 <form method="post" action="/settings/work-period/delete" style="display:inline" onsubmit="return confirm('<%= t('confirm_delete_work_period', 'Är du säker på att du vill ta bort denna avvikande arbetstid?') %>');">
                   <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
                   <input type="hidden" name="id" value="<%= p.id %>" />

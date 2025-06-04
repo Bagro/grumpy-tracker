@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>GDPR - Grumpy Tracker</title>
+  <title><%= t('gdpr', 'GDPR') %> - Grumpy Tracker</title>
   <link href="/public/tailwind.css" rel="stylesheet">
 </head>
 <body class="bg-grumpy-dark min-h-screen flex flex-col font-sans text-grumpy-offwhite">
@@ -12,13 +12,13 @@
   <main class="flex-1 p-4 max-w-md mx-auto w-full">
     <div class="mb-4">
       <form method="get" action="/gdpr/export">
-        <button type="submit" class="w-full bg-grumpy-orange text-grumpy-offwhite py-2 rounded hover:bg-grumpy-dark2 hover:text-grumpy-orange border border-grumpy-orange transition font-semibold mb-2">Export My Data (JSON)</button>
+        <button type="submit" class="w-full bg-grumpy-orange text-grumpy-offwhite py-2 rounded hover:bg-grumpy-dark2 hover:text-grumpy-orange border border-grumpy-orange transition font-semibold mb-2"><%= t('gdpr.export', 'Export My Data (JSON)') %></button>
       </form>
-      <form method="post" action="/gdpr/delete" onsubmit="return confirm('Are you sure? This cannot be undone!')">
-        <button type="submit" class="w-full bg-red-700 text-grumpy-offwhite py-2 rounded hover:bg-grumpy-dark2 hover:text-grumpy-orange border border-grumpy-orange transition font-semibold">Delete My Account & Data</button>
+      <% const deleteConfirmText = t('gdpr.delete_confirm', 'Are you sure? This cannot be undone!'); %>
+      <form method="post" action="/gdpr/delete" onsubmit="return confirm('<%= deleteConfirmText %>')">
+        <button type="submit" class="w-full bg-red-700 text-grumpy-offwhite py-2 rounded hover:bg-grumpy-dark2 hover:text-grumpy-orange border border-grumpy-orange transition font-semibold"><%= t('gdpr.delete', 'Delete My Account & Data') %></button>
       </form>
     </div>
-    <a href="/profile" class="text-grumpy-orange underline hover:text-grumpy-offwhite transition">Back to Profile</a>
   </main>
   <%- include('partials/footer') %>
 </body>

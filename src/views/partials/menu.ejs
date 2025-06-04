@@ -26,7 +26,7 @@
       <a href="/absence" class="px-3 py-1 rounded transition font-semibold <%= (currentPath && currentPath.startsWith('/absence')) ? 'bg-grumpy-orange text-grumpy-dark2' : 'hover:text-grumpy-orange' %>"><%= t('absence.list', 'Absence') %></a>
       <a href="/settings" class="px-3 py-1 rounded transition font-semibold <%= (currentPath === '/settings') ? 'bg-grumpy-orange text-grumpy-dark2' : 'hover:text-grumpy-orange' %>"><%= t('settings', 'Settings') %></a>
       <a href="/profile" class="px-3 py-1 rounded transition font-semibold <%= (currentPath === '/profile') ? 'bg-grumpy-orange text-grumpy-dark2' : 'hover:text-grumpy-orange' %>"><%= t('profile', 'Profile') %></a>
-      <a href="/gdpr" class="px-3 py-1 rounded transition font-semibold <%= (currentPath === '/gdpr') ? 'bg-grumpy-orange text-grumpy-dark2' : 'hover:text-grumpy-orange' %>">GDPR</a>
+      <a href="/gdpr" class="px-3 py-1 rounded transition font-semibold <%= (currentPath === '/gdpr') ? 'bg-grumpy-orange text-grumpy-dark2' : 'hover:text-grumpy-orange' %>"><%= t('gdpr', 'GDPR') %></a>
       <% if (user && user.is_admin) { %>
         <a href="/admin/users" class="px-3 py-1 rounded transition font-semibold <%= (currentPath && currentPath.startsWith('/admin')) ? 'bg-grumpy-orange text-grumpy-dark2' : 'hover:text-grumpy-orange' %>"><%= t('admin', 'Admin') %></a>
       <% } %>
@@ -59,7 +59,7 @@
       <a href="/absence" class="block px-3 py-2 rounded transition font-semibold <%= (currentPath && currentPath.startsWith('/absence')) ? 'bg-grumpy-orange text-grumpy-dark2' : 'hover:text-grumpy-orange' %>"><%= t('absence.list', 'Absence') %></a>
       <a href="/settings" class="block px-3 py-2 rounded transition font-semibold <%= (currentPath === '/settings') ? 'bg-grumpy-orange text-grumpy-dark2' : 'hover:text-grumpy-orange' %>"><%= t('settings', 'Settings') %></a>
       <a href="/profile" class="block px-3 py-2 rounded transition font-semibold <%= (currentPath === '/profile') ? 'bg-grumpy-orange text-grumpy-dark2' : 'hover:text-grumpy-orange' %>"><%= t('profile', 'Profile') %></a>
-      <a href="/gdpr" class="block px-3 py-2 rounded transition font-semibold <%= (currentPath === '/gdpr') ? 'bg-grumpy-orange text-grumpy-dark2' : 'hover:text-grumpy-orange' %>">GDPR</a>
+      <a href="/gdpr" class="block px-3 py-2 rounded transition font-semibold <%= (currentPath === '/gdpr') ? 'bg-grumpy-orange text-grumpy-dark2' : 'hover:text-grumpy-orange' %>"><%= t('gdpr', 'GDPR') %></a>
       <% if (user && user.is_admin) { %>
         <a href="/admin/users" class="block px-3 py-2 rounded transition font-semibold <%= (currentPath && currentPath.startsWith('/admin')) ? 'bg-grumpy-orange text-grumpy-dark2' : 'hover:text-grumpy-orange' %>"><%= t('admin', 'Admin') %></a>
       <% } %>

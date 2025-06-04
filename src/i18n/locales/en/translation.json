@@ -68,5 +68,21 @@
     "start_time": "Start Time",
     "end_time": "End Time",
     "amount": "Amount (hh:mm)"
-  }
+  },
+  "language.en": "English",
+  "language.sv": "Swedish",
+  "language.fi": "Finnish",
+  "language.no": "Norwegian",
+  "language.lv": "Latvian",
+  "language.et": "Estonian",
+  "language.lt": "Lithuanian",
+  "language.da": "Danish",
+  "active": "Active",
+  "deactivated": "Deactivated",
+  "reactivate": "Reactivate",
+  "deactivate": "Deactivate",
+  "delete_user_confirm": "Delete user?",
+  "actions": "Actions",
+  "created": "Created",
+  "status": "Status"
 }
