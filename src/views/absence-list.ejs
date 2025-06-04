@@ -15,48 +15,43 @@
             <svg class="w-6 h-6 text-grumpy-orange" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2a4 4 0 014-4h2a4 4 0 014 4v2"/></svg>
             <%= t('absence.list', 'Absence Entries') %>
           </h1>
-          <a href="/absence/new" class="bg-grumpy-orange text-grumpy-dark2 px-4 py-2 rounded font-semibold hover:bg-grumpy-dark2 hover:text-grumpy-orange border border-grumpy-orange transition"><%= t('absence.add', 'Add Absence') %></a>
         </div>
-        <div class="bg-grumpy-dark2 shadow-2xl rounded-2xl p-10 border border-grumpy-orange">
-          <table class="w-full table-auto rounded-2xl shadow mb-6 bg-grumpy-dark2 border border-grumpy-orange">
+        <div class="w-full max-w-4xl bg-grumpy-dark2 shadow-2xl rounded-2xl p-10 border border-grumpy-orange">
+          <table class="w-full table-auto rounded-2xl shadow mb-6">
             <thead class="bg-grumpy-dark2 text-grumpy-orange">
               <tr>
-                <th class="px-2 py-1"><%= t('date', 'Date') %></th>
-                <th class="px-2 py-1"><%= t('absence.type', 'Type') %></th>
-                <th class="px-2 py-1"><%= t('absence.full_day', 'Full Day') %></th>
-                <th class="px-2 py-1"><%= t('absence.start_time', 'Start') %></th>
-                <th class="px-2 py-1"><%= t('absence.end_time', 'End') %></th>
-                <th class="px-2 py-1"><%= t('comments', 'Comments') %></th>
-                <th class="px-2 py-1"></th>
+                <th class="text-left"><%= t('date', 'Date') %></th>
+                <th class="text-left"><%= t('absence.type', 'Type') %></th>
+                <th class="text-left"><%= t('absence.full_day', 'Full Day') %></th>
+                <th class="text-left"><%= t('absence.start_time', 'Start') %></th>
+                <th class="text-left"><%= t('absence.end_time', 'End') %></th>
+                <th class="text-left"><%= t('comments', 'Comments') %></th>
               </tr>
             </thead>
             <tbody>
-              <% absences.forEach(function(a) { %>
+              <% absences.forEach(function(a, idx) { %>
                 <tr class="even:bg-grumpy-dark hover:bg-grumpy-dark2 transition">
-                  <td class="px-2 py-1"><%= a.date %></td>
-                  <td class="px-2 py-1"><%= t('absence.' + a.type, a.type) %></td>
-                  <td class="px-2 py-1"><%= a.full_day ? t('yes', 'Yes') : t('no', 'No') %></td>
-                  <td class="px-2 py-1"><%= a.start_time != null ? a.start_time : '' %></td>
-                  <td class="px-2 py-1"><%= a.end_time != null ? a.end_time : '' %></td>
-                  <td class="px-2 py-1"><%= a.comments || '' %></td>
-                  <td class="px-2 py-1">
-                    <% const deleteConfirmText = t('delete_confirm', 'Delete?'); %>
-                    <a href="/absence/<%= a.id %>" class="text-grumpy-orange underline hover:text-grumpy-offwhite transition mr-2"><%= t('edit', 'Edit') %></a>
-                    <form method="post" action="/absence/<%= a.id %>/delete" onsubmit="return confirm('<%= deleteConfirmText %>');" class="inline">
-                      <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
-                      <button type="submit" class="text-red-700 underline hover:text-grumpy-orange transition"><%= t('delete', 'Delete') %></button>
-                    </form>
-                  </td>
+                  <td><%= a.date %></td>
+                  <td><%= t('absence.' + a.type, a.type) %></td>
+                  <td><%= a.full_day ? t('yes', 'Yes') : t('no', 'No') %></td>
+                  <td><%= minToTime(a.start_time) %></td>
+                  <td><%= minToTime(a.end_time) %></td>
+                  <td><%= a.comments || '' %></td>
                 </tr>
               <% }) %>
             </tbody>
           </table>
-          <% if (user) { %>
-            <a href="/absence/flex-leave" class="bg-grumpy-orange text-grumpy-dark2 px-4 py-2 rounded font-semibold hover:bg-grumpy-dark2 hover:text-grumpy-orange border border-grumpy-orange transition"><%= t('absence.flex_leave', 'Register Flex Leave') %></a>
-          <% } %>
         </div>
       </div>
     </main>
     <%- include('partials/footer') %>
   </body>
 </html>
+<%
+function minToTime(mins) {
+  if (mins === null || mins === undefined || mins === '') return '';
+  const h = Math.floor(mins / 60);
+  const m = mins % 60;
+  return (h < 10 ? '0' : '') + h + ':' + (m < 10 ? '0' : '') + m;
+}
+%>
