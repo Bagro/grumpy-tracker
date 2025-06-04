@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="<%= (user && user.preferred_language) || 'en' %>">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title><%= t('absence.list', 'Absence Entries') %> - Grumpy Tracker</title>
+    <link href="/public/tailwind.css" rel="stylesheet">
+  </head>
+  <body class="bg-grumpy-dark min-h-screen flex flex-col font-sans text-grumpy-offwhite">
+    <%- include('partials/menu', { user, csrfToken, currentPath: request.path }) %>
+    <main class="flex-1 flex flex-col items-center mt-8">
+      <div class="w-full max-w-4xl mt-6 mb-6">
+        <div class="flex flex-row justify-between items-center mb-4">
+          <h1 class="text-2xl font-bold text-grumpy-orange flex items-center gap-2">
+            <svg class="w-6 h-6 text-grumpy-orange" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2a4 4 0 014-4h2a4 4 0 014 4v2"/></svg>
+            <%= t('absence.list', 'Absence Entries') %>
+          </h1>
+        </div>
+        <div class="w-full max-w-4xl bg-grumpy-dark2 shadow-2xl rounded-2xl p-10 border border-grumpy-orange">
+          <table class="w-full table-auto rounded-2xl shadow mb-6">
+            <thead class="bg-grumpy-dark2 text-grumpy-orange">
+              <tr>
+                <th class="text-left"><%= t('date', 'Date') %></th>
+                <th class="text-left"><%= t('absence.type', 'Type') %></th>
+                <th class="text-left"><%= t('absence.full_day', 'Full Day') %></th>
+                <th class="text-left"><%= t('absence.start_time', 'Start') %></th>
+                <th class="text-left"><%= t('absence.end_time', 'End') %></th>
+                <th class="text-left"><%= t('comments', 'Comments') %></th>
+                <th class="text-left"><%= t('actions', 'Actions') %></th>
+              </tr>
+            </thead>
+            <tbody>
+              <% absences.forEach(function(a, idx) { %>
+                <tr class="even:bg-grumpy-dark hover:bg-grumpy-dark2 transition">
+                  <td><%= a.date %></td>
+                  <td>
+                    <% if (a.type === 'vacation') { %>
+                      <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-yellow-400 mx-auto" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 21v-2a4 4 0 014-4h10a4 4 0 014 4v2" /><circle cx="12" cy="7" r="4" stroke="currentColor" stroke-width="2" fill="none"/></svg>
+                    <% } else if (a.type === 'sickness') { %>
+                      <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-green-400 mx-auto" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-3-3v6m9 0a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                    <% } else if (a.type === 'care_of_sick_child') { %>
+                      <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-blue-400 mx-auto" fill="none" viewBox="0 0 24 24" stroke="currentColor"><circle cx="12" cy="7" r="4" stroke="currentColor" stroke-width="2" fill="none"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5.5 21v-2a4.5 4.5 0 019 0v2"/></svg>
+                    <% } else if (a.type === 'flex_leave') { %>
+                      <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-grumpy-orange mx-auto" fill="none" viewBox="0 0 24 24" stroke="currentColor"><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2" fill="none"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h8"/></svg>
+                    <% } else { %>
+                      <span class="text-xs text-grumpy-offwhite"><%= t('absence.' + a.type, a.type) %></span>
+                    <% } %>
+                  </td>
+                  <td>
+                    <% if (a.full_day) { %>
+                      <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-grumpy-orange mx-auto" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7" /></svg>
+                    <% } %>
+                  </td>
+                  <td><%= minToTime(a.start_time) %></td>
+                  <td><%= minToTime(a.end_time) %></td>
+                  <td><%= a.comments || '' %></td>
+                  <td class="whitespace-nowrap">
+                    <a href="/absence/<%= a.id %>" class="inline-block align-middle mr-2" title="<%= t('edit', 'Edit') %>">
+                      <span class="sr-only"><%= t('edit', 'Edit') %></span>
+                      <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-grumpy-orange hover:text-grumpy-offwhite transition" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536M9 13l6-6m2 2l-6 6m-2 2h6a2 2 0 002-2v-6a2 2 0 00-2-2h-6a2 2 0 00-2 2v6a2 2 0 002 2z" /></svg>
+                    </a>
+                    <% const deleteConfirmText = t('delete_confirm', 'Delete?'); %>
+                    <form method="post" action="/absence/<%= a.id %>/delete" class="inline align-middle" onsubmit="return confirm('<%= deleteConfirmText %>');">
+                      <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
+                      <button type="submit" class="align-middle" title="<%= t('delete', 'Delete') %>">
+                        <span class="sr-only"><%= t('delete', 'Delete') %></span>
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-red-700 hover:text-grumpy-orange transition" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
+                      </button>
+                    </form>
+                  </td>
+                </tr>
+              <% }) %>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </main>
+    <%- include('partials/footer') %>
+  </body>
+</html>
+<%
+function minToTime(mins) {
+  if (mins === null || mins === undefined || mins === '') return '';
+  const h = Math.floor(mins / 60);
+  const m = mins % 60;
+  return (h < 10 ? '0' : '') + h + ':' + (m < 10 ? '0' : '') + m;
+}
+%>

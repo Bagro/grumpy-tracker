@@ -819,6 +819,10 @@ select {
   margin-bottom: 1.5rem;
 }
 
+.ml-1 {
+  margin-left: 0.25rem;
+}
+
 .ml-2 {
   margin-left: 0.5rem;
 }
@@ -845,6 +849,10 @@ select {
 
 .mt-8 {
   margin-top: 2rem;
+}
+
+.mr-2 {
+  margin-right: 0.5rem;
 }
 
 .block {
@@ -875,8 +883,16 @@ select {
   height: 2.5rem;
 }
 
+.h-4 {
+  height: 1rem;
+}
+
 .h-5 {
   height: 1.25rem;
+}
+
+.h-6 {
+  height: 1.5rem;
 }
 
 .h-7 {
@@ -899,8 +915,20 @@ select {
   width: 5rem;
 }
 
+.w-4 {
+  width: 1rem;
+}
+
+.w-48 {
+  width: 12rem;
+}
+
 .w-5 {
   width: 1.25rem;
+}
+
+.w-6 {
+  width: 1.5rem;
 }
 
 .w-7 {
@@ -999,6 +1027,10 @@ select {
   justify-content: space-evenly;
 }
 
+.gap-1 {
+  gap: 0.25rem;
+}
+
 .gap-2 {
   gap: 0.5rem;
 }
@@ -1052,6 +1084,10 @@ select {
   overflow-x: auto;
 }
 
+.whitespace-nowrap {
+  white-space: nowrap;
+}
+
 .rounded {
   border-radius: 0.25rem;
 }
@@ -1068,9 +1104,19 @@ select {
   border-radius: 0.5rem;
 }
 
+.rounded-b {
+  border-bottom-right-radius: 0.25rem;
+  border-bottom-left-radius: 0.25rem;
+}
+
 .rounded-b-xl {
   border-bottom-right-radius: 0.75rem;
   border-bottom-left-radius: 0.75rem;
+}
+
+.rounded-t {
+  border-top-left-radius: 0.25rem;
+  border-top-right-radius: 0.25rem;
 }
 
 .border {
@@ -1339,6 +1385,21 @@ select {
   color: rgb(185 28 28 / var(--tw-text-opacity, 1));
 }
 
+.text-blue-400 {
+  --tw-text-opacity: 1;
+  color: rgb(96 165 250 / var(--tw-text-opacity, 1));
+}
+
+.text-green-400 {
+  --tw-text-opacity: 1;
+  color: rgb(74 222 128 / var(--tw-text-opacity, 1));
+}
+
+.text-yellow-400 {
+  --tw-text-opacity: 1;
+  color: rgb(250 204 21 / var(--tw-text-opacity, 1));
+}
+
 .underline {
   text-decoration-line: underline;
 }
@@ -1415,6 +1476,16 @@ select {
   background-color: rgb(35 33 30 / var(--tw-bg-opacity, 1));
 }
 
+.hover\:bg-grumpy-orange:hover {
+  --tw-bg-opacity: 1;
+  background-color: rgb(231 106 46 / var(--tw-bg-opacity, 1));
+}
+
+.hover\:text-grumpy-dark2:hover {
+  --tw-text-opacity: 1;
+  color: rgb(35 33 30 / var(--tw-text-opacity, 1));
+}
+
 .hover\:text-grumpy-offwhite:hover {
   --tw-text-opacity: 1;
   color: rgb(246 234 221 / var(--tw-text-opacity, 1));
@@ -1443,6 +1514,14 @@ select {
 .focus\:ring-grumpy-orange:focus {
   --tw-ring-opacity: 1;
   --tw-ring-color: rgb(231 106 46 / var(--tw-ring-opacity, 1));
+}
+
+.group:focus-within .group-focus-within\:block {
+  display: block;
+}
+
+.group:hover .group-hover\:block {
+  display: block;
 }
 
 @media (min-width: 640px) {

@@ -1,5 +1,5 @@
 <nav class="bg-grumpy-dark2 text-grumpy-offwhite border-b border-grumpy-orange">
-  <div class="max-w-7xl mx-auto flex items-center gap-4 px-4 py-2 relative">
+  <div class="max-w-7xl mx-auto flex flex-row gap-4 px-4 py-2 items-center relative">
     <a href="/" class="flex items-center gap-2 font-bold text-xl hover:text-grumpy-orange">
       <img src="/public/logo.png" alt="Grumpy Tracker Logo" class="h-10 w-10 rounded-full bg-grumpy-dark2 border-2 border-grumpy-orange shadow" />
       Grumpy Tracker
@@ -11,12 +11,22 @@
       </svg>
     </button>
     <!-- Desktop menu -->
-    <div id="main-menu" class="hidden md:flex flex-1 gap-2 md:gap-4 items-center ml-4">
-      <a href="/time" class="px-3 py-1 rounded transition font-semibold <%= (currentPath && currentPath.startsWith('/time') && !currentPath.startsWith('/time/summary')) ? 'bg-grumpy-orange text-grumpy-dark2' : 'hover:text-grumpy-orange' %>"><%= t('time_entries', 'Time Entries') %></a>
-      <a href="/time/new" class="px-3 py-1 rounded transition font-semibold <%= (currentPath === '/time/new') ? 'bg-grumpy-orange text-grumpy-dark2' : 'hover:text-grumpy-orange' %>"><%= t('new_entry', 'New Entry') %></a>
+    <div id="main-menu" class="hidden md:flex flex-1 flex-row gap-2 md:gap-4 items-center ml-4">
+      <div class="relative" id="new-dropdown-group">
+        <button type="button" id="new-dropdown-btn" class="px-3 py-1 rounded transition font-semibold hover:text-grumpy-orange flex items-center gap-1 <%= (currentPath === '/time/new' || currentPath === '/absence/new') ? 'bg-grumpy-orange text-grumpy-dark2' : '' %>" aria-haspopup="true" aria-expanded="false" tabindex="0">
+          <%= t('new', 'Ny') %>
+          <svg class="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+        </button>
+        <div id="new-dropdown-menu" class="absolute left-0 mt-2 w-48 bg-grumpy-dark2 border border-grumpy-orange rounded shadow-lg z-50 hidden">
+          <a href="/time/new" class="block px-4 py-2 hover:bg-grumpy-orange hover:text-grumpy-dark2 rounded-t" tabindex="0"><%= t('work_time', 'Arbetstid') %></a>
+          <a href="/absence/new" class="block px-4 py-2 hover:bg-grumpy-orange hover:text-grumpy-dark2" tabindex="0"><%= t('absence.list', 'Frånvaro') %></a>
+        </div>
+      </div>
+      <a href="/time" class="px-3 py-1 rounded transition font-semibold <%= (currentPath && currentPath.startsWith('/time') && !currentPath.startsWith('/time/summary')) ? 'bg-grumpy-orange text-grumpy-dark2' : 'hover:text-grumpy-orange' %>"><%= t('work_time', 'Arbetstid') %></a>
+      <a href="/absence" class="px-3 py-1 rounded transition font-semibold <%= (currentPath && currentPath.startsWith('/absence')) ? 'bg-grumpy-orange text-grumpy-dark2' : 'hover:text-grumpy-orange' %>"><%= t('absence.list', 'Absence') %></a>
       <a href="/settings" class="px-3 py-1 rounded transition font-semibold <%= (currentPath === '/settings') ? 'bg-grumpy-orange text-grumpy-dark2' : 'hover:text-grumpy-orange' %>"><%= t('settings', 'Settings') %></a>
       <a href="/profile" class="px-3 py-1 rounded transition font-semibold <%= (currentPath === '/profile') ? 'bg-grumpy-orange text-grumpy-dark2' : 'hover:text-grumpy-orange' %>"><%= t('profile', 'Profile') %></a>
-      <a href="/gdpr" class="px-3 py-1 rounded transition font-semibold <%= (currentPath === '/gdpr') ? 'bg-grumpy-orange text-grumpy-dark2' : 'hover:text-grumpy-orange' %>">GDPR</a>
+      <a href="/gdpr" class="px-3 py-1 rounded transition font-semibold <%= (currentPath === '/gdpr') ? 'bg-grumpy-orange text-grumpy-dark2' : 'hover:text-grumpy-orange' %>"><%= t('gdpr', 'GDPR') %></a>
       <% if (user && user.is_admin) { %>
         <a href="/admin/users" class="px-3 py-1 rounded transition font-semibold <%= (currentPath && currentPath.startsWith('/admin')) ? 'bg-grumpy-orange text-grumpy-dark2' : 'hover:text-grumpy-orange' %>"><%= t('admin', 'Admin') %></a>
       <% } %>
@@ -35,11 +45,21 @@
     </div>
     <!-- Mobile menu (hidden by default) -->
     <div id="mobile-menu" class="md:hidden absolute top-full left-0 w-full bg-grumpy-dark2 border-b border-grumpy-orange shadow-lg z-50 hidden flex-col gap-2 p-4 animate-fade-in">
-      <a href="/time" class="block px-3 py-2 rounded transition font-semibold <%= (currentPath && currentPath.startsWith('/time') && !currentPath.startsWith('/time/summary')) ? 'bg-grumpy-orange text-grumpy-dark2' : 'hover:text-grumpy-orange' %>"><%= t('time_entries', 'Time Entries') %></a>
-      <a href="/time/new" class="block px-3 py-2 rounded transition font-semibold <%= (currentPath === '/time/new') ? 'bg-grumpy-orange text-grumpy-dark2' : 'hover:text-grumpy-orange' %>"><%= t('new_entry', 'New Entry') %></a>
+      <div class="relative group">
+        <button type="button" class="block px-3 py-2 rounded transition font-semibold hover:text-grumpy-orange w-full text-left flex items-center gap-1 <%= (currentPath === '/time/new' || currentPath === '/absence/new') ? 'bg-grumpy-orange text-grumpy-dark2' : '' %>">
+          <%= t('new', 'Ny') %>
+          <svg class="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+        </button>
+        <div class="absolute left-0 mt-2 w-48 bg-grumpy-dark2 border border-grumpy-orange rounded shadow-lg z-50 hidden group-hover:block group-focus-within:block">
+          <a href="/time/new" class="block px-4 py-2 hover:bg-grumpy-orange hover:text-grumpy-dark2 rounded-t"><%= t('work_time', 'Arbetstid') %></a>
+          <a href="/absence/new" class="block px-4 py-2 hover:bg-grumpy-orange hover:text-grumpy-dark2"><%= t('absence.list', 'Frånvaro') %></a>
+        </div>
+      </div>
+      <a href="/time" class="block px-3 py-2 rounded transition font-semibold <%= (currentPath && currentPath.startsWith('/time') && !currentPath.startsWith('/time/summary')) ? 'bg-grumpy-orange text-grumpy-dark2' : 'hover:text-grumpy-orange' %>"><%= t('work_time', 'Arbetstid') %></a>
+      <a href="/absence" class="block px-3 py-2 rounded transition font-semibold <%= (currentPath && currentPath.startsWith('/absence')) ? 'bg-grumpy-orange text-grumpy-dark2' : 'hover:text-grumpy-orange' %>"><%= t('absence.list', 'Absence') %></a>
       <a href="/settings" class="block px-3 py-2 rounded transition font-semibold <%= (currentPath === '/settings') ? 'bg-grumpy-orange text-grumpy-dark2' : 'hover:text-grumpy-orange' %>"><%= t('settings', 'Settings') %></a>
       <a href="/profile" class="block px-3 py-2 rounded transition font-semibold <%= (currentPath === '/profile') ? 'bg-grumpy-orange text-grumpy-dark2' : 'hover:text-grumpy-orange' %>"><%= t('profile', 'Profile') %></a>
-      <a href="/gdpr" class="block px-3 py-2 rounded transition font-semibold <%= (currentPath === '/gdpr') ? 'bg-grumpy-orange text-grumpy-dark2' : 'hover:text-grumpy-orange' %>">GDPR</a>
+      <a href="/gdpr" class="block px-3 py-2 rounded transition font-semibold <%= (currentPath === '/gdpr') ? 'bg-grumpy-orange text-grumpy-dark2' : 'hover:text-grumpy-orange' %>"><%= t('gdpr', 'GDPR') %></a>
       <% if (user && user.is_admin) { %>
         <a href="/admin/users" class="block px-3 py-2 rounded transition font-semibold <%= (currentPath && currentPath.startsWith('/admin')) ? 'bg-grumpy-orange text-grumpy-dark2' : 'hover:text-grumpy-orange' %>"><%= t('admin', 'Admin') %></a>
       <% } %>
@@ -95,6 +115,33 @@
           authMenu.classList.add('hidden');
         }
       });
+      // Dropdown menu show on click only
+      (function() {
+        const btn = document.getElementById('new-dropdown-btn');
+        const menu = document.getElementById('new-dropdown-menu');
+        if (!btn || !menu) return;
+        btn.addEventListener('click', function(e) {
+          e.stopPropagation();
+          menu.classList.toggle('hidden');
+          btn.setAttribute('aria-expanded', menu.classList.contains('hidden') ? 'false' : 'true');
+        });
+        // Close on click outside
+        document.addEventListener('click', function(e) {
+          if (!menu.classList.contains('hidden')) {
+            if (!btn.contains(e.target) && !menu.contains(e.target)) {
+              menu.classList.add('hidden');
+              btn.setAttribute('aria-expanded', 'false');
+            }
+          }
+        });
+        // Close on menu item click
+        menu.querySelectorAll('a').forEach(a => {
+          a.addEventListener('click', function() {
+            menu.classList.add('hidden');
+            btn.setAttribute('aria-expanded', 'false');
+          });
+        });
+      })();
     </script>
   </div>
 </nav>

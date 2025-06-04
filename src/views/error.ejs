@@ -3,18 +3,18 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Error - Grumpy Tracker</title>
+  <title><%= t('error.title', 'Error') %> - Grumpy Tracker</title>
   <link href="/public/tailwind.css" rel="stylesheet">
 </head>
 <body class="bg-grumpy-dark min-h-screen flex flex-col font-sans text-grumpy-offwhite">
   <main class="flex-1 flex flex-col items-center justify-center p-4">
     <div class="bg-grumpy-dark2 border border-grumpy-orange rounded-2xl shadow-xl p-8 max-w-lg w-full text-center">
-      <h1 class="text-2xl font-bold text-grumpy-orange mb-4">Oops! Something went wrong.</h1>
+      <h1 class="text-2xl font-bold text-grumpy-orange mb-4"><%= t('error.heading', 'Oops! Something went wrong.') %></h1>
       <p class="mb-2 text-lg"><%= message %></p>
       <% if (error && error.message) { %>
         <pre class="bg-grumpy-dark text-red-400 p-2 rounded text-left overflow-x-auto"><%= error.message %></pre>
       <% } %>
-      <a href="/" class="mt-4 inline-block text-grumpy-orange underline hover:text-grumpy-offwhite transition">Back to Dashboard</a>
+      <a href="/" class="mt-4 inline-block text-grumpy-orange underline hover:text-grumpy-offwhite transition"><%= t('back_to_dashboard', 'Back to Dashboard') %></a>
     </div>
   </main>
   <%- include('partials/footer') %>

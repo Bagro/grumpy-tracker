@@ -13,7 +13,14 @@ router.get("/settings", async (req, res) => {
     });
   }
   const workPeriods = await prisma.workPeriod.findMany({ where: { user_id: req.user.id }, orderBy: { start: 'asc' } });
-  res.render("settings", { user: req.user, settings, workPeriods, error: null, success: null, csrfToken: req.csrfToken() });
+  res.render("settings", {
+    user: req.user,
+    settings,
+    workPeriods,
+    error: null,
+    success: null,
+    csrfToken: req.csrfToken(),
+  });
 });
 
 // Update normal work time

@@ -22,6 +22,9 @@ model User {
   settings          Settings?
   deactivated        Boolean? @default(false)
   workPeriods       WorkPeriod[]
+  absences          Absence[]
+  flex_balance        Int      @default(0)
+  flex_balance_travel Int      @default(0)
 }
 
 model TimeEntry {
@@ -71,6 +74,20 @@ model Settings {
   user              User     @relation(fields: [user_id], references: [id])
   user_id           String   @unique
   normal_work_time  Int      @default(480) // minutes
+}
+
+model Absence {
+  id         String   @id @default(uuid())
+  user       User     @relation(fields: [user_id], references: [id])
+  user_id    String
+  date       String   // YYYY-MM-DD
+  type       String   // 'vacation', 'sickness', 'care_of_sick_child', etc
+  full_day   Boolean  // true = full day, false = partial
+  start_time Int?     // minutes from midnight (if partial)
+  end_time   Int?     // minutes from midnight (if partial)
+  comments   String?
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
 }
 
 /// Session table for connect-pg-simple (managed by Prisma)
