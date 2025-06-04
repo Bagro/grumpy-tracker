@@ -23,6 +23,10 @@
                 <span class="text-xl font-extrabold text-grumpy-orange"><%= formatFlexTime(user.flex_balance) %></span>
               </div>
               <div class="flex justify-between items-center">
+                <span class="font-semibold text-grumpy-offwhite"><%= t('dashboard.flex_balance_travel', 'Flex + Travel') %>:</span>
+                <span class="text-xl font-extrabold text-grumpy-orange"><%= formatFlexTime(user.flex_balance_travel) %></span>
+              </div>
+              <div class="flex justify-between items-center">
                 <span class="font-semibold text-grumpy-offwhite"><%= t('dashboard.flex_time_work', 'Work') %>:</span>
                 <span class="text-xl font-extrabold text-grumpy-orange"><%= formatFlexTime(flexTotalWork) %></span>
               </div>

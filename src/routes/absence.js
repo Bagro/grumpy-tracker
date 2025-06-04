@@ -13,16 +13,20 @@ async function calculateFlexForEntry({ userId, date, work_start_time, work_end_t
   // Absence
   const absences = await prisma.absence.findMany({ where: { user_id: userId, date: d.toISOString().slice(0,10) } });
   let absenceMinutes = 0;
-  let fullDayAbsence = false;
+  let hasFullDayFlexLeave = false;
+  let hasFullDayVacationOrVab = false;
   for (const a of absences) {
     if (a.full_day) {
-      fullDayAbsence = true;
-      absenceMinutes += normal;
-    } else if (a.start_time != null && a.end_time != null) {
+      if (a.type === 'flex_leave') {
+        hasFullDayFlexLeave = true;
+      } else if (a.type === 'vacation' || a.type === 'care_of_sick_child') {
+        hasFullDayVacationOrVab = true;
+      }
+    } else if (a.start_time != null && a.end_time != null && a.type !== 'flex_leave') {
       absenceMinutes += (a.end_time - a.start_time);
     }
   }
-  if (fullDayAbsence) {
+  if (hasFullDayVacationOrVab) {
     normal = 0;
   } else if (absenceMinutes > 0) {
     normal = Math.max(0, normal - absenceMinutes);
@@ -32,20 +36,49 @@ async function calculateFlexForEntry({ userId, date, work_start_time, work_end_t
   const breaksMin = (break_start_time||[]).reduce((sum, b, i) => sum + (typeof b === 'number' && typeof (break_end_time||[])[i] === 'number' && (break_end_time||[])[i] > b ? ((break_end_time||[])[i] - b) : 0), 0);
   const extraMin = (extraTimes||[]).reduce((sum, et) => sum + (typeof et.start === 'number' && typeof et.end === 'number' && et.end > et.start ? (et.end - et.start) : 0), 0);
   let flex = work - breaksMin + extraMin - normal;
-  // Subtract flex usage for this day
-  // const flexusages = await prisma.flexUsage.findMany({ where: { user_id: userId, date: d.toISOString().slice(0,10) } });
-  const flexusages = [];
-  for (const f of flexusages) {
-    if (f.full_day) {
-      const normalForDay = await getWorkTimeForDate(d, userSettings, userId);
-      flex -= normalForDay;
-    } else if (f.amount != null) {
-      flex -= f.amount;
-    } else if (f.start_time != null && f.end_time != null) {
-      flex -= (f.end_time - f.start_time);
-    }
+  if (hasFullDayFlexLeave) {
+    flex -= await getWorkTimeForDate(d, userSettings, userId);
   }
   return Math.round(flex);
+}
+
+// Helper: Räkna om flex_balance och flex_balance_travel för användaren
+export async function recalculateFlexBalances(userId) {
+  // Hämta alla time entries
+  const timeEntries = await prisma.timeEntry.findMany({ where: { user_id: userId } });
+  let totalFlex = 0;
+  let totalFlexTravel = 0;
+  const userSettings = await prisma.settings.findUnique({ where: { user_id: userId } });
+  for (const entry of timeEntries) {
+    const extraTimes = await prisma.extraTime.findMany({ where: { time_entry_id: entry.id } });
+    // Flex
+    const flex = await calculateFlexForEntry({
+      userId,
+      date: entry.date,
+      work_start_time: entry.work_start_time,
+      work_end_time: entry.work_end_time,
+      break_start_time: entry.break_start_time,
+      break_end_time: entry.break_end_time,
+      extraTimes
+    });
+    totalFlex += flex;
+    // Flex + Travel
+    let flexTravel = flex;
+    if (typeof entry.travel_start_time === 'number' && typeof entry.travel_end_time === 'number' && typeof entry.work_start_time === 'number' && typeof entry.work_end_time === 'number') {
+      const beforeWork = entry.work_start_time - entry.travel_start_time;
+      const afterWork = entry.travel_end_time - entry.work_end_time;
+      flexTravel = entry.work_end_time - entry.work_start_time + beforeWork + afterWork - (entry.break_start_time||[]).reduce((sum, b, i) => sum + (typeof b === 'number' && typeof (entry.break_end_time||[])[i] === 'number' && (entry.break_end_time||[])[i] > b ? ((entry.break_end_time||[])[i] - b) : 0), 0) + (extraTimes||[]).reduce((sum, et) => sum + (typeof et.start === 'number' && typeof et.end === 'number' && et.end > et.start ? (et.end - et.start) : 0), 0) - (await getWorkTimeForDate(new Date(entry.date), userSettings, userId));
+    }
+    totalFlexTravel += flexTravel;
+  }
+  // Dra av normaltid för alla heldags flex_leave-absences
+  const flexLeaves = await prisma.absence.findMany({ where: { user_id: userId, type: 'flex_leave', full_day: true } });
+  for (const absence of flexLeaves) {
+    const normal = await getWorkTimeForDate(new Date(absence.date), userSettings, userId);
+    totalFlex -= normal;
+    totalFlexTravel -= normal;
+  }
+  await prisma.user.update({ where: { id: userId }, data: { flex_balance: totalFlex, flex_balance_travel: totalFlexTravel } });
 }
 
 // List absences for current user
@@ -87,26 +120,7 @@ router.post("/absence/new", async (req, res) => {
         comments,
       },
     });
-    // Efter att en absence lagts till, räkna om flex_balance för användaren (hela dagen)
-    // För enkelhet: summera om alla entries för dagen och sätt flex_balance till summan
-    // (Kan optimeras senare)
-    // Hämta alla time entries för dagen
-    const timeEntries = await prisma.timeEntry.findMany({ where: { user_id: req.user.id, date } });
-    let totalFlex = 0;
-    for (const entry of timeEntries) {
-      const extraTimes = await prisma.extraTime.findMany({ where: { time_entry_id: entry.id } });
-      const flex = await calculateFlexForEntry({
-        userId: req.user.id,
-        date: entry.date,
-        work_start_time: entry.work_start_time,
-        work_end_time: entry.work_end_time,
-        break_start_time: entry.break_start_time,
-        break_end_time: entry.break_end_time,
-        extraTimes
-      });
-      totalFlex += flex;
-    }
-    await prisma.user.update({ where: { id: req.user.id }, data: { flex_balance: { set: totalFlex } } });
+    await recalculateFlexBalances(req.user.id);
     res.redirect("/absence");
   } catch (err) {
     res.render("absence-form", { absence: req.body, user: req.user, error: err.message, csrfToken: req.csrfToken() });
@@ -117,26 +131,7 @@ router.post("/absence/new", async (req, res) => {
 router.post("/absence/:id/delete", async (req, res) => {
   try {
     await prisma.absence.delete({ where: { id: req.params.id, user_id: req.user.id } });
-    // Efter att en absence tagits bort, räkna om flex_balance för användaren (hela dagen)
-    const absence = await prisma.absence.findUnique({ where: { id: req.params.id, user_id: req.user.id } });
-    if (absence) {
-      const timeEntries = await prisma.timeEntry.findMany({ where: { user_id: req.user.id, date: absence.date } });
-      let totalFlex = 0;
-      for (const entry of timeEntries) {
-        const extraTimes = await prisma.extraTime.findMany({ where: { time_entry_id: entry.id } });
-        const flex = await calculateFlexForEntry({
-          userId: req.user.id,
-          date: entry.date,
-          work_start_time: entry.work_start_time,
-          work_end_time: entry.work_end_time,
-          break_start_time: entry.break_start_time,
-          break_end_time: entry.break_end_time,
-          extraTimes
-        });
-        totalFlex += flex;
-      }
-      await prisma.user.update({ where: { id: req.user.id }, data: { flex_balance: { set: totalFlex } } });
-    }
+    await recalculateFlexBalances(req.user.id);
     res.redirect("/absence");
   } catch (err) {
     res.status(500).send("Failed to delete absence: " + err.message);
@@ -160,6 +155,16 @@ router.post("/absence/flex_leave", async (req, res) => {
         end_time: null,
         comments,
       },
+    });
+    // Dra av normaltiden för dagen från flex_balance och flex_balance_travel
+    const userSettings = await prisma.settings.findUnique({ where: { user_id: req.user.id } });
+    const normal = await getWorkTimeForDate(new Date(date), userSettings, req.user.id);
+    await prisma.user.update({
+      where: { id: req.user.id },
+      data: {
+        flex_balance: { decrement: normal },
+        flex_balance_travel: { decrement: normal }
+      }
     });
     res.redirect("/absence");
   } catch (err) {
@@ -199,23 +204,7 @@ router.post("/absence/:id", async (req, res) => {
         comments,
       },
     });
-    // Efter att en absence ändrats, räkna om flex_balance för användaren (hela dagen)
-    const timeEntries = await prisma.timeEntry.findMany({ where: { user_id: req.user.id, date } });
-    let totalFlex = 0;
-    for (const entry of timeEntries) {
-      const extraTimes = await prisma.extraTime.findMany({ where: { time_entry_id: entry.id } });
-      const flex = await calculateFlexForEntry({
-        userId: req.user.id,
-        date: entry.date,
-        work_start_time: entry.work_start_time,
-        work_end_time: entry.work_end_time,
-        break_start_time: entry.break_start_time,
-        break_end_time: entry.break_end_time,
-        extraTimes
-      });
-      totalFlex += flex;
-    }
-    await prisma.user.update({ where: { id: req.user.id }, data: { flex_balance: { set: totalFlex } } });
+    await recalculateFlexBalances(req.user.id);
     res.redirect("/absence");
   } catch (err) {
     res.render("absence-form", { absence: req.body, user: req.user, error: err.message, csrfToken: req.csrfToken() });

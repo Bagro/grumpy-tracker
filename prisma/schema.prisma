@@ -24,6 +24,7 @@ model User {
   workPeriods       WorkPeriod[]
   absences          Absence[]
   flex_balance        Int      @default(0)
+  flex_balance_travel Int      @default(0)
 }
 
 model TimeEntry {

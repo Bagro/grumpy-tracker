@@ -3,6 +3,7 @@ import { PrismaClient } from "@prisma/client";
 import { parseISO } from "date-fns";
 import { Parser } from 'json2csv';
 import { getWorkTimeForDate } from '../utils.js';
+import { recalculateFlexBalances } from './absence.js';
 
 const prisma = new PrismaClient();
 const router = express.Router();
@@ -210,7 +211,7 @@ router.post("/time/new", async (req, res) => {
         },
       });
     }
-    // Uppdatera flex_balance
+    // Uppdatera flex_balance och flex_balance_travel
     const flex = await calculateFlexForEntry({
       userId: req.user.id,
       date: entryDate,
@@ -220,10 +221,21 @@ router.post("/time/new", async (req, res) => {
       break_end_time: breaksEnd,
       extraTimes
     });
+    // Flex + Travel
+    let flexTravel = flex;
+    if (typeof travelStart === 'number' && typeof travelEnd === 'number' && typeof workStart === 'number' && typeof workEnd === 'number') {
+      const beforeWork = workStart - travelStart;
+      const afterWork = travelEnd - workEnd;
+      flexTravel = workEnd - workStart + beforeWork + afterWork - breaksStart.reduce((sum, b, i) => sum + (typeof b === 'number' && typeof breaksEnd[i] === 'number' && breaksEnd[i] > b ? (breaksEnd[i] - b) : 0), 0) + extraTimes.reduce((sum, et) => sum + (typeof et.start === 'number' && typeof et.end === 'number' && et.end > et.start ? (et.end - et.start) : 0), 0) - (await getWorkTimeForDate(new Date(entryDate), await prisma.settings.findUnique({ where: { user_id: req.user.id } }), req.user.id));
+    }
     await prisma.user.update({
       where: { id: req.user.id },
-      data: { flex_balance: { increment: flex } }
+      data: {
+        flex_balance: { increment: flex },
+        flex_balance_travel: { increment: flexTravel }
+      }
     });
+    await recalculateFlexBalances(req.user.id);
     res.redirect("/time");
   } catch (err) {
     res.render("time-form", { entry: req.body, user: req.user, error: err.message, csrfToken: req.csrfToken() });
@@ -377,9 +389,25 @@ router.post("/time/:id/edit", async (req, res) => {
       break_end_time: breaksEnd,
       extraTimes
     });
+    // Flex + Travel
+    let oldFlexTravel = oldFlex;
+    let newFlexTravel = newFlex;
+    if (typeof travelStart === 'number' && typeof travelEnd === 'number' && typeof workStart === 'number' && typeof workEnd === 'number') {
+      const beforeWork = workStart - travelStart;
+      const afterWork = travelEnd - workEnd;
+      newFlexTravel = workEnd - workStart + beforeWork + afterWork - breaksStart.reduce((sum, b, i) => sum + (typeof b === 'number' && typeof breaksEnd[i] === 'number' && breaksEnd[i] > b ? (breaksEnd[i] - b) : 0), 0) + extraTimes.reduce((sum, et) => sum + (typeof et.start === 'number' && typeof et.end === 'number' && et.end > et.start ? (et.end - et.start) : 0), 0) - (await getWorkTimeForDate(new Date(entryDate), await prisma.settings.findUnique({ where: { user_id: req.user.id } }), req.user.id));
+    }
+    if (typeof oldEntry.travel_start_time === 'number' && typeof oldEntry.travel_end_time === 'number' && typeof oldEntry.work_start_time === 'number' && typeof oldEntry.work_end_time === 'number') {
+      const beforeWork = oldEntry.work_start_time - oldEntry.travel_start_time;
+      const afterWork = oldEntry.travel_end_time - oldEntry.work_end_time;
+      oldFlexTravel = oldEntry.work_end_time - oldEntry.work_start_time + beforeWork + afterWork - (oldEntry.break_start_time||[]).reduce((sum, b, i) => sum + (typeof b === 'number' && typeof (oldEntry.break_end_time||[])[i] === 'number' && (oldEntry.break_end_time||[])[i] > b ? ((oldEntry.break_end_time||[])[i] - b) : 0), 0) + (oldExtraTimes||[]).reduce((sum, et) => sum + (typeof et.start === 'number' && typeof et.end === 'number' && et.end > et.start ? (et.end - et.start) : 0), 0) - (await getWorkTimeForDate(new Date(entryDate), await prisma.settings.findUnique({ where: { user_id: req.user.id } }), req.user.id));
+    }
     await prisma.user.update({
       where: { id: req.user.id },
-      data: { flex_balance: { increment: newFlex - oldFlex } }
+      data: {
+        flex_balance: { increment: newFlex - oldFlex },
+        flex_balance_travel: { increment: newFlexTravel - oldFlexTravel }
+      }
     });
     res.redirect("/time");
   } catch (err) {
@@ -393,7 +421,7 @@ router.post("/time/:id/delete", async (req, res) => {
     if (!req.user) return res.redirect("/login");
     await prisma.extraTime.deleteMany({ where: { time_entry_id: req.params.id } });
     await prisma.timeEntry.delete({ where: { id: req.params.id, user_id: req.user.id } });
-    // Uppdatera flex_balance (dra bort flex för denna entry)
+    // Uppdatera flex_balance och flex_balance_travel (dra bort flex för denna entry)
     const oldEntry = await prisma.timeEntry.findUnique({ where: { id: req.params.id, user_id: req.user.id } });
     if (oldEntry) {
       const oldExtraTimes = await prisma.extraTime.findMany({ where: { time_entry_id: req.params.id } });
@@ -406,9 +434,18 @@ router.post("/time/:id/delete", async (req, res) => {
         break_end_time: oldEntry.break_end_time,
         extraTimes: oldExtraTimes
       });
+      let oldFlexTravel = oldFlex;
+      if (typeof oldEntry.travel_start_time === 'number' && typeof oldEntry.travel_end_time === 'number' && typeof oldEntry.work_start_time === 'number' && typeof oldEntry.work_end_time === 'number') {
+        const beforeWork = oldEntry.work_start_time - oldEntry.travel_start_time;
+        const afterWork = oldEntry.travel_end_time - oldEntry.work_end_time;
+        oldFlexTravel = oldEntry.work_end_time - oldEntry.work_start_time + beforeWork + afterWork - (oldEntry.break_start_time||[]).reduce((sum, b, i) => sum + (typeof b === 'number' && typeof (oldEntry.break_end_time||[])[i] === 'number' && (oldEntry.break_end_time||[])[i] > b ? ((oldEntry.break_end_time||[])[i] - b) : 0), 0) + (oldExtraTimes||[]).reduce((sum, et) => sum + (typeof et.start === 'number' && typeof et.end === 'number' && et.end > et.start ? (et.end - et.start) : 0), 0) - (await getWorkTimeForDate(new Date(oldEntry.date), await prisma.settings.findUnique({ where: { user_id: req.user.id } }), req.user.id));
+      }
       await prisma.user.update({
         where: { id: req.user.id },
-        data: { flex_balance: { decrement: oldFlex } }
+        data: {
+          flex_balance: { decrement: oldFlex },
+          flex_balance_travel: { decrement: oldFlexTravel }
+        }
       });
     }
     res.redirect("/time");
@@ -425,16 +462,20 @@ async function calculateFlexForEntry({ userId, date, work_start_time, work_end_t
   // Absence
   const absences = await prisma.absence.findMany({ where: { user_id: userId, date: d.toISOString().slice(0,10) } });
   let absenceMinutes = 0;
-  let fullDayAbsence = false;
+  let hasFullDayFlexLeave = false;
+  let hasFullDayVacationOrVab = false;
   for (const a of absences) {
     if (a.full_day) {
-      fullDayAbsence = true;
-      absenceMinutes += normal;
-    } else if (a.start_time != null && a.end_time != null) {
+      if (a.type === 'flex_leave') {
+        hasFullDayFlexLeave = true;
+      } else if (a.type === 'vacation' || a.type === 'care_of_sick_child') {
+        hasFullDayVacationOrVab = true;
+      }
+    } else if (a.start_time != null && a.end_time != null && a.type !== 'flex_leave') {
       absenceMinutes += (a.end_time - a.start_time);
     }
   }
-  if (fullDayAbsence) {
+  if (hasFullDayVacationOrVab) {
     normal = 0;
   } else if (absenceMinutes > 0) {
     normal = Math.max(0, normal - absenceMinutes);
@@ -444,17 +485,8 @@ async function calculateFlexForEntry({ userId, date, work_start_time, work_end_t
   const breaksMin = (break_start_time||[]).reduce((sum, b, i) => sum + (typeof b === 'number' && typeof (break_end_time||[])[i] === 'number' && (break_end_time||[])[i] > b ? ((break_end_time||[])[i] - b) : 0), 0);
   const extraMin = (extraTimes||[]).reduce((sum, et) => sum + (typeof et.start === 'number' && typeof et.end === 'number' && et.end > et.start ? (et.end - et.start) : 0), 0);
   let flex = work - breaksMin + extraMin - normal;
-  // Subtract flex usage for this day
-  const flexusages = []; // FlexUsage-modellen är borttagen
-  for (const f of flexusages) {
-    if (f.full_day) {
-      const normalForDay = await getWorkTimeForDate(d, userSettings, userId);
-      flex -= normalForDay;
-    } else if (f.amount != null) {
-      flex -= f.amount;
-    } else if (f.start_time != null && f.end_time != null) {
-      flex -= (f.end_time - f.start_time);
-    }
+  if (hasFullDayFlexLeave) {
+    flex -= await getWorkTimeForDate(d, userSettings, userId);
   }
   return Math.round(flex);
 }
