@@ -16,12 +16,6 @@
       <div class="bg-green-100 text-green-700 p-2 rounded mb-2"><%= success %></div>
     <% } %>
 
-    <!-- Flex Balance -->
-    <div class="mb-4 p-3 bg-grumpy-dark2 border border-grumpy-orange rounded flex items-center gap-2">
-      <span class="font-semibold"><%= t('dashboard.flex_balance', 'Flex Balance') %>:</span>
-      <span class="text-xl font-extrabold text-grumpy-orange"><%= formatFlexTime(user.flex_balance) %></span>
-    </div>
-
     <!-- Normaltid inställning -->
     <section class="bg-grumpy-dark2 shadow-2xl p-6 rounded-2xl space-y-4 border border-grumpy-orange mb-6 w-full">
       <form method="post" action="/settings" id="settings-main-form">
