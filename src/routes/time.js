@@ -76,7 +76,7 @@ router.get("/time", async (req, res) => {
     const extraMin = extraTimes.reduce((sum, et) => sum + (typeof et.start === 'number' && typeof et.end === 'number' && et.end > et.start ? (et.end - et.start) : 0), 0);
     let flex = work - breaksMin + extraMin - normal;
     // Subtract flex usage for this day (fix: always subtract, even if normal=0)
-    const flexusages = await prisma.flexUsage.findMany({ where: { user_id: req.user.id, date: dayKey } });
+    const flexusages = []; // FlexUsage-modellen är borttagen
     for (const f of flexusages) {
       if (f.full_day) {
         // Subtract the user's normal work time for this date (not the possibly reduced normal)
@@ -445,7 +445,7 @@ async function calculateFlexForEntry({ userId, date, work_start_time, work_end_t
   const extraMin = (extraTimes||[]).reduce((sum, et) => sum + (typeof et.start === 'number' && typeof et.end === 'number' && et.end > et.start ? (et.end - et.start) : 0), 0);
   let flex = work - breaksMin + extraMin - normal;
   // Subtract flex usage for this day
-  const flexusages = await prisma.flexUsage.findMany({ where: { user_id: userId, date: d.toISOString().slice(0,10) } });
+  const flexusages = []; // FlexUsage-modellen är borttagen
   for (const f of flexusages) {
     if (f.full_day) {
       const normalForDay = await getWorkTimeForDate(d, userSettings, userId);

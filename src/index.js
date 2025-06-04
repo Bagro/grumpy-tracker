@@ -17,7 +17,6 @@ import settingsRoutes from './routes/settings.js';
 import gdprRoutes from './routes/gdpr.js';
 import adminRoutes from './routes/admin.js';
 import absenceRoutes from './routes/absence.js';
-import flexusageRoutes from './routes/flexusage.js';
 import flexleaveRoutes from './routes/flexleave.js';
 import setupI18n from './i18n/index.js';
 import { PrismaClient } from '@prisma/client';
@@ -354,7 +353,6 @@ app.use(settingsRoutes);
 app.use(gdprRoutes);
 app.use(adminRoutes);
 app.use(absenceRoutes);
-app.use(flexusageRoutes);
 app.use(flexleaveRoutes);
 
 // Error handler for CSRF and others
