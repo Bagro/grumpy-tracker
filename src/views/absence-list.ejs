@@ -50,6 +50,9 @@
               <% }) %>
             </tbody>
           </table>
+          <% if (user) { %>
+            <a href="/absence/flex-leave" class="bg-grumpy-orange text-grumpy-dark2 px-4 py-2 rounded font-semibold hover:bg-grumpy-dark2 hover:text-grumpy-orange border border-grumpy-orange transition"><%= t('absence.flex_leave', 'Register Flex Leave') %></a>
+          <% } %>
         </div>
       </div>
     </main>

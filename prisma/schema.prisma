@@ -23,7 +23,6 @@ model User {
   deactivated        Boolean? @default(false)
   workPeriods       WorkPeriod[]
   absences          Absence[]
-  flexUsages        FlexUsage[]
   flex_balance        Int      @default(0)
 }
 
@@ -85,20 +84,6 @@ model Absence {
   full_day   Boolean  // true = full day, false = partial
   start_time Int?     // minutes from midnight (if partial)
   end_time   Int?     // minutes from midnight (if partial)
-  comments   String?
-  created_at DateTime @default(now())
-  updated_at DateTime @updatedAt
-}
-
-model FlexUsage {
-  id         String   @id @default(uuid())
-  user       User     @relation(fields: [user_id], references: [id])
-  user_id    String
-  date       String   // YYYY-MM-DD
-  full_day   Boolean  // true = full day, false = partial
-  start_time Int?     // minutes from midnight (if partial)
-  end_time   Int?     // minutes from midnight (if partial)
-  amount     Int?     // minutes used (optional, for partial usage)
   comments   String?
   created_at DateTime @default(now())
   updated_at DateTime @updatedAt

@@ -136,4 +136,28 @@ router.post("/absence/:id/delete", async (req, res) => {
   }
 });
 
+// Flexuttag = frånvaro: typ "flex_leave", alltid full_day=true, start/end_time null
+router.post("/absence/flex_leave", async (req, res) => {
+  try {
+    const { date, comments } = req.body;
+    if (!date) {
+      return res.status(400).send("Missing required fields");
+    }
+    await prisma.absence.create({
+      data: {
+        user_id: req.user.id,
+        date,
+        type: "flex_leave",
+        full_day: true,
+        start_time: null,
+        end_time: null,
+        comments,
+      },
+    });
+    res.redirect("/absence");
+  } catch (err) {
+    res.status(500).send("Failed to create flex leave: " + err.message);
+  }
+});
+
 export default router;

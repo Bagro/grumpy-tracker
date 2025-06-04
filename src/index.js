@@ -18,6 +18,7 @@ import gdprRoutes from './routes/gdpr.js';
 import adminRoutes from './routes/admin.js';
 import absenceRoutes from './routes/absence.js';
 import flexusageRoutes from './routes/flexusage.js';
+import flexleaveRoutes from './routes/flexleave.js';
 import setupI18n from './i18n/index.js';
 import { PrismaClient } from '@prisma/client';
 import flash from 'connect-flash';
@@ -119,10 +120,10 @@ app.get('/', async (req, res) => {
     if (!extraMap[et.time_entry_id]) extraMap[et.time_entry_id] = [];
     extraMap[et.time_entry_id].push(et);
   }
-  // Fetch absences and flex usages for user in the period
+  // Fetch absences for user in the period
   // We'll fetch for the whole year to cover all periods, then filter in-memory
   const allAbsences = await prisma.absence.findMany({ where: { user_id: req.user.id } });
-  const allFlexUsages = await prisma.flexUsage.findMany({ where: { user_id: req.user.id } });
+  const allFlexUsages = []; // FlexUsage-modellen är borttagen
 
   let flexTodayWork = 0, flexTodayWorkTravel = 0;
   let flexTotalWork = 0, flexTotalWorkTravel = 0;
@@ -354,6 +355,7 @@ app.use(gdprRoutes);
 app.use(adminRoutes);
 app.use(absenceRoutes);
 app.use(flexusageRoutes);
+app.use(flexleaveRoutes);
 
 // Error handler for CSRF and others
 app.use((err, req, res, next) => {

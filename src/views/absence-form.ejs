@@ -19,36 +19,49 @@
             <div class="bg-red-100 text-red-700 p-2 rounded mb-2"><%= error %></div>
           <% } %>
           <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
-          <div class="mb-4">
-            <label class="block mb-1 font-semibold" for="date"><%= t('date', 'Date') %></label>
-            <input id="date" type="date" name="date" class="w-full border rounded p-2 bg-grumpy-dark text-grumpy-offwhite" value="<%= absence.date || '' %>" required />
-          </div>
-          <div class="mb-4">
-            <label class="block mb-1 font-semibold" for="type"><%= t('absence.type', 'Type') %></label>
-            <select id="type" name="type" class="w-full border rounded p-2 bg-grumpy-dark text-grumpy-offwhite" required>
-              <option value="vacation" <%= absence.type === 'vacation' ? 'selected' : '' %>><%= t('absence.vacation', 'Vacation') %></option>
-              <option value="sickness" <%= absence.type === 'sickness' ? 'selected' : '' %>><%= t('absence.sickness', 'Sickness') %></option>
-              <option value="care_of_sick_child" <%= absence.type === 'care_of_sick_child' ? 'selected' : '' %>><%= t('absence.care_of_sick_child', 'Care of Sick Child') %></option>
-            </select>
-          </div>
-          <div class="mb-4 flex items-center gap-2">
-            <input id="full_day" type="checkbox" name="full_day" <%= absence.full_day ? 'checked' : '' %> class="rounded border-grumpy-orange text-grumpy-orange focus:ring-grumpy-orange" />
-            <label for="full_day" class="font-semibold"><%= t('absence.full_day', 'Full Day') %></label>
-          </div>
-          <div id="partial-time-fields" class="mb-4 <%= absence.full_day ? 'hidden' : '' %>">
-            <div class="mb-2">
-              <label class="block mb-1 font-semibold" for="start_time"><%= t('absence.start_time', 'Start Time') %></label>
-              <input id="start_time" type="time" name="start_time" class="w-full border rounded p-2 bg-grumpy-dark text-grumpy-offwhite" value="<%= absence.start_time || '' %>" />
+          <% if (typeof flexLeave !== 'undefined' && flexLeave) { %>
+            <input type="hidden" name="type" value="flex_leave" />
+            <input type="hidden" name="full_day" value="on" />
+            <div class="mb-4">
+              <label class="block mb-1 font-semibold" for="date"><%= t('date', 'Date') %></label>
+              <input id="date" type="date" name="date" class="w-full border rounded p-2 bg-grumpy-dark text-grumpy-offwhite" value="<%= absence.date || '' %>" required />
             </div>
-            <div>
-              <label class="block mb-1 font-semibold" for="end_time"><%= t('absence.end_time', 'End Time') %></label>
-              <input id="end_time" type="time" name="end_time" class="w-full border rounded p-2 bg-grumpy-dark text-grumpy-offwhite" value="<%= absence.end_time || '' %>" />
+            <div class="mb-4">
+              <label class="block mb-1 font-semibold" for="comments"><%= t('comments', 'Comments') %></label>
+              <textarea id="comments" name="comments" class="w-full border rounded p-2 bg-grumpy-dark text-grumpy-offwhite"><%= absence.comments || '' %></textarea>
             </div>
-          </div>
-          <div class="mb-4">
-            <label class="block mb-1 font-semibold" for="comments"><%= t('comments', 'Comments') %></label>
-            <textarea id="comments" name="comments" class="w-full border rounded p-2 bg-grumpy-dark text-grumpy-offwhite"><%= absence.comments || '' %></textarea>
-          </div>
+          <% } else { %>
+            <div class="mb-4">
+              <label class="block mb-1 font-semibold" for="date"><%= t('date', 'Date') %></label>
+              <input id="date" type="date" name="date" class="w-full border rounded p-2 bg-grumpy-dark text-grumpy-offwhite" value="<%= absence.date || '' %>" required />
+            </div>
+            <div class="mb-4">
+              <label class="block mb-1 font-semibold" for="type"><%= t('absence.type', 'Type') %></label>
+              <select id="type" name="type" class="w-full border rounded p-2 bg-grumpy-dark text-grumpy-offwhite" required>
+                <option value="vacation" <%= absence.type === 'vacation' ? 'selected' : '' %>><%= t('absence.vacation', 'Vacation') %></option>
+                <option value="sickness" <%= absence.type === 'sickness' ? 'selected' : '' %>><%= t('absence.sickness', 'Sickness') %></option>
+                <option value="care_of_sick_child" <%= absence.type === 'care_of_sick_child' ? 'selected' : '' %>><%= t('absence.care_of_sick_child', 'Care of Sick Child') %></option>
+              </select>
+            </div>
+            <div class="mb-4 flex items-center gap-2">
+              <input id="full_day" type="checkbox" name="full_day" <%= absence.full_day ? 'checked' : '' %> class="rounded border-grumpy-orange text-grumpy-orange focus:ring-grumpy-orange" />
+              <label for="full_day" class="font-semibold"><%= t('absence.full_day', 'Full Day') %></label>
+            </div>
+            <div id="partial-time-fields" class="mb-4 <%= absence.full_day ? 'hidden' : '' %>">
+              <div class="mb-2">
+                <label class="block mb-1 font-semibold" for="start_time"><%= t('absence.start_time', 'Start Time') %></label>
+                <input id="start_time" type="time" name="start_time" class="w-full border rounded p-2 bg-grumpy-dark text-grumpy-offwhite" value="<%= absence.start_time || '' %>" />
+              </div>
+              <div>
+                <label class="block mb-1 font-semibold" for="end_time"><%= t('absence.end_time', 'End Time') %></label>
+                <input id="end_time" type="time" name="end_time" class="w-full border rounded p-2 bg-grumpy-dark text-grumpy-offwhite" value="<%= absence.end_time || '' %>" />
+              </div>
+            </div>
+            <div class="mb-4">
+              <label class="block mb-1 font-semibold" for="comments"><%= t('comments', 'Comments') %></label>
+              <textarea id="comments" name="comments" class="w-full border rounded p-2 bg-grumpy-dark text-grumpy-offwhite"><%= absence.comments || '' %></textarea>
+            </div>
+          <% } %>
           <button type="submit" class="bg-grumpy-orange text-grumpy-dark2 px-4 py-2 rounded font-semibold w-full mt-2 hover:bg-grumpy-dark2 hover:text-grumpy-orange border border-grumpy-orange transition"><%= t('save', 'Save') %></button>
         </form>
       </div>
