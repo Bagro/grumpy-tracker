@@ -43,9 +43,12 @@
                     <%= t('dashboard.start_travel', 'Start travel') %>
                   </button>
                 </form>
-                <button class="w-full bg-grumpy-orange text-grumpy-dark2 font-semibold rounded py-2 mb-2 hover:bg-grumpy-dark2 hover:text-grumpy-orange border border-grumpy-orange transition">
-                  <%= t('dashboard.start_work', 'Start work') %>
-                </button>
+                <form hx-post="/time/today/work-start" hx-swap="none" method="post" action="/time/today/work-start">
+                  <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
+                  <button type="submit" class="w-full bg-grumpy-orange text-grumpy-dark2 font-semibold rounded py-2 mb-2 hover:bg-grumpy-dark2 hover:text-grumpy-orange border border-grumpy-orange transition">
+                    <%= t('dashboard.start_work', 'Start work') %>
+                  </button>
+                </form>
                 <button class="w-full bg-grumpy-orange text-grumpy-dark2 font-semibold rounded py-2 mb-2 hover:bg-grumpy-dark2 hover:text-grumpy-orange border border-grumpy-orange transition">
                   <%= t('dashboard.stop_work', 'Stop work') %>
                 </button>
