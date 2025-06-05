@@ -36,8 +36,13 @@
               <h2 class="text-lg font-bold text-grumpy-orange mb-3">
                 <%= t('dashboard.todays_time_log', 'Todays time log') %>
               </h2>
+              <% if (goHomeTime) { %>
+                <div class="mb-4 p-2 rounded bg-grumpy-dark border border-grumpy-orange text-center text-grumpy-orange font-semibold">
+                  <%= t('dashboard.go_home_time', 'Du kan gå hem kl. {{time}}', { time: goHomeTime }) %>
+                </div>
+              <% } %>
               <div class="flex flex-col gap-2 mt-4">
-                <% if (!todaysEntry || !todaysEntry.travel_start_time) { %>
+                <% if (!todaysEntry || (!todaysEntry.travel_start_time && !todaysEntry.work_start_time)) { %>
                 <form hx-post="/time/today/travel-start" hx-swap="none" method="post" action="/time/today/travel-start">
                   <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
                   <button type="submit" class="w-full bg-grumpy-orange text-grumpy-dark2 font-semibold rounded py-2 mb-2 hover:bg-grumpy-dark2 hover:text-grumpy-orange border border-grumpy-orange transition">
@@ -86,7 +91,7 @@
                   </button>
                 </form>
                 <% } %>
-                <% if (todaysEntry && todaysEntry.travel_start_time && !(typeof todaysEntry.travel_end_time === 'number' && todaysEntry.travel_end_time > 0)) { %>
+                <% if (!(typeof todaysEntry?.travel_end_time === 'number' && todaysEntry.travel_end_time > 0)) { %>
                 <form hx-post="/time/today/travel-end" hx-swap="none" method="post" action="/time/today/travel-end">
                   <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
                   <button type="submit" class="w-full bg-grumpy-orange text-grumpy-dark2 font-semibold rounded py-2 hover:bg-grumpy-dark2 hover:text-grumpy-orange border border-grumpy-orange transition">

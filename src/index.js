@@ -328,6 +328,45 @@ app.get('/', async (req, res) => {
   // Ensure break_start_time and break_end_time are arrays for widget logic
   if (!Array.isArray(todaysEntry.break_start_time)) todaysEntry.break_start_time = [];
   if (!Array.isArray(todaysEntry.break_end_time)) todaysEntry.break_end_time = [];
+
+  // Calculate go home time if work has started and not ended
+  let goHomeTime = null;
+  if (
+    typeof todaysEntry.work_start_time === 'number' &&
+    todaysEntry.work_start_time > 0 &&
+    !(typeof todaysEntry.work_end_time === 'number' && todaysEntry.work_end_time > 0)
+  ) {
+    // Get normal work duration for today (in minutes)
+    let normalMinutes = 480;
+    if (userSettings) {
+      normalMinutes = await getWorkTimeForDate(new Date(today), userSettings, req.user.id);
+    }
+    // Calculate total break time so far (in minutes)
+    let breakMinutes = 0;
+    if (Array.isArray(todaysEntry.break_start_time)) {
+      for (let i = 0; i < todaysEntry.break_start_time.length; i++) {
+        const start = todaysEntry.break_start_time[i];
+        const end = (Array.isArray(todaysEntry.break_end_time) && todaysEntry.break_end_time[i] != null) ? todaysEntry.break_end_time[i] : null;
+        if (typeof start === 'number') {
+          if (typeof end === 'number' && end > start) {
+            breakMinutes += (end - start);
+          } else {
+            // Ongoing break: count up to now
+            breakMinutes += Math.floor((Date.now() / 60000) - start);
+          }
+        }
+      }
+    }
+    // work_start_time is in minutes since midnight
+    let startMinutes = todaysEntry.work_start_time;
+    let endMinutes = startMinutes + normalMinutes + breakMinutes;
+    // Convert to HH:mm
+    let hours = Math.floor(endMinutes / 60);
+    let minutes = endMinutes % 60;
+    if (hours >= 24) hours = hours % 24;
+    goHomeTime = `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}`;
+  }
+
   res.render('index', {
     user: req.user,
     flexPeriodWork: Math.round(flexPeriodWork),
@@ -348,6 +387,7 @@ app.get('/', async (req, res) => {
     csrfToken: req.csrfToken(),
     currentPath: '/', // Add this line for menu highlighting
     todaysEntry // Pass today's entry for widget logic
+    , goHomeTime // Pass go home time for widget
   });
 });
 
