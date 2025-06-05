@@ -515,6 +515,69 @@ router.post('/time/today/work-start', async (req, res) => {
   res.redirect('/');
 });
 
+// Register work end for today's time entry
+router.post('/time/today/work-end', async (req, res) => {
+  if (!req.user) return res.status(401).send('Unauthorized');
+  const today = new Date();
+  const dateStr = today.toISOString().slice(0, 10);
+  const now = today.getHours() * 60 + today.getMinutes();
+  let entry = await prisma.timeEntry.findFirst({ where: { user_id: req.user.id, date: dateStr } });
+  if (!entry) {
+    // Set travel_start_time and work_start_time to 0 if not present
+    entry = await prisma.timeEntry.create({
+      data: {
+        user_id: req.user.id,
+        date: dateStr,
+        work_start_time: 0,
+        work_end_time: now,
+        travel_start_time: 0,
+      }
+    });
+  } else {
+    // Update existing entry
+    await prisma.timeEntry.update({
+      where: { id: entry.id },
+      data: { work_end_time: now }
+    });
+  }
+  if (req.xhr || req.headers.accept?.includes('json')) {
+    return res.status(204).end();
+  }
+  res.redirect('/');
+});
+
+// Register travel end for today's time entry
+router.post('/time/today/travel-end', async (req, res) => {
+  if (!req.user) return res.status(401).send('Unauthorized');
+  const today = new Date();
+  const dateStr = today.toISOString().slice(0, 10);
+  const now = today.getHours() * 60 + today.getMinutes();
+  let entry = await prisma.timeEntry.findFirst({ where: { user_id: req.user.id, date: dateStr } });
+  if (!entry) {
+    // Set work_start_time and work_end_time to 0 if not present
+    entry = await prisma.timeEntry.create({
+      data: {
+        user_id: req.user.id,
+        date: dateStr,
+        travel_end_time: now,
+        work_start_time: 0,
+        work_end_time: 0,
+        travel_start_time: 0,
+      }
+    });
+  } else {
+    // Update existing entry
+    await prisma.timeEntry.update({
+      where: { id: entry.id },
+      data: { travel_end_time: now }
+    });
+  }
+  if (req.xhr || req.headers.accept?.includes('json')) {
+    return res.status(204).end();
+  }
+  res.redirect('/');
+});
+
 // Helper: Calculate flex for a single time entry (same logic as in list)
 async function calculateFlexForEntry({ userId, date, work_start_time, work_end_time, break_start_time, break_end_time, extraTimes }) {
   const userSettings = await prisma.settings.findUnique({ where: { user_id: userId } });

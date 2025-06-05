@@ -49,12 +49,18 @@
                     <%= t('dashboard.start_work', 'Start work') %>
                   </button>
                 </form>
-                <button class="w-full bg-grumpy-orange text-grumpy-dark2 font-semibold rounded py-2 mb-2 hover:bg-grumpy-dark2 hover:text-grumpy-orange border border-grumpy-orange transition">
-                  <%= t('dashboard.stop_work', 'Stop work') %>
-                </button>
-                <button class="w-full bg-grumpy-orange text-grumpy-dark2 font-semibold rounded py-2 hover:bg-grumpy-dark2 hover:text-grumpy-orange border border-grumpy-orange transition">
-                  <%= t('dashboard.stop_travel', 'Stop travel') %>
-                </button>
+                <form hx-post="/time/today/work-end" hx-swap="none" method="post" action="/time/today/work-end">
+                  <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
+                  <button type="submit" class="w-full bg-grumpy-orange text-grumpy-dark2 font-semibold rounded py-2 mb-2 hover:bg-grumpy-dark2 hover:text-grumpy-orange border border-grumpy-orange transition">
+                    <%= t('dashboard.stop_work', 'Stop work') %>
+                  </button>
+                </form>
+                <form hx-post="/time/today/travel-end" hx-swap="none" method="post" action="/time/today/travel-end">
+                  <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
+                  <button type="submit" class="w-full bg-grumpy-orange text-grumpy-dark2 font-semibold rounded py-2 hover:bg-grumpy-dark2 hover:text-grumpy-orange border border-grumpy-orange transition">
+                    <%= t('dashboard.stop_travel', 'Stop travel') %>
+                  </button>
+                </form>
               </div>
             </div>
           </div>
