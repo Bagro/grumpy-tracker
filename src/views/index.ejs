@@ -11,21 +11,31 @@
     <%- include('partials/menu', { user, csrfToken, currentPath: request.path }) %>
     <main class="flex-1 flex flex-col p-4 sm:p-6">
       <div class="w-full max-w-5xl mx-auto flex flex-col md:flex-row gap-6 items-stretch">
-        <!-- Flex Time Card vänster på desktop, överst på mobil -->
-        <div class="flex flex-col max-w-xs w-full md:w-64 bg-grumpy-dark2 border border-grumpy-orange rounded-2xl shadow-xl p-4 sm:p-6 pointer-events-auto self-start md:self-start mx-auto md:mx-0 h-full">
-          <div class="w-full">
-            <h2 class="text-lg font-bold text-grumpy-orange mb-3">
-              <%= t('flex_time', 'Flex Time') %>
-            </h2>
-            <div class="flex flex-col gap-2 w-full">
-              <div class="flex justify-between items-center">
-                <span class="font-semibold text-grumpy-offwhite"><%= t('dashboard.flex_time_work', 'Arbete:') %></span>
-                <span class="text-xl font-extrabold text-grumpy-orange"><%= formatFlexTime(user.flex_balance) %></span>
+        <!-- Left column: Flex Time + Todays Time Log stacked -->
+        <div class="flex flex-col gap-6 max-w-xs w-full md:w-64">
+          <div class="flex flex-col bg-grumpy-dark2 border border-grumpy-orange rounded-2xl shadow-xl p-4 sm:p-6 pointer-events-auto self-start md:self-start mx-auto md:mx-0 h-full w-full">
+            <div class="w-full">
+              <h2 class="text-lg font-bold text-grumpy-orange mb-3">
+                <%= t('flex_time', 'Flex Time') %>
+              </h2>
+              <div class="flex flex-col gap-2 w-full">
+                <div class="flex justify-between items-center">
+                  <span class="font-semibold text-grumpy-offwhite"><%= t('dashboard.flex_time_work', 'Arbete:') %></span>
+                  <span class="text-xl font-extrabold text-grumpy-orange"><%= formatFlexTime(user.flex_balance) %></span>
+                </div>
+                <div class="flex justify-between items-center">
+                  <span class="font-semibold text-grumpy-offwhite"><%= t('dashboard.flex_time_work_travel', '+ Restid:') %></span>
+                  <span class="text-xl font-extrabold text-grumpy-orange"><%= formatFlexTime(user.flex_balance_travel) %></span>
+                </div>
               </div>
-              <div class="flex justify-between items-center">
-                <span class="font-semibold text-grumpy-offwhite"><%= t('dashboard.flex_time_work_travel', '+ Restid:') %></span>
-                <span class="text-xl font-extrabold text-grumpy-orange"><%= formatFlexTime(user.flex_balance_travel) %></span>
-              </div>
+            </div>
+          </div>
+          <!-- Todays Time Log Widget -->
+          <div class="flex flex-col bg-grumpy-dark2 border border-grumpy-orange rounded-2xl shadow-xl p-4 sm:p-6 pointer-events-auto self-start md:self-start mx-auto md:mx-0 h-full w-full">
+            <div class="w-full">
+              <h2 class="text-lg font-bold text-grumpy-orange mb-3">
+                <%= t('dashboard.todays_time_log', 'Todays time log') %>
+              </h2>
             </div>
           </div>
         </div>

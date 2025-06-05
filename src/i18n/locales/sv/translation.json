@@ -59,6 +59,7 @@
   "dashboard.normal_time": "Normaltid",
   "dashboard.work_time": "Arbete",
   "dashboard.work_travel_time": "+ Restid",
+  "dashboard.todays_time_log": "Dagens tidlogg",
   "absence": {
     "list": "Frånvaro",
     "new": "Registrera frånvaro",
