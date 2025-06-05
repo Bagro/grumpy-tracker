@@ -516,6 +516,85 @@ router.post('/time/today/travel-end', async (req, res) => {
   res.redirect('/');
 });
 
+// Register break start for today's time entry
+router.post('/time/today/break-start', async (req, res) => {
+  if (!req.user) return res.status(401).send('Unauthorized');
+  const today = new Date();
+  const dateStr = today.toISOString().slice(0, 10);
+  const now = today.getHours() * 60 + today.getMinutes();
+  let entry = await prisma.timeEntry.findFirst({ where: { user_id: req.user.id, date: dateStr } });
+  if (!entry) {
+    // Create entry with break_start_time as first break
+    entry = await prisma.timeEntry.create({
+      data: {
+        user_id: req.user.id,
+        date: dateStr,
+        work_start_time: 0,
+        work_end_time: 0,
+        travel_start_time: 0,
+        travel_end_time: 0,
+        break_start_time: [now],
+        break_end_time: [],
+      }
+    });
+  } else {
+    // Add a new break start (append to array)
+    const breakStarts = Array.isArray(entry.break_start_time) ? [...entry.break_start_time] : [];
+    breakStarts.push(now);
+    const breakEnds = Array.isArray(entry.break_end_time) ? [...entry.break_end_time] : [];
+    await prisma.timeEntry.update({
+      where: { id: entry.id },
+      data: { break_start_time: breakStarts, break_end_time: breakEnds }
+    });
+  }
+  await recalculateFlexBalances(req.user.id);
+  if (req.xhr || req.headers.accept?.includes('json')) {
+    return res.status(204).end();
+  }
+  res.redirect('/');
+});
+
+// Register break end for today's time entry
+router.post('/time/today/break-end', async (req, res) => {
+  if (!req.user) return res.status(401).send('Unauthorized');
+  const today = new Date();
+  const dateStr = today.toISOString().slice(0, 10);
+  const now = today.getHours() * 60 + today.getMinutes();
+  let entry = await prisma.timeEntry.findFirst({ where: { user_id: req.user.id, date: dateStr } });
+  if (!entry) {
+    // Create entry with break_end_time as first break end (should not happen, but for safety)
+    entry = await prisma.timeEntry.create({
+      data: {
+        user_id: req.user.id,
+        date: dateStr,
+        work_start_time: 0,
+        work_end_time: 0,
+        travel_start_time: 0,
+        travel_end_time: 0,
+        break_start_time: [],
+        break_end_time: [now],
+      }
+    });
+  } else {
+    // Add a new break end (append to array)
+    const breakStarts = Array.isArray(entry.break_start_time) ? [...entry.break_start_time] : [];
+    let breakEnds = Array.isArray(entry.break_end_time) ? [...entry.break_end_time] : [];
+    // Only add if there is an open break (breakEnds.length < breakStarts.length)
+    if (breakEnds.length < breakStarts.length) {
+      breakEnds.push(now);
+      await prisma.timeEntry.update({
+        where: { id: entry.id },
+        data: { break_end_time: breakEnds }
+      });
+    }
+  }
+  await recalculateFlexBalances(req.user.id);
+  if (req.xhr || req.headers.accept?.includes('json')) {
+    return res.status(204).end();
+  }
+  res.redirect('/');
+});
+
 // Helper: Calculate flex for a single time entry (same logic as in list)
 async function calculateFlexForEntry({ userId, date, work_start_time, work_end_time, break_start_time, break_end_time, extraTimes }) {
   const userSettings = await prisma.settings.findUnique({ where: { user_id: userId } });

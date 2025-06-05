@@ -45,12 +45,39 @@
                   </button>
                 </form>
                 <% } %>
+                <% if (!todaysEntry || !todaysEntry.work_start_time) { %>
                 <form hx-post="/time/today/work-start" hx-swap="none" method="post" action="/time/today/work-start">
                   <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
                   <button type="submit" class="w-full bg-grumpy-orange text-grumpy-dark2 font-semibold rounded py-2 mb-2 hover:bg-grumpy-dark2 hover:text-grumpy-orange border border-grumpy-orange transition">
                     <%= t('dashboard.start_work', 'Start work') %>
                   </button>
                 </form>
+                <% } %>
+                <% 
+                  // Show Start break if work has started, not ended, and no break is ongoing
+                  const workStarted = todaysEntry && typeof todaysEntry.work_start_time === 'number' && todaysEntry.work_start_time > 0;
+                  const workEnded = todaysEntry && typeof todaysEntry.work_end_time === 'number' && todaysEntry.work_end_time > 0;
+                  const breaks = (todaysEntry && Array.isArray(todaysEntry.break_start_time)) ? todaysEntry.break_start_time : [];
+                  const breaksEnd = (todaysEntry && Array.isArray(todaysEntry.break_end_time)) ? todaysEntry.break_end_time : [];
+                  const breakOngoing = breaks.length > 0 && (breaksEnd.length < breaks.length || breaksEnd[breaks.length-1] == null);
+                %>
+                <% if (workStarted && !workEnded) { %>
+                  <% if (!breakOngoing) { %>
+                  <form hx-post="/time/today/break-start" hx-swap="none" method="post" action="/time/today/break-start">
+                    <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
+                    <button type="submit" class="w-full bg-grumpy-orange text-grumpy-dark2 font-semibold rounded py-2 mb-2 hover:bg-grumpy-dark2 hover:text-grumpy-orange border border-grumpy-orange transition">
+                      <%= t('dashboard.start_break', 'Start break') %>
+                    </button>
+                  </form>
+                  <% } else { %>
+                  <form hx-post="/time/today/break-end" hx-swap="none" method="post" action="/time/today/break-end">
+                    <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
+                    <button type="submit" class="w-full bg-grumpy-orange text-grumpy-dark2 font-semibold rounded py-2 mb-2 hover:bg-grumpy-dark2 hover:text-grumpy-orange border border-grumpy-orange transition">
+                      <%= t('dashboard.stop_break', 'Stop break') %>
+                    </button>
+                  </form>
+                  <% } %>
+                <% } %>
                 <form hx-post="/time/today/work-end" hx-swap="none" method="post" action="/time/today/work-end">
                   <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
                   <button type="submit" class="w-full bg-grumpy-orange text-grumpy-dark2 font-semibold rounded py-2 mb-2 hover:bg-grumpy-dark2 hover:text-grumpy-orange border border-grumpy-orange transition">
