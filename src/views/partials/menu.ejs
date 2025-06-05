@@ -22,7 +22,7 @@
           <a href="/absence/new" class="block px-4 py-2 hover:bg-grumpy-orange hover:text-grumpy-dark2" tabindex="0"><%= t('absence.list', 'Frånvaro') %></a>
         </div>
       </div>
-      <a href="/time" class="px-3 py-1 rounded transition font-semibold <%= (currentPath && currentPath.startsWith('/time') && !currentPath.startsWith('/time/summary')) ? 'bg-grumpy-orange text-grumpy-dark2' : 'hover:text-grumpy-orange' %>"><%= t('work_time', 'Arbetstid') %></a>
+      <a href="/time" class="px-3 py-1 rounded transition font-semibold <%= (currentPath && currentPath.startsWith('/time') && !currentPath.startsWith('/time/summary')) ? '!bg-grumpy-orange !text-grumpy-dark2' : 'hover:text-grumpy-orange' %>"><%= t('work_time', 'Arbetstid') %></a>
       <a href="/absence" class="px-3 py-1 rounded transition font-semibold <%= (currentPath && currentPath.startsWith('/absence')) ? 'bg-grumpy-orange text-grumpy-dark2' : 'hover:text-grumpy-orange' %>"><%= t('absence.list', 'Absence') %></a>
       <a href="/settings" class="px-3 py-1 rounded transition font-semibold <%= (currentPath === '/settings') ? 'bg-grumpy-orange text-grumpy-dark2' : 'hover:text-grumpy-orange' %>"><%= t('settings', 'Settings') %></a>
       <a href="/profile" class="px-3 py-1 rounded transition font-semibold <%= (currentPath === '/profile') ? 'bg-grumpy-orange text-grumpy-dark2' : 'hover:text-grumpy-orange' %>"><%= t('profile', 'Profile') %></a>
@@ -55,7 +55,7 @@
           <a href="/absence/new" class="block px-4 py-2 hover:bg-grumpy-orange hover:text-grumpy-dark2"><%= t('absence.list', 'Frånvaro') %></a>
         </div>
       </div>
-      <a href="/time" class="block px-3 py-2 rounded transition font-semibold <%= (currentPath && currentPath.startsWith('/time') && !currentPath.startsWith('/time/summary')) ? 'bg-grumpy-orange text-grumpy-dark2' : 'hover:text-grumpy-orange' %>"><%= t('work_time', 'Arbetstid') %></a>
+      <a href="/time" class="block px-3 py-2 rounded transition font-semibold <%= (currentPath && currentPath.startsWith('/time') && !currentPath.startsWith('/time/summary')) ? '!bg-grumpy-orange !text-grumpy-dark2' : 'hover:text-grumpy-orange' %>"><%= t('work_time', 'Arbetstid') %></a>
       <a href="/absence" class="block px-3 py-2 rounded transition font-semibold <%= (currentPath && currentPath.startsWith('/absence')) ? 'bg-grumpy-orange text-grumpy-dark2' : 'hover:text-grumpy-orange' %>"><%= t('absence.list', 'Absence') %></a>
       <a href="/settings" class="block px-3 py-2 rounded transition font-semibold <%= (currentPath === '/settings') ? 'bg-grumpy-orange text-grumpy-dark2' : 'hover:text-grumpy-orange' %>"><%= t('settings', 'Settings') %></a>
       <a href="/profile" class="block px-3 py-2 rounded transition font-semibold <%= (currentPath === '/profile') ? 'bg-grumpy-orange text-grumpy-dark2' : 'hover:text-grumpy-orange' %>"><%= t('profile', 'Profile') %></a>

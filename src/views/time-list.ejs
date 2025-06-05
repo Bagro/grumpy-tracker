@@ -52,7 +52,11 @@
                   <td><%= minToTime(entry.work_start_time) %></td>
                   <td><%= minToTime(entry.work_end_time) %></td>
                   <td><%= minToTime(entry.travel_end_time) %></td>
-                  <td><%= entry.flex %> min</td>
+                  <td>
+                    <% if (entry.flex !== "" && entry.flex !== null && entry.flex !== undefined) { %>
+                      <%= entry.flex %> min
+                    <% } %>
+                  </td>
                   <td>
                     <% if ((entry.breaks && entry.breaks.length) || (entry.extraTimes && entry.extraTimes.length)) { %>
                       <button type="button" class="text-grumpy-orange underline toggle-details" data-idx="<%= idx %>"><%= t('show_details', 'Visa mer') %></button>

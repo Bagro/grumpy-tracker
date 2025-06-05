@@ -184,6 +184,10 @@ app.get('/', async (req, res) => {
     flexUsageMap[f.date].push(f);
   }
   for (const e of entries) {
+    // Only include entries with both work_start_time and work_end_time as valid numbers > 0 and work_end_time > work_start_time
+    if (!(typeof e.work_start_time === 'number' && typeof e.work_end_time === 'number' && e.work_start_time > 0 && e.work_end_time > e.work_start_time)) {
+      continue;
+    }
     const d = e.date instanceof Date ? e.date : new Date(e.date);
     const dayKey = d.toISOString().slice(0,10);
     // Use correct work time for this entry
@@ -314,6 +318,60 @@ app.get('/', async (req, res) => {
   console.log('Current user id:', req.user.id);
   console.log('Loaded entries:', entries);
 
+  // Find today's entry for the widget logic
+  const todaysEntry = entries.find(e => {
+    const d = e.date instanceof Date ? e.date.toISOString().slice(0,10) : (typeof e.date === 'string' ? e.date.slice(0,10) : '');
+    return d === today;
+  }) || {};
+  // Attach extraTimes for today (for dashboard widget logic)
+  if (todaysEntry && todaysEntry.id) {
+    todaysEntry.extraTimes = extraMap[todaysEntry.id] ? [...extraMap[todaysEntry.id]] : [];
+  } else {
+    todaysEntry.extraTimes = [];
+  }
+  // Ensure break_start_time and break_end_time are arrays for widget logic
+  if (!Array.isArray(todaysEntry.break_start_time)) todaysEntry.break_start_time = [];
+  if (!Array.isArray(todaysEntry.break_end_time)) todaysEntry.break_end_time = [];
+
+  // Calculate go home time if work has started and not ended
+  let goHomeTime = null;
+  if (
+    typeof todaysEntry.work_start_time === 'number' &&
+    todaysEntry.work_start_time > 0 &&
+    !(typeof todaysEntry.work_end_time === 'number' && todaysEntry.work_end_time > 0)
+  ) {
+    // Get normal work duration for today (in minutes)
+    let normalMinutes = 480;
+    if (userSettings) {
+      normalMinutes = await getWorkTimeForDate(new Date(today), userSettings, req.user.id);
+    }
+    // If a break is ongoing, use (now - break start) for the ongoing break, otherwise sum all completed breaks
+    let breakMinutes = 0;
+    if (Array.isArray(todaysEntry.break_start_time)) {
+      const nowMinutes = new Date().getHours() * 60 + new Date().getMinutes();
+      for (let i = 0; i < todaysEntry.break_start_time.length; i++) {
+        const start = todaysEntry.break_start_time[i];
+        const end = (Array.isArray(todaysEntry.break_end_time) && todaysEntry.break_end_time[i] != null) ? todaysEntry.break_end_time[i] : null;
+        if (typeof start === 'number') {
+          if (typeof end === 'number' && end > start) {
+            breakMinutes += (end - start);
+          } else if (i === todaysEntry.break_start_time.length - 1) {
+            // Ongoing break: only add (now - break start) for the last break
+            breakMinutes += nowMinutes - start;
+          }
+        }
+      }
+    }
+    // work_start_time is in minutes since midnight
+    let startMinutes = todaysEntry.work_start_time;
+    let endMinutes = startMinutes + normalMinutes + breakMinutes;
+    // Convert to HH:mm
+    let hours = Math.floor(endMinutes / 60);
+    let minutes = endMinutes % 60;
+    if (hours >= 24) hours = hours % 24;
+    goHomeTime = `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}`;
+  }
+
   res.render('index', {
     user: req.user,
     flexPeriodWork: Math.round(flexPeriodWork),
@@ -331,7 +389,10 @@ app.get('/', async (req, res) => {
     week: currentWeek,
     currentWeek,
     currentMonth,
-    csrfToken: req.csrfToken()
+    csrfToken: req.csrfToken(),
+    currentPath: '/', // Add this line for menu highlighting
+    todaysEntry // Pass today's entry for widget logic
+    , goHomeTime // Pass go home time for widget
   });
 });
 

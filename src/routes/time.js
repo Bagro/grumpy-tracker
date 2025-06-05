@@ -77,37 +77,17 @@ router.get("/time", async (req, res) => {
     const breaksMin = breaks.reduce((sum, b) => sum + (typeof b.start === 'number' && typeof b.end === 'number' && b.end > b.start ? (b.end - b.start) : 0), 0);
     const extraMin = extraTimes.reduce((sum, et) => sum + (typeof et.start === 'number' && typeof et.end === 'number' && et.end > et.start ? (et.end - et.start) : 0), 0);
     let flex = work - breaksMin + extraMin - normal;
-    // Subtract flex usage for this day (fix: always subtract, even if normal=0)
-    const flexusages = []; // FlexUsage-modellen är borttagen
-    for (const f of flexusages) {
-      if (f.full_day) {
-        // Subtract the user's normal work time for this date (not the possibly reduced normal)
-        const normalForDay = await getWorkTimeForDate(d, userSettings, req.user.id);
-        flex -= normalForDay;
-      } else if (f.amount != null) {
-        flex -= f.amount;
-      } else if (f.start_time != null && f.end_time != null) {
-        flex -= (f.end_time - f.start_time);
-      }
-    }
+    // Ta bort flexusages-loopen, modellen är borttagen
     // Flex + Travel (samma logik som dashboard)
     let flexTravel = flex;
     if (typeof e.travel_start_time === 'number' && typeof e.travel_end_time === 'number' && typeof e.work_start_time === 'number' && typeof e.work_end_time === 'number') {
       const beforeWork = e.work_start_time - e.travel_start_time;
       const afterWork = e.travel_end_time - e.work_end_time;
       flexTravel = work + beforeWork + afterWork - breaksMin + extraMin - normal;
-      for (const f of flexusages) {
-        if (f.full_day) {
-          const normalForDay = await getWorkTimeForDate(d, userSettings, req.user.id);
-          flexTravel -= normalForDay;
-        } else if (f.amount != null) {
-          flexTravel -= f.amount;
-        } else if (f.start_time != null && f.end_time != null) {
-          flexTravel -= (f.end_time - f.start_time);
-        }
-      }
     }
     if (e.date === today) flexToday += flex;
+    // Visa ingen flex om posten saknar både work_start_time och work_end_time
+    const hasValidWork = typeof e.work_start_time === 'number' && typeof e.work_end_time === 'number' && e.work_start_time > 0 && e.work_end_time > 0 && e.work_end_time > e.work_start_time;
     return {
       id: e.id,
       date: e.date,
@@ -117,11 +97,11 @@ router.get("/time", async (req, res) => {
       travel_end_time: e.travel_end_time || '',
       breaks,
       extraTimes,
-      flex: Math.round(flex),
+      flex: hasValidWork ? Math.round(flex) : '',
       comments: e.comments || ''
     };
   }));
-  res.render("time-list", { entries, user: req.user, csrfToken: req.csrfToken(), flexToday, flexTotal, flexTotalTravel });
+  res.render("time-list", { entries, user: req.user, csrfToken: req.csrfToken(), flexToday, flexTotal, flexTotalTravel, currentPath: req.path });
 });
 
 // New time entry form
@@ -210,30 +190,6 @@ router.post("/time/new", async (req, res) => {
         },
       });
     }
-    // Uppdatera flex_balance och flex_balance_travel
-    const flex = await calculateFlexForEntry({
-      userId: req.user.id,
-      date: entryDate,
-      work_start_time: workStart,
-      work_end_time: workEnd,
-      break_start_time: breaksStart,
-      break_end_time: breaksEnd,
-      extraTimes
-    });
-    // Flex + Travel
-    let flexTravel = flex;
-    if (typeof travelStart === 'number' && typeof travelEnd === 'number' && typeof workStart === 'number' && typeof workEnd === 'number') {
-      const beforeWork = workStart - travelStart;
-      const afterWork = travelEnd - workEnd;
-      flexTravel = workEnd - workStart + beforeWork + afterWork - breaksStart.reduce((sum, b, i) => sum + (typeof b === 'number' && typeof breaksEnd[i] === 'number' && breaksEnd[i] > b ? (breaksEnd[i] - b) : 0), 0) + extraTimes.reduce((sum, et) => sum + (typeof et.start === 'number' && typeof et.end === 'number' && et.end > et.start ? (et.end - et.start) : 0), 0) - (await getWorkTimeForDate(new Date(entryDate), await prisma.settings.findUnique({ where: { user_id: req.user.id } }), req.user.id));
-    }
-    await prisma.user.update({
-      where: { id: req.user.id },
-      data: {
-        flex_balance: { increment: flex },
-        flex_balance_travel: { increment: flexTravel }
-      }
-    });
     await recalculateFlexBalances(req.user.id);
     res.redirect("/time");
   } catch (err) {
@@ -420,37 +376,290 @@ router.post("/time/:id/delete", async (req, res) => {
     if (!req.user) return res.redirect("/login");
     await prisma.extraTime.deleteMany({ where: { time_entry_id: req.params.id } });
     await prisma.timeEntry.delete({ where: { id: req.params.id, user_id: req.user.id } });
-    // Uppdatera flex_balance och flex_balance_travel (dra bort flex för denna entry)
-    const oldEntry = await prisma.timeEntry.findUnique({ where: { id: req.params.id, user_id: req.user.id } });
-    if (oldEntry) {
-      const oldExtraTimes = await prisma.extraTime.findMany({ where: { time_entry_id: req.params.id } });
-      const oldFlex = await calculateFlexForEntry({
-        userId: req.user.id,
-        date: oldEntry.date,
-        work_start_time: oldEntry.work_start_time,
-        work_end_time: oldEntry.work_end_time,
-        break_start_time: oldEntry.break_start_time,
-        break_end_time: oldEntry.break_end_time,
-        extraTimes: oldExtraTimes
-      });
-      let oldFlexTravel = oldFlex;
-      if (typeof oldEntry.travel_start_time === 'number' && typeof oldEntry.travel_end_time === 'number' && typeof oldEntry.work_start_time === 'number' && typeof oldEntry.work_end_time === 'number') {
-        const beforeWork = oldEntry.work_start_time - oldEntry.travel_start_time;
-        const afterWork = oldEntry.travel_end_time - oldEntry.work_end_time;
-        oldFlexTravel = oldEntry.work_end_time - oldEntry.work_start_time + beforeWork + afterWork - (oldEntry.break_start_time||[]).reduce((sum, b, i) => sum + (typeof b === 'number' && typeof (oldEntry.break_end_time||[])[i] === 'number' && (oldEntry.break_end_time||[])[i] > b ? ((oldEntry.break_end_time||[])[i] - b) : 0), 0) + (oldExtraTimes||[]).reduce((sum, et) => sum + (typeof et.start === 'number' && typeof et.end === 'number' && et.end > et.start ? (et.end - et.start) : 0), 0) - (await getWorkTimeForDate(new Date(oldEntry.date), await prisma.settings.findUnique({ where: { user_id: req.user.id } }), req.user.id));
-      }
-      await prisma.user.update({
-        where: { id: req.user.id },
-        data: {
-          flex_balance: { decrement: oldFlex },
-          flex_balance_travel: { decrement: oldFlexTravel }
-        }
-      });
-    }
+    await recalculateFlexBalances(req.user.id);
     res.redirect("/time");
   } catch (err) {
     res.status(500).send("Failed to delete time entry: " + err.message);
   }
+});
+
+// Register travel start for today's time entry
+router.post('/time/today/travel-start', async (req, res) => {
+  if (!req.user) return res.status(401).send('Unauthorized');
+  const today = new Date();
+  const dateStr = today.toISOString().slice(0, 10);
+  const now = today.getHours() * 60 + today.getMinutes();
+  let entry = await prisma.timeEntry.findFirst({ where: { user_id: req.user.id, date: dateStr } });
+  if (!entry) {
+    // Set work_start_time and work_end_time to a sentinel value (e.g. 0) so they don't affect flex time
+    entry = await prisma.timeEntry.create({
+      data: {
+        user_id: req.user.id,
+        date: dateStr,
+        travel_start_time: now,
+        work_start_time: 0, // 00:00
+        work_end_time: 0,   // 00:00
+      }
+    });
+  } else {
+    // Update existing entry
+    await prisma.timeEntry.update({
+      where: { id: entry.id },
+      data: { travel_start_time: now }
+    });
+  }
+  if (req.xhr || req.headers.accept?.includes('json')) {
+    await recalculateFlexBalances(req.user.id);
+    return res.status(204).end();
+  }
+  await recalculateFlexBalances(req.user.id);
+  res.redirect('/');
+});
+
+// Register work start for today's time entry
+router.post('/time/today/work-start', async (req, res) => {
+  if (!req.user) return res.status(401).send('Unauthorized');
+  const today = new Date();
+  const dateStr = today.toISOString().slice(0, 10);
+  const now = today.getHours() * 60 + today.getMinutes();
+  let entry = await prisma.timeEntry.findFirst({ where: { user_id: req.user.id, date: dateStr } });
+  if (!entry) {
+    // Set travel_start_time and work_end_time to 0 if not present
+    entry = await prisma.timeEntry.create({
+      data: {
+        user_id: req.user.id,
+        date: dateStr,
+        work_start_time: now,
+        travel_start_time: 0,
+        work_end_time: 0,
+      }
+    });
+  } else {
+    // Update existing entry
+    await prisma.timeEntry.update({
+      where: { id: entry.id },
+      data: { work_start_time: now }
+    });
+  }
+  if (req.xhr || req.headers.accept?.includes('json')) {
+    await recalculateFlexBalances(req.user.id);
+    return res.status(204).end();
+  }
+  await recalculateFlexBalances(req.user.id);
+  res.redirect('/');
+});
+
+// Register work end for today's time entry
+router.post('/time/today/work-end', async (req, res) => {
+  if (!req.user) return res.status(401).send('Unauthorized');
+  const today = new Date();
+  const dateStr = today.toISOString().slice(0, 10);
+  const now = today.getHours() * 60 + today.getMinutes();
+  let entry = await prisma.timeEntry.findFirst({ where: { user_id: req.user.id, date: dateStr } });
+  if (!entry) {
+    // Set travel_start_time and work_start_time to 0 if not present
+    entry = await prisma.timeEntry.create({
+      data: {
+        user_id: req.user.id,
+        date: dateStr,
+        work_start_time: 0,
+        work_end_time: now,
+        travel_start_time: 0,
+      }
+    });
+  } else {
+    // If a break is ongoing, close it with the same time as work_end_time
+    let breakStarts = Array.isArray(entry.break_start_time) ? [...entry.break_start_time] : [];
+    let breakEnds = Array.isArray(entry.break_end_time) ? [...entry.break_end_time] : [];
+    if (breakStarts.length > breakEnds.length) {
+      breakEnds.push(now);
+    }
+    await prisma.timeEntry.update({
+      where: { id: entry.id },
+      data: { work_end_time: now, break_end_time: breakEnds }
+    });
+  }
+  if (req.xhr || req.headers.accept?.includes('json')) {
+    await recalculateFlexBalances(req.user.id);
+    return res.status(204).end();
+  }
+  await recalculateFlexBalances(req.user.id);
+  res.redirect('/');
+});
+
+// Register travel end for today's time entry
+router.post('/time/today/travel-end', async (req, res) => {
+  if (!req.user) return res.status(401).send('Unauthorized');
+  const today = new Date();
+  const dateStr = today.toISOString().slice(0, 10);
+  const now = today.getHours() * 60 + today.getMinutes();
+  let entry = await prisma.timeEntry.findFirst({ where: { user_id: req.user.id, date: dateStr } });
+  if (!entry) {
+    // Set work_start_time and work_end_time to 0 if not present
+    entry = await prisma.timeEntry.create({
+      data: {
+        user_id: req.user.id,
+        date: dateStr,
+        travel_end_time: now,
+        work_start_time: 0,
+        work_end_time: 0,
+        travel_start_time: 0,
+      }
+    });
+  } else {
+    // Update existing entry
+    await prisma.timeEntry.update({
+      where: { id: entry.id },
+      data: { travel_end_time: now }
+    });
+  }
+  if (req.xhr || req.headers.accept?.includes('json')) {
+    await recalculateFlexBalances(req.user.id);
+    return res.status(204).end();
+  }
+  await recalculateFlexBalances(req.user.id);
+  res.redirect('/');
+});
+
+// Register break start for today's time entry
+router.post('/time/today/break-start', async (req, res) => {
+  if (!req.user) return res.status(401).send('Unauthorized');
+  const today = new Date();
+  const dateStr = today.toISOString().slice(0, 10);
+  const now = today.getHours() * 60 + today.getMinutes();
+  let entry = await prisma.timeEntry.findFirst({ where: { user_id: req.user.id, date: dateStr } });
+  if (!entry) {
+    // Create entry with break_start_time as first break
+    entry = await prisma.timeEntry.create({
+      data: {
+        user_id: req.user.id,
+        date: dateStr,
+        work_start_time: 0,
+        work_end_time: 0,
+        travel_start_time: 0,
+        travel_end_time: 0,
+        break_start_time: [now],
+        break_end_time: [],
+      }
+    });
+  } else {
+    // Add a new break start (append to array)
+    const breakStarts = Array.isArray(entry.break_start_time) ? [...entry.break_start_time] : [];
+    breakStarts.push(now);
+    const breakEnds = Array.isArray(entry.break_end_time) ? [...entry.break_end_time] : [];
+    await prisma.timeEntry.update({
+      where: { id: entry.id },
+      data: { break_start_time: breakStarts, break_end_time: breakEnds }
+    });
+  }
+  await recalculateFlexBalances(req.user.id);
+  if (req.xhr || req.headers.accept?.includes('json')) {
+    return res.status(204).end();
+  }
+  res.redirect('/');
+});
+
+// Register break end for today's time entry
+router.post('/time/today/break-end', async (req, res) => {
+  if (!req.user) return res.status(401).send('Unauthorized');
+  const today = new Date();
+  const dateStr = today.toISOString().slice(0, 10);
+  const now = today.getHours() * 60 + today.getMinutes();
+  let entry = await prisma.timeEntry.findFirst({ where: { user_id: req.user.id, date: dateStr } });
+  if (!entry) {
+    // Create entry with break_end_time as first break end (should not happen, but for safety)
+    entry = await prisma.timeEntry.create({
+      data: {
+        user_id: req.user.id,
+        date: dateStr,
+        work_start_time: 0,
+        work_end_time: 0,
+        travel_start_time: 0,
+        travel_end_time: 0,
+        break_start_time: [],
+        break_end_time: [now],
+      }
+    });
+  } else {
+    // Add a new break end (append to array)
+    const breakStarts = Array.isArray(entry.break_start_time) ? [...entry.break_start_time] : [];
+    let breakEnds = Array.isArray(entry.break_end_time) ? [...entry.break_end_time] : [];
+    // Only add if there is an open break (breakEnds.length < breakStarts.length)
+    if (breakEnds.length < breakStarts.length) {
+      breakEnds.push(now);
+      await prisma.timeEntry.update({
+        where: { id: entry.id },
+        data: { break_end_time: breakEnds }
+      });
+    }
+  }
+  await recalculateFlexBalances(req.user.id);
+  if (req.xhr || req.headers.accept?.includes('json')) {
+    return res.status(204).end();
+  }
+  res.redirect('/');
+});
+
+// Register extra time start for today's time entry
+router.post('/time/today/extra-start', async (req, res) => {
+  if (!req.user) return res.status(401).send('Unauthorized');
+  const today = new Date();
+  const dateStr = today.toISOString().slice(0, 10);
+  const now = today.getHours() * 60 + today.getMinutes();
+  let entry = await prisma.timeEntry.findFirst({ where: { user_id: req.user.id, date: dateStr } });
+  if (!entry) {
+    // Create entry with extraTimes as first extra
+    entry = await prisma.timeEntry.create({
+      data: {
+        user_id: req.user.id,
+        date: dateStr,
+        work_start_time: 0,
+        work_end_time: 0,
+        travel_start_time: 0,
+        travel_end_time: 0,
+      }
+    });
+  }
+  // Add a new extra time (append to array)
+  // Sätt end till 0 istället för null för att undvika Prisma-fel
+  await prisma.extraTime.create({
+    data: {
+      time_entry_id: entry.id,
+      start: now,
+      end: 0
+    }
+  });
+  await recalculateFlexBalances(req.user.id);
+  if (req.xhr || req.headers.accept?.includes('json')) {
+    return res.status(204).end();
+  }
+  res.redirect('/');
+});
+
+// Register extra time end for today's time entry
+router.post('/time/today/extra-end', async (req, res) => {
+  if (!req.user) return res.status(401).send('Unauthorized');
+  const today = new Date();
+  const dateStr = today.toISOString().slice(0, 10);
+  const now = today.getHours() * 60 + today.getMinutes();
+  let entry = await prisma.timeEntry.findFirst({ where: { user_id: req.user.id, date: dateStr } });
+  if (!entry) return res.redirect('/');
+  // Find latest extraTime without end (end === 0)
+  const extra = await prisma.extraTime.findFirst({
+    where: { time_entry_id: entry.id, end: 0 },
+    orderBy: { start: 'desc' }
+  });
+  if (extra) {
+    await prisma.extraTime.update({
+      where: { id: extra.id },
+      data: { end: now }
+    });
+  }
+  await recalculateFlexBalances(req.user.id);
+  if (req.xhr || req.headers.accept?.includes('json')) {
+    return res.status(204).end();
+  }
+  res.redirect('/');
 });
 
 // Helper: Calculate flex for a single time entry (same logic as in list)
@@ -480,12 +689,16 @@ async function calculateFlexForEntry({ userId, date, work_start_time, work_end_t
     normal = Math.max(0, normal - absenceMinutes);
   }
   // Flex
-  const work = (typeof work_end_time === 'number' && typeof work_start_time === 'number') ? (work_end_time - work_start_time) : 0;
-  const breaksMin = (break_start_time||[]).reduce((sum, b, i) => sum + (typeof b === 'number' && typeof (break_end_time||[])[i] === 'number' && (break_end_time||[])[i] > b ? ((break_end_time||[])[i] - b) : 0), 0);
-  const extraMin = (extraTimes||[]).reduce((sum, et) => sum + (typeof et.start === 'number' && typeof et.end === 'number' && et.end > et.start ? (et.end - et.start) : 0), 0);
-  let flex = work - breaksMin + extraMin - normal;
-  if (hasFullDayFlexLeave) {
-    flex -= await getWorkTimeForDate(d, userSettings, userId);
+  const validWork = typeof work_start_time === 'number' && typeof work_end_time === 'number' && work_start_time > 0 && work_end_time > 0 && work_end_time > work_start_time;
+  let flex = 0;
+  if (validWork) {
+    const work = work_end_time - work_start_time;
+    const breaksMin = (break_start_time||[]).reduce((sum, b, i) => sum + (typeof b === 'number' && typeof (break_end_time||[])[i] === 'number' && (break_end_time||[])[i] > b ? ((break_end_time||[])[i] - b) : 0), 0);
+    const extraMin = (extraTimes||[]).reduce((sum, et) => sum + (typeof et.start === 'number' && typeof et.end === 'number' && et.end > et.start ? (et.end - et.start) : 0), 0);
+    flex = work - breaksMin + extraMin - normal;
+    if (hasFullDayFlexLeave) {
+      flex -= await getWorkTimeForDate(d, userSettings, userId);
+    }
   }
   return Math.round(flex);
 }
