@@ -184,6 +184,10 @@ app.get('/', async (req, res) => {
     flexUsageMap[f.date].push(f);
   }
   for (const e of entries) {
+    // Only include entries with both work_start_time and work_end_time as valid numbers > 0 and work_end_time > work_start_time
+    if (!(typeof e.work_start_time === 'number' && typeof e.work_end_time === 'number' && e.work_start_time > 0 && e.work_end_time > e.work_start_time)) {
+      continue;
+    }
     const d = e.date instanceof Date ? e.date : new Date(e.date);
     const dayKey = d.toISOString().slice(0,10);
     // Use correct work time for this entry
