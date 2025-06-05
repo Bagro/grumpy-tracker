@@ -319,6 +319,12 @@ app.get('/', async (req, res) => {
     const d = e.date instanceof Date ? e.date.toISOString().slice(0,10) : (typeof e.date === 'string' ? e.date.slice(0,10) : '');
     return d === today;
   }) || {};
+  // Attach extraTimes for today (for dashboard widget logic)
+  if (todaysEntry && todaysEntry.id) {
+    todaysEntry.extraTimes = extraMap[todaysEntry.id] ? [...extraMap[todaysEntry.id]] : [];
+  } else {
+    todaysEntry.extraTimes = [];
+  }
   // Ensure break_start_time and break_end_time are arrays for widget logic
   if (!Array.isArray(todaysEntry.break_start_time)) todaysEntry.break_start_time = [];
   if (!Array.isArray(todaysEntry.break_end_time)) todaysEntry.break_end_time = [];

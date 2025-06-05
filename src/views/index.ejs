@@ -92,6 +92,29 @@
                     <%= t('dashboard.stop_travel', 'Stop travel') %>
                   </button>
                 </form>
+                <% // Extratid-knappar: visas om workEnded %>
+                <% 
+                  const extraTimes = (todaysEntry && Array.isArray(todaysEntry.extraTimes)) ? todaysEntry.extraTimes : [];
+                  // Extratid pågående: senaste extra saknar end eller end är 0
+                  const extraOngoing = extraTimes && extraTimes.length > 0 && (extraTimes[extraTimes.length-1].end === 0);
+                %>
+                <% if (workEnded) { %>
+                  <% if (!extraOngoing) { %>
+                  <form hx-post="/time/today/extra-start" hx-swap="none" method="post" action="/time/today/extra-start">
+                    <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
+                    <button type="submit" class="w-full bg-grumpy-orange text-grumpy-dark2 font-semibold rounded py-2 mb-2 hover:bg-grumpy-dark2 hover:text-grumpy-orange border border-grumpy-orange transition">
+                      <%= t('dashboard.start_extra', 'Starta extratid') %>
+                    </button>
+                  </form>
+                  <% } else { %>
+                  <form hx-post="/time/today/extra-end" hx-swap="none" method="post" action="/time/today/extra-end">
+                    <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
+                    <button type="submit" class="w-full bg-grumpy-orange text-grumpy-dark2 font-semibold rounded py-2 mb-2 hover:bg-grumpy-dark2 hover:text-grumpy-orange border border-grumpy-orange transition">
+                      <%= t('dashboard.stop_extra', 'Stoppa extratid') %>
+                    </button>
+                  </form>
+                  <% } %>
+                <% } %>
               </div>
             </div>
           </div>

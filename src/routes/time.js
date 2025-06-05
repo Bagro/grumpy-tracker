@@ -600,6 +600,68 @@ router.post('/time/today/break-end', async (req, res) => {
   res.redirect('/');
 });
 
+// Register extra time start for today's time entry
+router.post('/time/today/extra-start', async (req, res) => {
+  if (!req.user) return res.status(401).send('Unauthorized');
+  const today = new Date();
+  const dateStr = today.toISOString().slice(0, 10);
+  const now = today.getHours() * 60 + today.getMinutes();
+  let entry = await prisma.timeEntry.findFirst({ where: { user_id: req.user.id, date: dateStr } });
+  if (!entry) {
+    // Create entry with extraTimes as first extra
+    entry = await prisma.timeEntry.create({
+      data: {
+        user_id: req.user.id,
+        date: dateStr,
+        work_start_time: 0,
+        work_end_time: 0,
+        travel_start_time: 0,
+        travel_end_time: 0,
+      }
+    });
+  }
+  // Add a new extra time (append to array)
+  // Sätt end till 0 istället för null för att undvika Prisma-fel
+  await prisma.extraTime.create({
+    data: {
+      time_entry_id: entry.id,
+      start: now,
+      end: 0
+    }
+  });
+  await recalculateFlexBalances(req.user.id);
+  if (req.xhr || req.headers.accept?.includes('json')) {
+    return res.status(204).end();
+  }
+  res.redirect('/');
+});
+
+// Register extra time end for today's time entry
+router.post('/time/today/extra-end', async (req, res) => {
+  if (!req.user) return res.status(401).send('Unauthorized');
+  const today = new Date();
+  const dateStr = today.toISOString().slice(0, 10);
+  const now = today.getHours() * 60 + today.getMinutes();
+  let entry = await prisma.timeEntry.findFirst({ where: { user_id: req.user.id, date: dateStr } });
+  if (!entry) return res.redirect('/');
+  // Find latest extraTime without end (end === 0)
+  const extra = await prisma.extraTime.findFirst({
+    where: { time_entry_id: entry.id, end: 0 },
+    orderBy: { start: 'desc' }
+  });
+  if (extra) {
+    await prisma.extraTime.update({
+      where: { id: extra.id },
+      data: { end: now }
+    });
+  }
+  await recalculateFlexBalances(req.user.id);
+  if (req.xhr || req.headers.accept?.includes('json')) {
+    return res.status(204).end();
+  }
+  res.redirect('/');
+});
+
 // Helper: Calculate flex for a single time entry (same logic as in list)
 async function calculateFlexForEntry({ userId, date, work_start_time, work_end_time, break_start_time, break_end_time, extraTimes }) {
   const userSettings = await prisma.settings.findUnique({ where: { user_id: userId } });
