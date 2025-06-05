@@ -346,7 +346,7 @@ function getISOWeek(date) {
 
 // Auth routes
 app.use(authRoutes);
-app.use(timeRoutes);
+app.use('/time', timeRoutes);
 app.use(profileRoutes);
 app.use(settingsRoutes);
 app.use(gdprRoutes);

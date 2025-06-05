@@ -453,6 +453,37 @@ router.post("/time/:id/delete", async (req, res) => {
   }
 });
 
+// Register travel start for today's time entry
+router.post('/today/travel-start', async (req, res) => {
+  if (!req.user) return res.status(401).send('Unauthorized');
+  const today = new Date();
+  const dateStr = today.toISOString().slice(0, 10);
+  const now = today.getHours() * 60 + today.getMinutes();
+  let entry = await prisma.timeEntry.findFirst({ where: { user_id: req.user.id, date: dateStr } });
+  if (!entry) {
+    // Set work_start_time and work_end_time to a sentinel value (e.g. 0) so they don't affect flex time
+    entry = await prisma.timeEntry.create({
+      data: {
+        user_id: req.user.id,
+        date: dateStr,
+        travel_start_time: now,
+        work_start_time: 0, // 00:00
+        work_end_time: 0,   // 00:00
+      }
+    });
+  } else {
+    // Update existing entry
+    await prisma.timeEntry.update({
+      where: { id: entry.id },
+      data: { travel_start_time: now }
+    });
+  }
+  if (req.xhr || req.headers.accept?.includes('json')) {
+    return res.status(204).end();
+  }
+  res.redirect('/');
+});
+
 // Helper: Calculate flex for a single time entry (same logic as in list)
 async function calculateFlexForEntry({ userId, date, work_start_time, work_end_time, break_start_time, break_end_time, extraTimes }) {
   const userSettings = await prisma.settings.findUnique({ where: { user_id: userId } });
