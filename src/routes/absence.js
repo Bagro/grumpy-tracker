@@ -32,12 +32,16 @@ async function calculateFlexForEntry({ userId, date, work_start_time, work_end_t
     normal = Math.max(0, normal - absenceMinutes);
   }
   // Flex
-  const work = (typeof work_end_time === 'number' && typeof work_start_time === 'number') ? (work_end_time - work_start_time) : 0;
-  const breaksMin = (break_start_time||[]).reduce((sum, b, i) => sum + (typeof b === 'number' && typeof (break_end_time||[])[i] === 'number' && (break_end_time||[])[i] > b ? ((break_end_time||[])[i] - b) : 0), 0);
-  const extraMin = (extraTimes||[]).reduce((sum, et) => sum + (typeof et.start === 'number' && typeof et.end === 'number' && et.end > et.start ? (et.end - et.start) : 0), 0);
-  let flex = work - breaksMin + extraMin - normal;
-  if (hasFullDayFlexLeave) {
-    flex -= await getWorkTimeForDate(d, userSettings, userId);
+  const validWork = typeof work_start_time === 'number' && typeof work_end_time === 'number' && work_start_time > 0 && work_end_time > 0 && work_end_time > work_start_time;
+  let flex = 0;
+  if (validWork) {
+    const work = work_end_time - work_start_time;
+    const breaksMin = (break_start_time||[]).reduce((sum, b, i) => sum + (typeof b === 'number' && typeof (break_end_time||[])[i] === 'number' && (break_end_time||[])[i] > b ? ((break_end_time||[])[i] - b) : 0), 0);
+    const extraMin = (extraTimes||[]).reduce((sum, et) => sum + (typeof et.start === 'number' && typeof et.end === 'number' && et.end > et.start ? (et.end - et.start) : 0), 0);
+    flex = work - breaksMin + extraMin - normal;
+    if (hasFullDayFlexLeave) {
+      flex -= await getWorkTimeForDate(d, userSettings, userId);
+    }
   }
   return Math.round(flex);
 }
