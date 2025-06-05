@@ -468,10 +468,15 @@ router.post('/time/today/work-end', async (req, res) => {
       }
     });
   } else {
-    // Update existing entry
+    // If a break is ongoing, close it with the same time as work_end_time
+    let breakStarts = Array.isArray(entry.break_start_time) ? [...entry.break_start_time] : [];
+    let breakEnds = Array.isArray(entry.break_end_time) ? [...entry.break_end_time] : [];
+    if (breakStarts.length > breakEnds.length) {
+      breakEnds.push(now);
+    }
     await prisma.timeEntry.update({
       where: { id: entry.id },
-      data: { work_end_time: now }
+      data: { work_end_time: now, break_end_time: breakEnds }
     });
   }
   if (req.xhr || req.headers.accept?.includes('json')) {
