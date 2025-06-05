@@ -341,18 +341,19 @@ app.get('/', async (req, res) => {
     if (userSettings) {
       normalMinutes = await getWorkTimeForDate(new Date(today), userSettings, req.user.id);
     }
-    // Calculate total break time so far (in minutes)
+    // If a break is ongoing, use (now - break start) for the ongoing break, otherwise sum all completed breaks
     let breakMinutes = 0;
     if (Array.isArray(todaysEntry.break_start_time)) {
+      const nowMinutes = new Date().getHours() * 60 + new Date().getMinutes();
       for (let i = 0; i < todaysEntry.break_start_time.length; i++) {
         const start = todaysEntry.break_start_time[i];
         const end = (Array.isArray(todaysEntry.break_end_time) && todaysEntry.break_end_time[i] != null) ? todaysEntry.break_end_time[i] : null;
         if (typeof start === 'number') {
           if (typeof end === 'number' && end > start) {
             breakMinutes += (end - start);
-          } else {
-            // Ongoing break: count up to now
-            breakMinutes += Math.floor((Date.now() / 60000) - start);
+          } else if (i === todaysEntry.break_start_time.length - 1) {
+            // Ongoing break: only add (now - break start) for the last break
+            breakMinutes += nowMinutes - start;
           }
         }
       }
