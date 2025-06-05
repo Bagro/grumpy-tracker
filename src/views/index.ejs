@@ -86,12 +86,14 @@
                   </button>
                 </form>
                 <% } %>
+                <% if (todaysEntry && todaysEntry.travel_start_time && !(typeof todaysEntry.travel_end_time === 'number' && todaysEntry.travel_end_time > 0)) { %>
                 <form hx-post="/time/today/travel-end" hx-swap="none" method="post" action="/time/today/travel-end">
                   <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
                   <button type="submit" class="w-full bg-grumpy-orange text-grumpy-dark2 font-semibold rounded py-2 hover:bg-grumpy-dark2 hover:text-grumpy-orange border border-grumpy-orange transition">
                     <%= t('dashboard.stop_travel', 'Stop travel') %>
                   </button>
                 </form>
+                <% } %>
                 <% // Extratid-knappar: visas om workEnded %>
                 <% 
                   const extraTimes = (todaysEntry && Array.isArray(todaysEntry.extraTimes)) ? todaysEntry.extraTimes : [];
