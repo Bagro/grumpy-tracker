@@ -121,7 +121,7 @@ router.get("/time", async (req, res) => {
       comments: e.comments || ''
     };
   }));
-  res.render("time-list", { entries, user: req.user, csrfToken: req.csrfToken(), flexToday, flexTotal, flexTotalTravel });
+  res.render("time-list", { entries, user: req.user, csrfToken: req.csrfToken(), flexToday, flexTotal, flexTotalTravel, currentPath: req.path });
 });
 
 // New time entry form
@@ -454,7 +454,7 @@ router.post("/time/:id/delete", async (req, res) => {
 });
 
 // Register travel start for today's time entry
-router.post('/today/travel-start', async (req, res) => {
+router.post('/time/today/travel-start', async (req, res) => {
   if (!req.user) return res.status(401).send('Unauthorized');
   const today = new Date();
   const dateStr = today.toISOString().slice(0, 10);

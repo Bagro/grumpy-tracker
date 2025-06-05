@@ -331,7 +331,8 @@ app.get('/', async (req, res) => {
     week: currentWeek,
     currentWeek,
     currentMonth,
-    csrfToken: req.csrfToken()
+    csrfToken: req.csrfToken(),
+    currentPath: '/' // Add this line for menu highlighting
   });
 });
 
@@ -346,7 +347,7 @@ function getISOWeek(date) {
 
 // Auth routes
 app.use(authRoutes);
-app.use('/time', timeRoutes);
+app.use(timeRoutes);
 app.use(profileRoutes);
 app.use(settingsRoutes);
 app.use(gdprRoutes);
