@@ -314,6 +314,11 @@ app.get('/', async (req, res) => {
   console.log('Current user id:', req.user.id);
   console.log('Loaded entries:', entries);
 
+  // Find today's entry for the widget logic
+  const todaysEntry = entries.find(e => {
+    const d = e.date instanceof Date ? e.date.toISOString().slice(0,10) : (typeof e.date === 'string' ? e.date.slice(0,10) : '');
+    return d === today;
+  });
   res.render('index', {
     user: req.user,
     flexPeriodWork: Math.round(flexPeriodWork),
@@ -332,7 +337,8 @@ app.get('/', async (req, res) => {
     currentWeek,
     currentMonth,
     csrfToken: req.csrfToken(),
-    currentPath: '/' // Add this line for menu highlighting
+    currentPath: '/', // Add this line for menu highlighting
+    todaysEntry // Pass today's entry for widget logic
   });
 });
 
