@@ -43,16 +43,18 @@
               <% } %>
               <div class="flex flex-col gap-2 mt-4">
                 <% if (!todaysEntry || (!todaysEntry.travel_start_time && !todaysEntry.work_start_time)) { %>
-                <form hx-post="/time/today/travel-start" hx-swap="none" method="post" action="/time/today/travel-start">
+                <form hx-post="/time/today/travel-start" hx-swap="none" method="post" action="/time/today/travel-start" class="local-time-form">
                   <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
+                  <input type="hidden" name="local_time" />
                   <button type="submit" class="w-full bg-grumpy-orange text-grumpy-dark2 font-semibold rounded py-2 mb-2 hover:bg-grumpy-dark2 hover:text-grumpy-orange border border-grumpy-orange transition">
                     <%= t('dashboard.start_travel', 'Start travel') %>
                   </button>
                 </form>
                 <% } %>
                 <% if (!todaysEntry || !todaysEntry.work_start_time) { %>
-                <form hx-post="/time/today/work-start" hx-swap="none" method="post" action="/time/today/work-start">
+                <form hx-post="/time/today/work-start" hx-swap="none" method="post" action="/time/today/work-start" class="local-time-form">
                   <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
+                  <input type="hidden" name="local_time" />
                   <button type="submit" class="w-full bg-grumpy-orange text-grumpy-dark2 font-semibold rounded py-2 mb-2 hover:bg-grumpy-dark2 hover:text-grumpy-orange border border-grumpy-orange transition">
                     <%= t('dashboard.start_work', 'Start work') %>
                   </button>
@@ -68,15 +70,17 @@
                 %>
                 <% if (workStarted && !workEnded) { %>
                   <% if (!breakOngoing) { %>
-                  <form hx-post="/time/today/break-start" hx-swap="none" method="post" action="/time/today/break-start">
+                  <form hx-post="/time/today/break-start" hx-swap="none" method="post" action="/time/today/break-start" class="local-time-form">
                     <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
+                    <input type="hidden" name="local_time" />
                     <button type="submit" class="w-full bg-grumpy-orange text-grumpy-dark2 font-semibold rounded py-2 mb-2 hover:bg-grumpy-dark2 hover:text-grumpy-orange border border-grumpy-orange transition">
                       <%= t('dashboard.start_break', 'Start break') %>
                     </button>
                   </form>
                   <% } else { %>
-                  <form hx-post="/time/today/break-end" hx-swap="none" method="post" action="/time/today/break-end">
+                  <form hx-post="/time/today/break-end" hx-swap="none" method="post" action="/time/today/break-end" class="local-time-form">
                     <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
+                    <input type="hidden" name="local_time" />
                     <button type="submit" class="w-full bg-grumpy-orange text-grumpy-dark2 font-semibold rounded py-2 mb-2 hover:bg-grumpy-dark2 hover:text-grumpy-orange border border-grumpy-orange transition">
                       <%= t('dashboard.stop_break', 'Stop break') %>
                     </button>
@@ -84,16 +88,18 @@
                   <% } %>
                 <% } %>
                 <% if (!workEnded) { %>
-                <form hx-post="/time/today/work-end" hx-swap="none" method="post" action="/time/today/work-end">
+                <form hx-post="/time/today/work-end" hx-swap="none" method="post" action="/time/today/work-end" class="local-time-form">
                   <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
+                  <input type="hidden" name="local_time" />
                   <button type="submit" class="w-full bg-grumpy-orange text-grumpy-dark2 font-semibold rounded py-2 mb-2 hover:bg-grumpy-dark2 hover:text-grumpy-orange border border-grumpy-orange transition">
                     <%= t('dashboard.stop_work', 'Stop work') %>
                   </button>
                 </form>
                 <% } %>
                 <% if (!(typeof todaysEntry?.travel_end_time === 'number' && todaysEntry.travel_end_time > 0)) { %>
-                <form hx-post="/time/today/travel-end" hx-swap="none" method="post" action="/time/today/travel-end">
+                <form hx-post="/time/today/travel-end" hx-swap="none" method="post" action="/time/today/travel-end" class="local-time-form">
                   <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
+                  <input type="hidden" name="local_time" />
                   <button type="submit" class="w-full bg-grumpy-orange text-grumpy-dark2 font-semibold rounded py-2 hover:bg-grumpy-dark2 hover:text-grumpy-orange border border-grumpy-orange transition">
                     <%= t('dashboard.stop_travel', 'Stop travel') %>
                   </button>
@@ -107,15 +113,17 @@
                 %>
                 <% if (workEnded) { %>
                   <% if (!extraOngoing) { %>
-                  <form hx-post="/time/today/extra-start" hx-swap="none" method="post" action="/time/today/extra-start">
+                  <form hx-post="/time/today/extra-start" hx-swap="none" method="post" action="/time/today/extra-start" class="local-time-form">
                     <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
+                    <input type="hidden" name="local_time" />
                     <button type="submit" class="w-full bg-grumpy-orange text-grumpy-dark2 font-semibold rounded py-2 mb-2 hover:bg-grumpy-dark2 hover:text-grumpy-orange border border-grumpy-orange transition">
                       <%= t('dashboard.start_extra', 'Starta extratid') %>
                     </button>
                   </form>
                   <% } else { %>
-                  <form hx-post="/time/today/extra-end" hx-swap="none" method="post" action="/time/today/extra-end">
+                  <form hx-post="/time/today/extra-end" hx-swap="none" method="post" action="/time/today/extra-end" class="local-time-form">
                     <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
+                    <input type="hidden" name="local_time" />
                     <button type="submit" class="w-full bg-grumpy-orange text-grumpy-dark2 font-semibold rounded py-2 mb-2 hover:bg-grumpy-dark2 hover:text-grumpy-orange border border-grumpy-orange transition">
                       <%= t('dashboard.stop_extra', 'Stoppa extratid') %>
                     </button>
