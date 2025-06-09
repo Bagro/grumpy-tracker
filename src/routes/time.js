@@ -19,6 +19,18 @@ function diffMinutes(start, end) {
   return timeToMinutes(end) - timeToMinutes(start);
 }
 
+// Helper: Hämta "nu" i minuter från midnatt, använd local_time om det finns
+function getNowFromRequest(req) {
+  if (req.body && req.body.local_time) {
+    const d = new Date(req.body.local_time);
+    if (!isNaN(d)) {
+      return d.getHours() * 60 + d.getMinutes();
+    }
+  }
+  const now = new Date();
+  return now.getHours() * 60 + now.getMinutes();
+}
+
 // List time entries for current user
 router.get("/time", async (req, res) => {
   if (!req.user) return res.redirect("/login");
@@ -388,7 +400,7 @@ router.post('/time/today/travel-start', async (req, res) => {
   if (!req.user) return res.status(401).send('Unauthorized');
   const today = new Date();
   const dateStr = today.toISOString().slice(0, 10);
-  const now = today.getHours() * 60 + today.getMinutes();
+  const now = getNowFromRequest(req);
   let entry = await prisma.timeEntry.findFirst({ where: { user_id: req.user.id, date: dateStr } });
   if (!entry) {
     // Set work_start_time and work_end_time to a sentinel value (e.g. 0) so they don't affect flex time
@@ -421,7 +433,7 @@ router.post('/time/today/work-start', async (req, res) => {
   if (!req.user) return res.status(401).send('Unauthorized');
   const today = new Date();
   const dateStr = today.toISOString().slice(0, 10);
-  const now = today.getHours() * 60 + today.getMinutes();
+  const now = getNowFromRequest(req);
   let entry = await prisma.timeEntry.findFirst({ where: { user_id: req.user.id, date: dateStr } });
   if (!entry) {
     // Set travel_start_time and work_end_time to 0 if not present
@@ -454,7 +466,7 @@ router.post('/time/today/work-end', async (req, res) => {
   if (!req.user) return res.status(401).send('Unauthorized');
   const today = new Date();
   const dateStr = today.toISOString().slice(0, 10);
-  const now = today.getHours() * 60 + today.getMinutes();
+  const now = getNowFromRequest(req);
   let entry = await prisma.timeEntry.findFirst({ where: { user_id: req.user.id, date: dateStr } });
   if (!entry) {
     // Set travel_start_time and work_start_time to 0 if not present
@@ -492,7 +504,7 @@ router.post('/time/today/travel-end', async (req, res) => {
   if (!req.user) return res.status(401).send('Unauthorized');
   const today = new Date();
   const dateStr = today.toISOString().slice(0, 10);
-  const now = today.getHours() * 60 + today.getMinutes();
+  const now = getNowFromRequest(req);
   let entry = await prisma.timeEntry.findFirst({ where: { user_id: req.user.id, date: dateStr } });
   if (!entry) {
     // Set work_start_time and work_end_time to 0 if not present
@@ -526,7 +538,7 @@ router.post('/time/today/break-start', async (req, res) => {
   if (!req.user) return res.status(401).send('Unauthorized');
   const today = new Date();
   const dateStr = today.toISOString().slice(0, 10);
-  const now = today.getHours() * 60 + today.getMinutes();
+  const now = getNowFromRequest(req);
   let entry = await prisma.timeEntry.findFirst({ where: { user_id: req.user.id, date: dateStr } });
   if (!entry) {
     // Create entry with break_start_time as first break
@@ -564,10 +576,10 @@ router.post('/time/today/break-end', async (req, res) => {
   if (!req.user) return res.status(401).send('Unauthorized');
   const today = new Date();
   const dateStr = today.toISOString().slice(0, 10);
-  const now = today.getHours() * 60 + today.getMinutes();
+  const now = getNowFromRequest(req);
   let entry = await prisma.timeEntry.findFirst({ where: { user_id: req.user.id, date: dateStr } });
   if (!entry) {
-    // Create entry with break_end_time as first break end (should not happen, but for safety)
+    // Create entry with break_end_time as first break end (should not happen, men för säkerhet)
     entry = await prisma.timeEntry.create({
       data: {
         user_id: req.user.id,
@@ -605,7 +617,7 @@ router.post('/time/today/extra-start', async (req, res) => {
   if (!req.user) return res.status(401).send('Unauthorized');
   const today = new Date();
   const dateStr = today.toISOString().slice(0, 10);
-  const now = today.getHours() * 60 + today.getMinutes();
+  const now = getNowFromRequest(req);
   let entry = await prisma.timeEntry.findFirst({ where: { user_id: req.user.id, date: dateStr } });
   if (!entry) {
     // Create entry with extraTimes as first extra
@@ -641,7 +653,7 @@ router.post('/time/today/extra-end', async (req, res) => {
   if (!req.user) return res.status(401).send('Unauthorized');
   const today = new Date();
   const dateStr = today.toISOString().slice(0, 10);
-  const now = today.getHours() * 60 + today.getMinutes();
+  const now = getNowFromRequest(req);
   let entry = await prisma.timeEntry.findFirst({ where: { user_id: req.user.id, date: dateStr } });
   if (!entry) return res.redirect('/');
   // Find latest extraTime without end (end === 0)
