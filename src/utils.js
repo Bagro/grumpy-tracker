@@ -20,7 +20,8 @@ export async function getWorkTimeForDate(date, settings, userId) {
       start: { lte: date },
       end: { gte: date },
     },
-    orderBy: { start: 'asc' },
+    // Use most recent matching period in case of overlaps
+    orderBy: { start: 'desc' },
   });
   if (periods.length > 0) {
     return periods[0].work_time_minutes;
