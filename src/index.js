@@ -7,7 +7,8 @@ import passport from 'passport';
 import i18next from 'i18next';
 import Backend from 'i18next-fs-backend';
 import middleware from 'i18next-http-middleware';
-import csurf from 'csurf';
+import { doubleCsrf } from 'csrf-csrf';
+import cookieParser from 'cookie-parser';
 import { fileURLToPath } from 'url';
 import { dirname } from 'path';
 import authRoutes from './routes/auth.js';
@@ -55,6 +56,9 @@ app.use(session({
   cookie: { httpOnly: true, secure: false },
 }));
 
+// Cookie parser (needed for csrf-csrf)
+app.use(cookieParser());
+
 // Passport.js
 app.use(passport.initialize());
 app.use(passport.session());
@@ -77,7 +81,22 @@ await setupI18n();
 app.use(middleware.handle(i18next));
 
 // CSRF protection
-app.use(csurf());
+const { doubleCsrfProtection, generateCsrfToken } = doubleCsrf({
+  getSecret: () => process.env.CSRF_SECRET || process.env.SESSION_SECRET || 'changeme',
+  getSessionIdentifier: (req) => req.sessionID,
+  cookieName: "csrf-token", // Simpler name for testing
+  cookieOptions: {
+    sameSite: "lax", // Needed for cross-site requests
+    path: "/",
+    secure: process.env.NODE_ENV === 'production',
+    httpOnly: true
+  },
+  size: 32,
+  ignoredMethods: ["GET", "HEAD", "OPTIONS"],
+  getCsrfTokenFromRequest: (req) => req.headers["x-csrf-token"] || (req.body && req.body._csrf)
+});
+
+app.use(doubleCsrfProtection);
 
 // Connect-flash middleware
 app.use(flash());
