@@ -22,9 +22,43 @@ function diffMinutes(start, end) {
 // Helper: Hämta "nu" i minuter från midnatt, använd local_time om det finns
 function getNowFromRequest(req) {
   if (req.body && req.body.local_time) {
-    const d = new Date(req.body.local_time);
-    if (!isNaN(d)) {
-      return d.getHours() * 60 + d.getMinutes();
+    // Check if the local_time includes timezone offset in format [±HH:MM]
+    const localTimeStr = req.body.local_time;
+    const offsetMatch = localTimeStr.match(/\[([-+])(\d{2}):(\d{2})\]$/);
+
+    if (offsetMatch) {
+      // Extract the ISO string without the timezone offset part
+      const isoString = localTimeStr.substring(0, localTimeStr.indexOf('['));
+      // Parse the date as UTC
+      const d = new Date(isoString);
+
+      if (!isNaN(d)) {
+        // Get the local hours and minutes directly
+        const sign = offsetMatch[1] === '-' ? -1 : 1;
+        const offsetHours = parseInt(offsetMatch[2], 10);
+        const offsetMinutes = parseInt(offsetMatch[3], 10);
+        const totalOffsetMinutes = sign * (offsetHours * 60 + offsetMinutes);
+
+        // Get UTC hours and minutes
+        const utcHours = d.getUTCHours();
+        const utcMinutes = d.getUTCMinutes();
+        const utcTotalMinutes = utcHours * 60 + utcMinutes;
+
+        // Apply the offset to get local time
+        let localTotalMinutes = utcTotalMinutes + totalOffsetMinutes;
+
+        // Handle day boundaries
+        while (localTotalMinutes < 0) localTotalMinutes += 24 * 60;
+        while (localTotalMinutes >= 24 * 60) localTotalMinutes -= 24 * 60;
+
+        return localTotalMinutes;
+      }
+    } else {
+      // Fallback to the original behavior for backward compatibility
+      const d = new Date(localTimeStr);
+      if (!isNaN(d)) {
+        return d.getHours() * 60 + d.getMinutes();
+      }
     }
   }
   const now = new Date();

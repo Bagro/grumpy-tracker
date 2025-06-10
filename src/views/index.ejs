@@ -249,5 +249,27 @@ function formatFlexTime(min) {
 }
 %>
     <%- include('partials/footer') %>
+    <script>
+      // Set local time in all forms with class "local-time-form" before submission
+      document.addEventListener('DOMContentLoaded', function() {
+        const localTimeForms = document.querySelectorAll('.local-time-form');
+        localTimeForms.forEach(form => {
+          form.addEventListener('submit', function() {
+            const localTimeInput = this.querySelector('input[name="local_time"]');
+            if (localTimeInput) {
+              const now = new Date();
+              // Format as YYYY-MM-DDTHH:MM:SS.sssZ[±HH:MM] to include timezone offset
+              const isoString = now.toISOString();
+              const tzOffset = now.getTimezoneOffset();
+              const hours = Math.abs(Math.floor(tzOffset / 60));
+              const minutes = Math.abs(tzOffset % 60);
+              const sign = tzOffset <= 0 ? '+' : '-';
+              const formattedOffset = `${sign}${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}`;
+              localTimeInput.value = `${isoString}[${formattedOffset}]`;
+            }
+          });
+        });
+      });
+    </script>
   </body>
 </html>
