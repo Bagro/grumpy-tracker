@@ -46,6 +46,6 @@
     "prettier": "^3.2.5",
     "supertest": "^7.1.1",
     "tailwindcss": "^4.1.8",
-    "vitest": "^3.2.3"
+    "vitest": "^4.1.4"
   }
 }
