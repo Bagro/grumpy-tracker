@@ -22,7 +22,7 @@
     "csrf-csrf": "^4.0.3",
     "date-fns": "^4.1.0",
     "dotenv": "^17.4.2",
-    "ejs": "^3.1.9",
+    "ejs": "^5.0.2",
     "express": "^5.1.0",
     "express-session": "^1.17.3",
     "htmx.org": "^1.9.10",
