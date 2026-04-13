@@ -14,7 +14,8 @@
     "tailwind:watch": "tailwindcss -i ./src/public/input.css -o ./src/public/tailwind.css --watch"
   },
   "dependencies": {
-    "@prisma/client": "^6.19.3",
+    "@prisma/adapter-pg": "^7.7.0",
+    "@prisma/client": "^7.7.0",
     "bcrypt": "^6.0.0",
     "connect-flash": "^0.1.1",
     "connect-pg-simple": "^10.0.0",
@@ -33,7 +34,7 @@
     "passport": "^0.7.0",
     "passport-local": "^1.0.0",
     "pg": "^8.11.1",
-    "prisma": "^6.19.3"
+    "prisma": "^7.7.0"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",

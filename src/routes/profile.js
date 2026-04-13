@@ -1,8 +1,6 @@
 import express from "express";
 import bcrypt from "bcrypt";
-import { PrismaClient } from "@prisma/client";
-
-const prisma = new PrismaClient();
+import prisma from "../db.js";
 const router = express.Router();
 
 router.get("/profile", async (req, res) => {

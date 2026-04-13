@@ -1,9 +1,7 @@
 import express from "express";
 import passport from "../auth/passport.js";
 import bcrypt from "bcrypt";
-import { PrismaClient } from "@prisma/client";
-
-const prisma = new PrismaClient();
+import prisma from "../db.js";
 const router = express.Router();
 
 // Helper for i18n in views

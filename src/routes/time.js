@@ -1,11 +1,10 @@
 import express from "express";
-import { PrismaClient } from "@prisma/client";
+import prisma from "../db.js";
 import { parseISO } from "date-fns";
 import { Parser } from 'json2csv';
 import { getWorkTimeForDate } from '../utils.js';
 import { recalculateFlexBalances } from './absence.js';
 
-const prisma = new PrismaClient();
 const router = express.Router();
 
 // Helper: HH:mm -> minuter
