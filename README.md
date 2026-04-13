@@ -1,30 +1,11 @@
-<!-- ============================= -->
-<!-- 🚨🚨🚨 100% AI-GENERATED CODE 🚨🚨🚨 -->
-<!-- ⚠️ NO HUMAN HAS REVIEWED THIS! ⚠️ -->
-<!-- 🤖 Use at your own risk! 🤖 -->
-<!-- ============================= -->
-
-# ⚠️🤖🚨 **AI-GENERATED PROJECT DISCLAIMER** 🚨🤖⚠️
-
-> **🟡 This project is 100% AI-generated! 🟡**
->
-> - 🤖 _All code, documentation, and logic were created by artificial intelligence._
-> - 👀 _No human has reviewed or audited this code._
-> - 🧪 _Use at your own risk! Bugs, security issues, and weirdness are possible._
-> - 📝 _Contributions and code reviews are **highly encouraged**!_
->
-> **If you see this, you know you're living in the future.**
-
----
-
 # Grumpy Tracker
 
 Grumpy Tracker is a time tracking system for keeping track of work hours and flex time.
 
 ## Features
 
-- Time reporting: work, travel, breaks, extra time
-- Flex calculation and summary
+- Time reporting: work, travel, breaks, and extra time
+- Flex balance calculation and summary
 - Multilingual support (Swedish, English, Finnish, Norwegian, Latvian, Estonian, Lithuanian, Danish)
 - User profiles and settings
 - GDPR: data export and deletion
@@ -35,9 +16,9 @@ Grumpy Tracker is a time tracking system for keeping track of work hours and fle
 
 ### Prerequisites
 
-- [Node.js](https://nodejs.org/) (v18 or later recommended)
+- [Node.js](https://nodejs.org/) v20 or later
 - [Docker](https://www.docker.com/) (for easy local development)
-- [PostgreSQL](https://www.postgresql.org/) (if not running via Docker)
+- [PostgreSQL](https://www.postgresql.org/) v16 (if not running via Docker)
 
 ### 1. Clone the repository
 
@@ -48,12 +29,19 @@ cd grumpy-tracker
 
 ### 2. Create environment variables
 
-Copy `.env.example` to `.env` and fill in (or create a `.env`):
+Copy `.env.example` to `.env` and fill in your values:
 
+```sh
+cp .env.example .env
 ```
-DATABASE_URL=postgres://grumpy:grumpy@localhost:5432/grumpytracker
-SESSION_SECRET=change-me
-```
+
+| Variable         | Description                                      | Example                                                     |
+| ---------------- | ------------------------------------------------ | ----------------------------------------------------------- |
+| `DATABASE_URL`   | PostgreSQL connection string                     | `postgres://grumpy:grumpysecret@localhost:5432/grumpytracker` |
+| `SESSION_SECRET` | Secret key for session management (keep private) | `a-long-random-string`                                      |
+| `NODE_ENV`       | Environment (`development` / `production`)       | `development`                                               |
+
+> **Note:** `DATABASE_URL` is used at runtime by the app (via `prisma.config.ts` and `src/db.js`) and by `npx prisma migrate` for CLI operations.
 
 ### 3. Start with Docker (recommended)
 
@@ -61,12 +49,17 @@ SESSION_SECRET=change-me
 docker-compose up --build
 ```
 
-- The app runs at [http://localhost:3000](http://localhost:3000)
-- The database runs on port 5432
+- App: [http://localhost:3000](http://localhost:3000)
+- Database: port 5432
 
-### 4. Alternative: Run locally without Docker
+The container automatically runs `npx prisma migrate deploy` on startup before launching the server (see `start.sh`).
+
+> **Note:** The `docker-compose.yml` sets `DATABASE_URL` for the app container. Add `SESSION_SECRET` to the environment section in `docker-compose.yml` for production deployments.
+
+### 4. Run locally without Docker
 
 1. Start PostgreSQL and create the database `grumpytracker`
+
 2. Install dependencies:
 
    ```sh
@@ -76,16 +69,22 @@ docker-compose up --build
 3. Run database migrations:
 
    ```sh
-   npx prisma migrate dev --name init
+   npx prisma migrate deploy
    ```
 
-4. Build Tailwind CSS (one-time build):
+   For a brand new local environment (creates migration history):
+
+   ```sh
+   npx prisma migrate dev
+   ```
+
+4. Build Tailwind CSS:
 
    ```sh
    npm run tailwind:build
    ```
 
-   Or run in "watch" mode for automatic updates on changes:
+   Or watch for changes during development:
 
    ```sh
    npm run tailwind:watch
@@ -99,40 +98,61 @@ docker-compose up --build
 
 ### 5. Create admin user
 
-The first user with the email `admin@grumpy.local` gets admin rights.
+Register a user with the email `admin@grumpy.local` — it will automatically receive admin rights.
 
-### 6. Test
+## Configuration Files
 
-Run tests with:
+| File                | Purpose                                                                 |
+| ------------------- | ----------------------------------------------------------------------- |
+| `.env`              | Runtime environment variables (not committed)                           |
+| `prisma.config.ts`  | Prisma 7 datasource config — provides the `pg` adapter for CLI and ORM  |
+| `prisma/schema.prisma` | Database schema (models and relations)                               |
+| `eslint.config.js`  | ESLint flat config (ESLint 10+)                                         |
+| `vitest.config.js`  | Vitest config with `globals: true` for Jest-compatible test syntax      |
+| `tailwind.config.js` | Tailwind CSS configuration                                             |
+| `docker-compose.yml` | Local Docker setup (app + PostgreSQL)                                  |
+
+## Testing
+
+The project has two test runners:
+
+**Vitest** (default, recommended):
+
+```sh
+npx vitest run
+```
+
+**Jest** (legacy, used by `npm test`):
 
 ```sh
 npm test
 ```
 
-## Verify Prisma migrations in Docker
+> Integration tests require a running PostgreSQL database with `DATABASE_URL` set.
 
-To ensure all tables are created automatically when using Docker and a prebuilt image:
+## Docker: Verify Prisma migrations
 
-1. Make sure the `prisma/migrations/` directory exists in your repo and is NOT listed in `.dockerignore` or `.gitignore`.
-2. Rebuild and restart the database:
+To ensure all tables are created when using Docker:
 
-   ```zsh
-   docker compose down
-   docker compose up --build -d db
-   sleep 10
-   docker compose run --rm app npx prisma migrate deploy
-   docker compose exec db psql -U grumpy -d grumpytracker -c '\dt'
-   ```
+```sh
+docker compose down
+docker compose up --build -d db
+sleep 10
+docker compose run --rm app npx prisma migrate deploy
+docker compose exec db psql -U grumpy -d grumpytracker -c '\dt'
+```
 
-3. You should now see all tables from `schema.prisma` (e.g. User, TimeEntry, ExtraTime, Settings, WorkPeriod, session, _prisma_migrations).
+You should see all tables from `schema.prisma` (User, TimeEntry, ExtraTime, Settings, WorkPeriod, Absence, Session, \_prisma\_migrations).
 
-If you only see the _prisma_migrations table, the migration files are missing from the image. Make sure `prisma/migrations/` is included in both the repo and the Docker image.
+> Make sure `prisma/migrations/` is committed and not listed in `.dockerignore` or `.gitignore`.
 
 ## Code Style & Architecture
 
-- Backend: Node.js, Express, Prisma, Passport.js, i18next
-- Frontend: EJS, Tailwind CSS, htmx (optional)
-- See [`.github/copilot-instructions.md`](.github/copilot-instructions.md) for code standards and architecture
+- **Backend:** Node.js (ESM), Express 5, Prisma 7, Passport.js, i18next
+- **Frontend:** EJS templates, Tailwind CSS 4, htmx (attribute-based, forms also work without JS)
+- **Database:** PostgreSQL 16 via `@prisma/adapter-pg`
+- **Linting:** ESLint 10 with flat config (`eslint.config.js`)
+- See [`.github/copilot-instructions.md`](.github/copilot-instructions.md) for code standards
 
 ## License
 
