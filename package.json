@@ -14,36 +14,39 @@
     "tailwind:watch": "tailwindcss -i ./src/public/input.css -o ./src/public/tailwind.css --watch"
   },
   "dependencies": {
-    "@prisma/client": "^6.9.0",
+    "@prisma/adapter-pg": "^7.7.0",
+    "@prisma/client": "^7.7.0",
     "bcrypt": "^6.0.0",
     "connect-flash": "^0.1.1",
     "connect-pg-simple": "^10.0.0",
     "cookie-parser": "^1.4.7",
     "csrf-csrf": "^4.0.3",
     "date-fns": "^4.1.0",
-    "dotenv": "^16.0.3",
-    "ejs": "^3.1.9",
+    "dotenv": "^17.4.2",
+    "ejs": "^5.0.2",
     "express": "^5.1.0",
     "express-session": "^1.17.3",
-    "htmx.org": "^1.9.10",
-    "i18next": "^25.2.0",
+    "htmx.org": "^2.0.8",
+    "i18next": "^26.0.4",
     "i18next-fs-backend": "^2.6.0",
     "i18next-http-middleware": "^3.7.4",
     "json2csv": "^6.0.0-alpha.2",
     "passport": "^0.7.0",
     "passport-local": "^1.0.0",
     "pg": "^8.11.1",
-    "prisma": "^6.9.0"
+    "prisma": "^7.7.0"
   },
   "devDependencies": {
+    "@eslint/js": "^10.0.1",
     "@tailwindcss/forms": "^0.5.7",
     "bcryptjs": "^3.0.2",
-    "eslint": "^9.28.0",
+    "eslint": "^10.2.0",
+    "globals": "^17.5.0",
     "jest": "^30.0.0",
     "nodemon": "^3.1.0",
     "prettier": "^3.2.5",
     "supertest": "^7.1.1",
     "tailwindcss": "^4.1.8",
-    "vitest": "^3.2.3"
+    "vitest": "^4.1.4"
   }
 }

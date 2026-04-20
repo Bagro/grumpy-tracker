@@ -1,8 +1,6 @@
 import express from "express";
-import { PrismaClient } from "@prisma/client";
+import prisma from "../db.js";
 import { getWorkTimeForDate } from '../utils.js';
-
-const prisma = new PrismaClient();
 const router = express.Router();
 
 // Helper: Calculate flex for a single time entry (same logic as in time.js)

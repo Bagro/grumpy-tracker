@@ -19,7 +19,7 @@ import gdprRoutes from './routes/gdpr.js';
 import adminRoutes from './routes/admin.js';
 import absenceRoutes from './routes/absence.js';
 import setupI18n from './i18n/index.js';
-import { PrismaClient } from '@prisma/client';
+import prisma from './db.js';
 import flash from 'connect-flash';
 import { getWorkTimeForDate } from './utils.js';
 import pgSession from 'connect-pg-simple';
@@ -31,7 +31,6 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
 const app = express();
-const prisma = new PrismaClient();
 
 // EJS setup
 app.set('view engine', 'ejs');

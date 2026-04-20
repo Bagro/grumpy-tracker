@@ -1,8 +1,7 @@
 import express from "express";
-import { PrismaClient } from "@prisma/client";
+import prisma from "../db.js";
 import { Parser } from "json2csv";
 
-const prisma = new PrismaClient();
 const router = express.Router();
 
 // GDPR: Actions page
