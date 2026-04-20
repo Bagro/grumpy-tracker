@@ -1,6 +1,6 @@
 {
   "name": "grumpy-tracker",
-  "version": "0.1.16",
+  "version": "0.1.17",
   "description": "Time tracking system for Grumpy Tracker",
   "main": "src/index.js",
   "type": "module",
