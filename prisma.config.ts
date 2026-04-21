@@ -3,6 +3,7 @@ import { PrismaPg } from "@prisma/adapter-pg";
 
 export default defineConfig({
   datasource: {
+    url: process.env.DATABASE_URL,
     adapter: () => {
       const connectionString = process.env.DATABASE_URL;
       if (!connectionString) {
